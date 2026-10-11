@@ -4,6 +4,10 @@ CREATE TABLE public.service (
     type CHAR(1) CHECK (type IN ('m', 's')),
     name TEXT,
     description TEXT,
+    notes TEXT,
+    interval_miles INTEGER NOT NULL DEFAULT 0,
+    interval_months INTEGER NOT NULL DEFAULT 0,
+    interval_years INTEGER NOT NULL DEFAULT 0,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_date TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

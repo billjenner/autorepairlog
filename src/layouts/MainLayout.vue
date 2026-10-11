@@ -45,6 +45,26 @@
           />
           <q-btn
             flat
+            label="Schedule"
+            to="/schedule"
+            class="q-mx-sm"
+            style="min-width: 126px"
+            :style="buttonStyle('/schedule')"
+            @mouseover="hoveredPath = '/schedule'"
+            @mouseleave="hoveredPath = null"
+          />
+          <q-btn
+            flat
+            label="Service"
+            to="/service"
+            class="q-mx-sm"
+            style="min-width: 126px"
+            :style="buttonStyle('/service')"
+            @mouseover="hoveredPath = '/service'"
+            @mouseleave="hoveredPath = null"
+          />
+          <q-btn
+            flat
             label="Auto"
             to="/auto"
             class="q-mx-sm"
@@ -99,6 +119,12 @@
         </q-item>
         <q-item clickable v-ripple @click="navigateAndClose('/mileage')">
           <q-item-section>Mileage</q-item-section>
+        </q-item>
+        <q-item clickable v-ripple @click="navigateAndClose('/schedule')">
+          <q-item-section>Schedule</q-item-section>
+        </q-item>
+        <q-item clickable v-ripple @click="navigateAndClose('/service')">
+          <q-item-section>Service</q-item-section>
         </q-item>
         <q-item clickable v-ripple @click="navigateAndClose('/dashboard')">
           <q-item-section>Dashboard</q-item-section>

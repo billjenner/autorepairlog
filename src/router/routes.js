@@ -163,6 +163,30 @@ const routes = [
         },
       },
       {
+        path: 'schedule',
+        component: () => import('pages/Schedule.vue'),
+        meta: {
+          requiresAuth: true,
+          seo: {
+            title: 'Schedule',
+            description: 'Create and manage your schedules.',
+            canonicalPath: '/schedule',
+          },
+        },
+      },
+      {
+        path: 'service',
+        component: () => import('pages/Service.vue'),
+        meta: {
+          requiresAuth: true,
+          seo: {
+            title: 'Service',
+            description: 'Create and manage your services.',
+            canonicalPath: '/service',
+          },
+        },
+      },
+      {
         path: 'users',
         component: () => import('pages/Users.vue'),
         meta: {

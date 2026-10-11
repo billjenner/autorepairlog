@@ -1,0 +1,228 @@
+<template>
+  <q-page class="q-pa-md">
+    <div class="row justify-center">
+      <div class="col-12 col-md-10 col-lg-8">
+        <q-card flat bordered class="q-pa-md">
+          <div class="row items-center justify-between q-mx-md q-mb-md">
+            <div class="text-h5">Schedules</div>
+            <q-btn
+              color="primary"
+              :label="showForm ? 'Cancel' : 'Add Schedule'"
+              :disable="!usersStore.currentUser"
+              @click="toggleForm"
+            />
+          </div>
+
+          <q-banner v-if="scheduleStore.error" class="bg-negative text-white q-mb-md" rounded>
+            {{ scheduleStore.error }}
+          </q-banner>
+
+          <q-banner
+            v-else-if="!usersStore.currentUser"
+            class="bg-warning text-dark q-mb-md"
+            rounded
+          >
+            Sign in to manage schedules.
+          </q-banner>
+
+          <q-form v-if="showForm" @submit.prevent="saveSchedule" class="q-gutter-md">
+            <q-card flat bordered class="q-pa-md bg-grey-1">
+              <div class="text-subtitle1 q-mb-sm">
+                {{ editingScheduleId ? 'Edit schedule' : 'Schedule details' }}
+              </div>
+              <q-select
+                v-model="form.auto_id"
+                :options="autoOptions"
+                label="Auto template"
+                emit-value
+                map-options
+                clearable
+                filled
+                dense
+              />
+              <q-input
+                v-model.trim="form.notes"
+                type="textarea"
+                label="Notes"
+                autogrow
+                filled
+                dense
+                class="q-mt-md"
+              />
+            </q-card>
+
+            <div class="row justify-end q-gutter-sm">
+              <q-btn flat label="Cancel" @click="resetForm" />
+              <q-btn
+                type="submit"
+                color="primary"
+                :label="editingScheduleId ? 'Update schedule' : 'Save schedule'"
+                :loading="scheduleStore.loading"
+              />
+            </div>
+          </q-form>
+
+          <q-table
+            class="q-mt-md"
+            :rows="scheduleStore.schedules"
+            :columns="columns"
+            :loading="scheduleStore.loading"
+            :pagination="{ rowsPerPage: 25 }"
+            :rows-per-page-options="[10, 25, 50, 0]"
+            row-key="schedule_id"
+            flat
+            bordered
+            dense
+            no-data-label="No schedule records yet."
+          >
+            <template #body-cell-auto="props">
+              <q-td :props="props">{{ autoDescription(props.row.auto_id) }}</q-td>
+            </template>
+            <template #body-cell-created_date="props">
+              <q-td :props="props">{{ formatDate(props.row.created_date) }}</q-td>
+            </template>
+            <template #body-cell-actions="props">
+              <q-td :props="props" class="text-right">
+                <q-btn flat dense color="primary" label="Edit" @click="editSchedule(props.row)" />
+                <q-btn
+                  flat
+                  dense
+                  color="negative"
+                  label="Delete"
+                  @click="pendingDeleteSchedule = props.row"
+                />
+              </q-td>
+            </template>
+          </q-table>
+
+          <q-dialog v-model="confirmDeleteOpen">
+            <q-card style="min-width: 320px">
+              <q-card-section class="text-h6">Delete schedule?</q-card-section>
+              <q-card-section>This removes the schedule from your list.</q-card-section>
+              <q-card-actions align="right">
+                <q-btn flat label="Cancel" color="primary" @click="pendingDeleteSchedule = null" />
+                <q-btn
+                  label="Delete"
+                  color="negative"
+                  :loading="scheduleStore.loading"
+                  @click="deleteSchedule"
+                />
+              </q-card-actions>
+            </q-card>
+          </q-dialog>
+        </q-card>
+      </div>
+    </div>
+  </q-page>
+</template>
+
+<script setup>
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useQuasar } from 'quasar'
+import { templateAutoLabel, useScheduleStore } from 'src/stores/schedule'
+import { useUsersStore } from 'stores/users'
+import { notifySuccess } from '../utils/notify'
+
+const $q = useQuasar()
+const scheduleStore = useScheduleStore()
+const usersStore = useUsersStore()
+const showForm = ref(false)
+const editingScheduleId = ref(null)
+const pendingDeleteSchedule = ref(null)
+const form = reactive({ auto_id: null, notes: '' })
+
+const columns = [
+  { name: 'auto', label: 'Auto', field: 'auto_id', align: 'left' },
+  { name: 'notes', label: 'Notes', field: 'notes', align: 'left' },
+  { name: 'created_date', label: 'Created', field: 'created_date', align: 'left', sortable: true },
+  { name: 'actions', label: '', field: 'schedule_id', align: 'right' },
+]
+
+const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
+const autoOptions = computed(() =>
+  scheduleStore.templateAutos.map((auto) => ({
+    label: templateAutoLabel(auto),
+    value: auto.auto_id,
+  })),
+)
+const confirmDeleteOpen = computed({
+  get: () => Boolean(pendingDeleteSchedule.value),
+  set: (open) => {
+    if (!open) {
+      pendingDeleteSchedule.value = null
+    }
+  },
+})
+
+function autoDescription(autoId) {
+  const auto = scheduleStore.templateAutos.find((item) => item.auto_id === autoId)
+  return auto ? templateAutoLabel(auto) : '—'
+}
+
+function formatDate(value) {
+  return value ? new Date(value).toLocaleDateString() : '—'
+}
+
+function resetForm() {
+  form.auto_id = null
+  form.notes = ''
+  editingScheduleId.value = null
+  showForm.value = false
+}
+
+function toggleForm() {
+  if (showForm.value) {
+    resetForm()
+  } else {
+    showForm.value = true
+  }
+}
+
+function editSchedule(schedule) {
+  form.auto_id = schedule.auto_id
+  form.notes = schedule.notes || ''
+  editingScheduleId.value = schedule.schedule_id
+  showForm.value = true
+}
+
+async function load() {
+  if (!currentUserId.value) {
+    scheduleStore.schedules = []
+    return
+  }
+
+  await scheduleStore.loadTemplateAutos()
+  await scheduleStore.loadSchedules()
+}
+
+async function saveSchedule() {
+  const isEditing = Boolean(editingScheduleId.value)
+  const saved = isEditing
+    ? await scheduleStore.updateSchedule(editingScheduleId.value, form)
+    : await scheduleStore.createSchedule(form)
+
+  if (!saved) {
+    return
+  }
+
+  notifySuccess($q, `Schedule ${isEditing ? 'updated' : 'saved'} successfully.`, {
+    color: 'positive',
+  })
+  resetForm()
+}
+
+async function deleteSchedule() {
+  const schedule = pendingDeleteSchedule.value
+  if (!schedule) {
+    return
+  }
+
+  if (await scheduleStore.deleteSchedule(schedule.schedule_id)) {
+    pendingDeleteSchedule.value = null
+    notifySuccess($q, 'Schedule deleted successfully.', { color: 'negative' })
+  }
+}
+
+watch(currentUserId, load)
+onMounted(load)
+</script>
