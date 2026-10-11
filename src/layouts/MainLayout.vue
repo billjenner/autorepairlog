@@ -1,0 +1,379 @@
+<template>
+  <q-layout view="lHh Lpr lFf">
+    <q-header elevated color="primary">
+      <q-toolbar>
+        <q-btn
+          v-if="$q.screen.lt.md"
+          flat
+          dense
+          round
+          icon="menu"
+          @click="leftDrawerOpen = !leftDrawerOpen"
+        />
+        <q-toolbar-title>
+          <router-link to="/" class="brand-link row items-center no-wrap">
+            <q-img
+              src="/icons/favicon-48x48.png"
+              alt="Auto Repair Log"
+              class="q-mr-sm"
+              style="width: 32px; height: 32px; border-radius: 4px"
+            />
+            <span>Auto Repair Log</span>
+          </router-link>
+        </q-toolbar-title>
+
+        <template v-if="!$q.screen.lt.md">
+          <q-btn
+            flat
+            label="Log"
+            to="/log"
+            class="q-mx-sm"
+            style="min-width: 126px"
+            :style="buttonStyle('/log')"
+            @mouseover="hoveredPath = '/log'"
+            @mouseleave="hoveredPath = null"
+          />
+          <q-btn
+            flat
+            label="Mileage"
+            to="/mileage"
+            class="q-mx-sm"
+            style="min-width: 126px"
+            :style="buttonStyle('/mileage')"
+            @mouseover="hoveredPath = '/mileage'"
+            @mouseleave="hoveredPath = null"
+          />
+          <q-btn
+            flat
+            label="Auto"
+            to="/auto"
+            class="q-mx-sm"
+            style="min-width: 126px"
+            :style="buttonStyle('/auto')"
+            @mouseover="hoveredPath = '/auto'"
+            @mouseleave="hoveredPath = null"
+          />
+          <q-btn
+            flat
+            label="Profile"
+            to="/profile"
+            class="q-mx-sm"
+            style="min-width: 126px"
+            :style="buttonStyle('/profile')"
+            @mouseover="hoveredPath = '/profile'"
+            @mouseleave="hoveredPath = null"
+          />
+          <q-btn
+            v-if="!(usersStore.currentUser && usersStore.currentUser.email)"
+            flat
+            label="LOGIN"
+            to="/login"
+            class="q-mx-sm"
+            style="min-width: 126px"
+            :style="buttonStyle('/login')"
+            @mouseover="hoveredPath = '/login'"
+            @mouseleave="hoveredPath = null"
+          />
+          <q-btn
+            v-else
+            flat
+            round
+            :label="userInitials"
+            aria-label="Sign out"
+            class="q-mx-sm user-initials-button"
+            @click="signOut()"
+          >
+            <q-tooltip>Sign out</q-tooltip>
+          </q-btn>
+        </template>
+      </q-toolbar>
+    </q-header>
+
+    <q-drawer v-model="leftDrawerOpen" side="left" bordered overlay>
+      <q-list padding>
+        <q-item clickable v-ripple @click="navigateAndClose('/')">
+          <q-item-section>Intro</q-item-section>
+        </q-item>
+        <q-item clickable v-ripple @click="navigateAndClose('/log')">
+          <q-item-section>Log</q-item-section>
+        </q-item>
+        <q-item clickable v-ripple @click="navigateAndClose('/mileage')">
+          <q-item-section>Mileage</q-item-section>
+        </q-item>
+        <q-item clickable v-ripple @click="navigateAndClose('/dashboard')">
+          <q-item-section>Dashboard</q-item-section>
+        </q-item>
+        <q-item clickable v-ripple @click="navigateAndClose('/docs')">
+          <q-item-section>Docs</q-item-section>
+        </q-item>
+        <q-item v-if="isAdmin" clickable v-ripple @click="navigateAndClose('/users')">
+          <q-item-section>Users</q-item-section>
+        </q-item>
+        <q-item v-if="isAdmin" clickable v-ripple @click="navigateAndClose('/feedback')">
+          <q-item-section>Feedback</q-item-section>
+        </q-item>
+        <q-item v-if="isAdmin" clickable v-ripple @click="navigateAndClose('/barcode-scanner')">
+          <q-item-section>Barcode Scanner</q-item-section>
+        </q-item>
+        <q-item v-if="isAdmin" clickable v-ripple @click="navigateAndClose('/tst-food-facts')">
+          <q-item-section>Tst Food Facts</q-item-section>
+        </q-item>
+        <q-item
+          v-if="!(usersStore.currentUser && usersStore.currentUser.email)"
+          clickable
+          v-ripple
+          @click="navigateAndClose('/login')"
+        >
+          <q-item-section>Login</q-item-section>
+        </q-item>
+        <q-item v-else clickable v-ripple @click="signOut()">
+          <q-item-section>Sign out</q-item-section>
+        </q-item>
+      </q-list>
+    </q-drawer>
+
+    <q-page-container>
+      <router-view v-slot="{ Component, route: currentRoute }">
+        <transition name="screen-fade" mode="out-in">
+          <component :is="Component" :key="currentRoute.path" />
+        </transition>
+      </router-view>
+    </q-page-container>
+    <q-footer class="bg-primary text-white q-pa-sm">
+      <div class="row items-center justify-between">
+        <div class="text-caption">V: {{ appVersion }}-{{ appCommit }}</div>
+        <div v-if="usersStore.currentUser && usersStore.currentUser.email">
+          {{ profileStore.currentProfile?.fname }}
+          {{ profileStore.currentProfile?.lname }}
+        </div>
+        <div v-else class="text-caption">Not logged in</div>
+      </div>
+    </q-footer>
+
+    <q-dialog v-model="showInstallDialog" persistent>
+      <q-card style="min-width: 320px; max-width: 420px">
+        <q-card-section>
+          <div class="text-h6">Install Auto Repair Log App?</div>
+        </q-card-section>
+
+        <q-card-section>
+          Install this app on your device for a faster, full-screen experience.
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat color="negative" label="Not now" @click="dismissInstallDialog" />
+          <q-btn color="secondary" label="Install" @click="promptInstall" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="showSignOutDialog">
+      <q-card style="min-width: 320px; max-width: 420px">
+        <q-card-section>
+          <div class="text-h6">Sign out?</div>
+        </q-card-section>
+
+        <q-card-section>Are you sure you want to sign out?</q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" @click="showSignOutDialog = false" />
+          <q-btn color="negative" label="Sign out" @click="confirmSignOut" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <OfflineConnectionCard v-model="showOfflineDialog" />
+  </q-layout>
+</template>
+
+<script setup>
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useQuasar } from 'quasar'
+import { useRoute, useRouter } from 'vue-router'
+import { useUsersStore } from 'stores/users'
+import { useProfileStore } from 'stores/profile'
+import OfflineConnectionCard from 'components/OfflineConnectionCard.vue'
+
+const $q = useQuasar()
+const route = useRoute()
+const hoveredPath = ref(null)
+const usersStore = useUsersStore()
+const profileStore = useProfileStore()
+const router = useRouter()
+const leftDrawerOpen = ref(false)
+const deferredInstallPrompt = ref(null)
+const showInstallDialog = ref(false)
+const showSignOutDialog = ref(false)
+const showOfflineDialog = ref(false)
+
+const appVersion = process.env.APP_VERSION
+const appCommit = process.env.APP_COMMIT
+
+const userInitials = computed(() => {
+  const firstInitial = String(profileStore.currentProfile?.fname || '')
+    .trim()
+    .charAt(0)
+  const lastInitial = String(profileStore.currentProfile?.lname || '')
+    .trim()
+    .charAt(0)
+
+  return `${firstInitial}${lastInitial}`.toUpperCase() || 'U'
+})
+
+const isAdmin = computed(() => {
+  const adminEmail = String(import.meta.env.VITE_FORMSUBMIT_RECIPIENT || '')
+    .trim()
+    .toLowerCase()
+  const currentEmail = String(usersStore.currentUser?.email || '')
+    .trim()
+    .toLowerCase()
+
+  return Boolean(adminEmail) && currentEmail === adminEmail
+})
+
+async function navigate(path) {
+  router.push(path)
+}
+
+async function signOut() {
+  showSignOutDialog.value = true
+}
+
+async function confirmSignOut() {
+  showSignOutDialog.value = false
+  await usersStore.logoutUser()
+  router.push('/login')
+}
+
+async function navigateAndClose(path) {
+  leftDrawerOpen.value = false
+  if (path === '/login') {
+    router.push(path)
+    return
+  }
+
+  await navigate(path)
+}
+
+// TODO: Use with capacitor
+// async function exitApp() {
+//   await App.exitApp()
+// }
+
+function buttonStyle(path) {
+  if (route.path === path) {
+    return { backgroundColor: 'var(--q-secondary)' }
+  }
+
+  if (hoveredPath.value === path) {
+    return { backgroundColor: 'var(--q-accent)' }
+  }
+
+  return { backgroundColor: 'var(--q-secondary)' }
+}
+
+function dismissInstallDialog() {
+  showInstallDialog.value = false
+}
+
+async function promptInstall() {
+  if (!deferredInstallPrompt.value) {
+    showInstallDialog.value = false
+    return
+  }
+
+  deferredInstallPrompt.value.prompt()
+  await deferredInstallPrompt.value.userChoice
+  deferredInstallPrompt.value = null
+  showInstallDialog.value = false
+}
+
+function handleBeforeInstallPrompt(event) {
+  event.preventDefault()
+  deferredInstallPrompt.value = event
+  showInstallDialog.value = true
+}
+
+function handleAppInstalled() {
+  deferredInstallPrompt.value = null
+  showInstallDialog.value = false
+}
+
+onMounted(() => {
+  window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+  window.addEventListener('appinstalled', handleAppInstalled)
+
+  if (usersStore.currentUser?.user_id) {
+    profileStore.loadCurrentProfile(usersStore.currentUser.user_id)
+  }
+})
+
+watch(
+  () => usersStore.currentUser?.user_id,
+  (userId) => {
+    if (userId) {
+      profileStore.loadCurrentProfile(userId)
+    } else {
+      profileStore.currentProfile = null
+    }
+  },
+)
+
+watch(
+  () => usersStore.offlineAttempts,
+  (attempts, previous) => {
+    if (attempts > previous) {
+      showOfflineDialog.value = true
+    }
+  },
+)
+
+watch(
+  () => usersStore.isOffline || profileStore.isOffline,
+  (isOffline) => {
+    if (isOffline) {
+      showOfflineDialog.value = true
+    }
+  },
+)
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+  window.removeEventListener('appinstalled', handleAppInstalled)
+})
+</script>
+
+<style scoped>
+.screen-fade-enter-active,
+.screen-fade-leave-active {
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease,
+    filter 200ms ease;
+}
+
+.screen-fade-enter-from,
+.screen-fade-leave-to {
+  opacity: 0;
+  transform: translateY(18px);
+  filter: blur(4px);
+}
+
+.screen-fade-enter-to,
+.screen-fade-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+.brand-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.user-initials-button {
+  background-color: var(--q-accent);
+  min-width: 40px;
+  min-height: 40px;
+}
+</style>

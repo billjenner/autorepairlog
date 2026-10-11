@@ -1,0 +1,54 @@
+{
+  "name": "autorepairlog",
+  "version": "0.0.1",
+  "description": "Auto Repair Log",
+  "productName": "Auto Repair Log",
+  "author": "Bill Jenner",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "lint": "eslint -c ./eslint.config.js \"./src*/**/*.{js,cjs,mjs,vue}\"",
+    "format": "prettier --write \"**/*.{js,vue,css,scss,html,md,json}\" --ignore-path .gitignore",
+    "test": "echo \"No test specified\" && exit 0",
+    "dev": "quasar dev",
+    "build": "quasar build",
+    "postinstall": "quasar prepare"
+  },
+  "dependencies": {
+    "@quasar/extras": "^1.16.4",
+    "@supabase/supabase-js": "^2.111.0",
+    "chart.js": "^4.5.1",
+    "html5-qrcode": "^2.3.8",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
+    "pinia": "^3.0.1",
+    "quasar": "^2.16.0",
+    "register-service-worker": "^1.7.2",
+    "vue": "^3.5.22",
+    "vue-chartjs": "^5.3.4",
+    "vue-router": "^5.0.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@quasar/app-vite": "^2.5.1",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "autoprefixer": "^10.4.27",
+    "eslint": "^9.39.4",
+    "eslint-plugin-vue": "^10.8.0",
+    "globals": "^17.4.0",
+    "postcss": "^8.5.8",
+    "prettier": "^3.8.1",
+    "rollup": "^4.64.3",
+    "supabase": "^2.113.0",
+    "vite-plugin-checker": "^0.12.0",
+    "vite-plugin-vue-devtools": "^8.2.1",
+    "vue-eslint-parser": "^10.4.0",
+    "workbox-build": "^7.4.1"
+  },
+  "engines": {
+    "node": "^28 || ^26 || ^24 || ^22.12",
+    "npm": ">= 6.13.4",
+    "yarn": ">= 1.21.1",
+    "pnpm": ">= 10.0.0"
+  }
+}

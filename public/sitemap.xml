@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Main Site -->
+  <url>
+    <loc>https://slimmacros.com/</loc>
+  </url>
+
+  <!-- Food, Workout, Supplement and Weight Diaries -->
+  <url>
+    <loc>https://slimmacros.com/log?tab=food</loc>
+  </url>
+
+  <url>
+    <loc>https://slimmacros.com/log?tab=workouts</loc>
+  </url>
+
+  <url>
+    <loc>https://slimmacros.com/log?tab=supplements</loc>
+  </url>
+
+  <url>
+    <loc>https://slimmacros.com/log?tab=weight</loc>
+  </url>
+
+  <!-- Add / Manage Items -->
+  <url>
+    <loc>https://slimmacros.com/items?tab=food</loc>
+  </url>
+
+  <url>
+    <loc>https://slimmacros.com/items?tab=workouts</loc>
+  </url>
+
+  <url>
+    <loc>https://slimmacros.com/items?tab=supplements</loc>
+  </url>
+
+  <url>
+    <loc>https://slimmacros.com/items?tab=profile</loc>
+  </url>
+
+  <!-- Dashboard -->
+  <url>
+    <loc>https://slimmacros.com/dashboard</loc>
+  </url>
+
+  <!-- Documentation -->
+  <url>
+    <loc>https://slimmacros.com/docs</loc>
+  </url>
+
+</urlset>
