@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🥗 Auto Repair Log
 
 > **Track your Auto records, manage maintenance and repair schedules, and stay ahead with a clear view of upcoming service needs.**
@@ -61,3 +62,7 @@ By combining historical records with mileage-based and calendar-based estimates,
 ### Multifactor Auth - Off / On
 
 > Supabase > DB > Authentication > Sign In / PRoviders > Confirm Email = Off,
+=======
+# autorepairlog
+Track your Auto records, manage maintenance and repair schedules, and stay ahead with a clear view of upcoming service needs.
+>>>>>>> 1db6b7a204d5efdfdb4d82bcbf00b6ca5612ae65
