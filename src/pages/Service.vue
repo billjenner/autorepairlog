@@ -136,7 +136,7 @@
                 color="primary"
                 :label="editingServiceId ? 'Update service' : 'Save service'"
                 :loading="serviceStore.loading"
-                :disable="Boolean(editingServiceId) && !hasPositiveInterval"
+                :disable="!hasRequiredFields || (Boolean(editingServiceId) && !hasPositiveInterval)"
               />
             </div>
           </q-form>
@@ -292,6 +292,9 @@ const columns = [
 ]
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
+const hasRequiredFields = computed(
+  () => Boolean(selectedScheduleId.value) && Boolean(form.type) && Boolean(form.name?.trim()),
+)
 const hasPositiveInterval = computed(() =>
   [form.interval_miles, form.interval_months, form.interval_years].some(
     (interval) => Number(interval) > 0,
@@ -321,7 +324,7 @@ const confirmDeleteOpen = computed({
 function createEmptyForm() {
   return {
     schedule_id: null,
-    type: null,
+    type: 'm',
     name: '',
     description: '',
     notes: '',
@@ -385,7 +388,7 @@ async function load() {
 }
 
 async function saveService() {
-  if (!(await scheduleSelectRef.value?.validate())) {
+  if (!(await scheduleSelectRef.value?.validate()) || !hasRequiredFields.value) {
     return
   }
 
