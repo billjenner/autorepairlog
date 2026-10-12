@@ -40,15 +40,10 @@
                 filled
                 dense
               />
-              <q-input
-                v-model.trim="form.notes"
-                type="textarea"
-                label="Notes"
-                autogrow
-                filled
-                dense
-                class="q-mt-md"
-              />
+              <div class="q-mt-md">
+                <div class="text-caption text-grey-7 q-mb-xs">Notes</div>
+                <notes-editor v-model="form.notes" />
+              </div>
             </q-card>
 
             <div class="row justify-end q-gutter-sm">
@@ -119,6 +114,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
+import NotesEditor from 'components/NotesEditor.vue'
 import { templateAutoLabel, useScheduleStore } from 'src/stores/schedule'
 import { useUsersStore } from 'stores/users'
 import { notifySuccess } from '../utils/notify'
