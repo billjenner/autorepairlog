@@ -6,7 +6,7 @@
       style="
         border-radius: 12px;
         max-width: 100%;
-        width: 40%;
+        width: 32%;
         margin-top: 32px;
         margin-bottom: 32px;
       "
