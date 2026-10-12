@@ -432,11 +432,18 @@ watch(selectedScheduleId, (scheduleId) => {
     form.schedule_id = scheduleId
   }
 })
-watch(scheduleOptions, (options) => {
-  if (selectedScheduleId.value && !options.some((o) => o.value === selectedScheduleId.value)) {
-    selectedScheduleId.value = null
-  }
-})
+watch(
+  scheduleOptions,
+  (options) => {
+    if (selectedScheduleId.value && !options.some((o) => o.value === selectedScheduleId.value)) {
+      selectedScheduleId.value = null
+    }
+    if (!selectedScheduleId.value && options.length === 1) {
+      selectedScheduleId.value = options[0].value
+    }
+  },
+  { immediate: true },
+)
 watch(currentUserId, load)
 onMounted(load)
 </script>
