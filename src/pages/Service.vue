@@ -13,6 +13,23 @@
             />
           </div>
 
+          <div class="row q-mx-md q-mb-md">
+            <q-select
+              ref="scheduleSelectRef"
+              v-model="selectedScheduleId"
+              :options="scheduleOptions"
+              label="Auto"
+              emit-value
+              map-options
+              clearable
+              filled
+              dense
+              lazy-rules
+              :rules="[(value) => !showForm || !!value || 'Select an auto.']"
+              class="col-12 col-sm-6"
+            />
+          </div>
+
           <q-banner v-if="serviceStore.error" class="bg-negative text-white q-mb-md" rounded>
             {{ serviceStore.error }}
           </q-banner>
@@ -32,15 +49,13 @@
               </div>
               <div class="row q-col-gutter-md">
                 <div class="col-12">
-                  <q-select
-                    v-model="form.schedule_id"
-                    :options="scheduleOptions"
-                    label="Schedule (template auto)"
-                    emit-value
-                    map-options
-                    clearable
+                  <q-input
+                    :model-value="selectedScheduleLabel"
+                    label="Auto"
+                    readonly
                     filled
                     dense
+                    hint="Change the auto using the selector above."
                   />
                 </div>
                 <div class="col-12 col-sm-4">
@@ -128,7 +143,7 @@
 
           <q-table
             class="q-mt-md"
-            :rows="serviceStore.services"
+            :rows="visibleServices"
             :columns="columns"
             :loading="serviceStore.loading"
             :pagination="{ rowsPerPage: 25 }"
@@ -229,6 +244,8 @@ const serviceStore = useServiceStore()
 const usersStore = useUsersStore()
 const showForm = ref(false)
 const editingServiceId = ref(null)
+const selectedScheduleId = ref(null)
+const scheduleSelectRef = ref(null)
 const pendingDeleteService = ref(null)
 const detailsService = ref(null)
 const detailsOpen = computed({
@@ -286,6 +303,12 @@ const scheduleOptions = computed(() =>
     value: schedule.schedule_id,
   })),
 )
+const selectedScheduleLabel = computed(() => scheduleDescription(selectedScheduleId.value))
+const visibleServices = computed(() =>
+  selectedScheduleId.value
+    ? serviceStore.services.filter((item) => item.schedule_id === selectedScheduleId.value)
+    : [],
+)
 const confirmDeleteOpen = computed({
   get: () => Boolean(pendingDeleteService.value),
   set: (open) => {
@@ -312,6 +335,10 @@ function scheduleDescription(scheduleId) {
   return scheduleOptions.value.find((option) => option.value === scheduleId)?.label || '—'
 }
 
+function createFormForSelection() {
+  return { ...createEmptyForm(), schedule_id: selectedScheduleId.value }
+}
+
 function resetForm() {
   Object.assign(form, createEmptyForm())
   editingServiceId.value = null
@@ -321,9 +348,14 @@ function resetForm() {
 function toggleForm() {
   if (showForm.value) {
     resetForm()
-  } else {
-    showForm.value = true
+    return
   }
+
+  if (!selectedScheduleId.value && scheduleOptions.value.length === 1) {
+    selectedScheduleId.value = scheduleOptions.value[0].value
+  }
+  Object.assign(form, createFormForSelection())
+  showForm.value = true
 }
 
 function editService(service) {
@@ -337,6 +369,7 @@ function editService(service) {
     interval_months: service.interval_months ?? 0,
     interval_years: service.interval_years ?? 0,
   })
+  selectedScheduleId.value = service.schedule_id
   editingServiceId.value = service.service_id
   showForm.value = true
 }
@@ -352,6 +385,10 @@ async function load() {
 }
 
 async function saveService() {
+  if (!(await scheduleSelectRef.value?.validate())) {
+    return
+  }
+
   const isEditing = Boolean(editingServiceId.value)
   if (isEditing && !hasPositiveInterval.value) {
     $q.notify({
@@ -387,6 +424,16 @@ async function deleteService() {
   }
 }
 
+watch(selectedScheduleId, (scheduleId) => {
+  if (showForm.value) {
+    form.schedule_id = scheduleId
+  }
+})
+watch(scheduleOptions, (options) => {
+  if (selectedScheduleId.value && !options.some((o) => o.value === selectedScheduleId.value)) {
+    selectedScheduleId.value = null
+  }
+})
 watch(currentUserId, load)
 onMounted(load)
 </script>
