@@ -25,7 +25,7 @@
             Sign in to manage schedules.
           </q-banner>
 
-          <q-form v-if="showForm" @submit.prevent="saveSchedule" class="q-gutter-md">
+          <q-form v-if="showForm" @submit.prevent="saveSchedule" class="q-mt-md q-gutter-md">
             <q-card flat bordered class="q-pa-md bg-grey-1">
               <div class="text-subtitle1 q-mb-sm">
                 {{ editingScheduleId ? 'Edit schedule' : 'Schedule details' }}
