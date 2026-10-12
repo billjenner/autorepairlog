@@ -213,13 +213,6 @@ const pendingDeleteMileage = ref(null)
 const form = reactive(createEmptyForm())
 
 const columns = [
-  {
-    name: 'auto',
-    label: 'Auto',
-    field: (row) => autoLabelById(row.auto_id),
-    align: 'left',
-    sortable: true,
-  },
   { name: 'miles', label: 'Miles', field: 'miles', align: 'right', sortable: true },
   { name: 'date', label: 'Date', field: 'date', align: 'left', sortable: true },
   { name: 'actions', label: '', field: 'mileage_id', align: 'right' },

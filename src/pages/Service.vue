@@ -154,9 +154,6 @@
             dense
             no-data-label="No service records yet."
           >
-            <template #body-cell-schedule="props">
-              <q-td :props="props">{{ scheduleDescription(props.row.schedule_id) }}</q-td>
-            </template>
             <template #body-cell-type="props">
               <q-td :props="props">{{ props.row.type ? props.row.type.toUpperCase() : '—' }}</q-td>
             </template>
@@ -264,7 +261,6 @@ const typeOptions = [
 ]
 
 const columns = [
-  { name: 'schedule', label: 'Schedule', field: 'schedule_id', align: 'left' },
   { name: 'type', label: 'Type', field: 'type', align: 'left', sortable: true },
   { name: 'name', label: 'Name', field: 'name', align: 'left', sortable: true },
   {
