@@ -102,25 +102,26 @@
                   />
                 </div>
                 <div class="col-12">
-                  <q-input
-                    v-model.trim="form.notes"
-                    type="textarea"
-                    label="Notes"
-                    autogrow
-                    filled
-                    dense
-                  />
+                  <div class="text-caption text-grey-7 q-mb-xs">Notes</div>
+                  <notes-editor v-model="form.notes" />
                 </div>
               </div>
             </q-card>
 
             <div class="row justify-end q-gutter-sm">
+              <div
+                v-if="editingServiceId && !hasPositiveInterval"
+                class="text-caption text-negative self-center q-mr-auto"
+              >
+                Enter a value greater than 0 for at least one interval to update this service.
+              </div>
               <q-btn flat label="Cancel" @click="resetForm" />
               <q-btn
                 type="submit"
                 color="primary"
                 :label="editingServiceId ? 'Update service' : 'Save service'"
                 :loading="serviceStore.loading"
+                :disable="Boolean(editingServiceId) && !hasPositiveInterval"
               />
             </div>
           </q-form>
@@ -149,7 +150,7 @@
                 <q-btn
                   flat
                   dense
-                  color="secondary"
+                  color="accent"
                   label="Details"
                   @click="detailsService = props.row"
                 />
@@ -181,14 +182,8 @@
                 />
               </q-card-section>
               <q-card-section class="q-pt-none">
-                <q-input
-                  :model-value="detailsService?.notes || ''"
-                  type="textarea"
-                  label="Details"
-                  readonly
-                  autogrow
-                  filled
-                />
+                <div class="text-caption text-grey-7 q-mb-xs">Details</div>
+                <notes-viewer :notes="detailsService?.notes || ''" />
               </q-card-section>
               <q-card-actions align="right">
                 <q-btn flat label="Close" color="primary" v-close-popup />
@@ -222,6 +217,8 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
+import NotesEditor from 'components/NotesEditor.vue'
+import NotesViewer from 'components/NotesViewer.vue'
 import { useServiceStore } from 'src/stores/service'
 import { templateAutoLabel } from 'src/stores/schedule'
 import { useUsersStore } from 'stores/users'
@@ -278,6 +275,11 @@ const columns = [
 ]
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
+const hasPositiveInterval = computed(() =>
+  [form.interval_miles, form.interval_months, form.interval_years].some(
+    (interval) => Number(interval) > 0,
+  ),
+)
 const scheduleOptions = computed(() =>
   serviceStore.scheduleOptions.map((schedule) => ({
     label: templateAutoLabel(schedule.auto),
@@ -351,6 +353,14 @@ async function load() {
 
 async function saveService() {
   const isEditing = Boolean(editingServiceId.value)
+  if (isEditing && !hasPositiveInterval.value) {
+    $q.notify({
+      color: 'negative',
+      message: 'Enter a value greater than 0 for at least one interval to update this service.',
+    })
+    return
+  }
+
   const saved = isEditing
     ? await serviceStore.updateService(editingServiceId.value, form)
     : await serviceStore.createService(form)
