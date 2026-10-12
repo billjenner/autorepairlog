@@ -2,3 +2,6 @@ node_modules/
 .env
 dist/
 .quasar/
+*.xls*
+*.xlsx*
+*.xlsm*
