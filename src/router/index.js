@@ -129,14 +129,15 @@ export default defineRouter(async (/* { store, ssrContext } */) => {
       }
 
       if (requiresAdmin) {
-        const adminEmail = String(import.meta.env.VITE_FORMSUBMIT_RECIPIENT || '')
-          .trim()
-          .toLowerCase()
-        const currentEmail = String(store.currentUser?.email || '')
-          .trim()
-          .toLowerCase()
+        const { useProfileStore } = await import('../stores/profile')
+        const profileStore = useProfileStore()
+        const userId = store.currentUser?.user_id
 
-        if (!adminEmail || currentEmail !== adminEmail) {
+        if (userId && !profileStore.currentProfile) {
+          await profileStore.loadCurrentProfile(userId)
+        }
+
+        if (!(Number(profileStore.currentProfile?.admin_level) > 0)) {
           return { path: '/' }
         }
       }

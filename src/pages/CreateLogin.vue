@@ -112,6 +112,7 @@ async function handleSubmit() {
     await profileStore.saveProfile(result.user_id, {
       fname: fname.value.trim(),
       lname: lname.value.trim(),
+      email: result.email || store.currentUser?.email,
     })
     message.value = `User created for ${store.currentUser?.email}`
     notifySuccess($q, `User created for ${store.currentUser?.email}`)

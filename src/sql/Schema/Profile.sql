@@ -22,6 +22,12 @@ create table public.profile (
         on delete cascade
 );
 
+-- ============================================================
+-- Add to table
+-- ============================================================
+ALTER TABLE public.profile
+    ADD COLUMN email text NOT NULL DEFAULT ''::text,
+    ADD COLUMN last_logged_in timestamptz NULL;
 
 -- ============================================================
 -- ROW LEVEL SECURITY
@@ -55,9 +61,51 @@ for insert
 to authenticated
 with check (auth.uid() = user_id);
 
+-- Admins (admin_level > 0) can view all profiles.
+-- security definer avoids infinite recursion from querying profile inside its own policy.
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+    select exists (
+        select 1 from public.profile
+        where user_id = auth.uid() and admin_level > 0
+    );
+$$;
+
+create policy "Admins can view all profiles"
+on public.profile
+for select
+to authenticated
+using (public.is_admin());
+
 -- ============================================================
 -- Refresh
 -- ============================================================
 -- Make newly created tables available to the Supabase REST API immediately.
 notify pgrst, 'reload schema';
 
+-- ============================================================
+-- added RLS
+-- ============================================================
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+    select exists (
+        select 1 from public.profile
+        where user_id = auth.uid() and admin_level > 0
+    );
+$$;
+
+create policy "Admins can view all profiles"
+on public.profile
+for select
+to authenticated
+using (public.is_admin());

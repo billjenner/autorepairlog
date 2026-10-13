@@ -4,7 +4,6 @@ import { isConnectionError } from '../utils/connection'
 
 const CURRENT_USER_STORAGE_KEY = 'slimmacros.currentUser'
 const USERS_LOGGED_IN_FUNCTION = 'users-logged-in'
-const LIST_PROFILES_FUNCTION = 'list-profiles'
 const appUrl = import.meta.env.VITE_APP_URL
 
 function normalizeEmail(email) {
@@ -191,6 +190,15 @@ export const useUsersStore = defineStore('Users', {
         persistCurrentUser(savedUser)
         this.isOffline = false
         await this.syncLoggedInSession(normalizedEmail, true)
+
+        const { error: lastLoginError } = await supabase
+          .from('profile')
+          .update({ last_logged_in: new Date().toISOString() })
+          .eq('user_id', authUser.id)
+        if (lastLoginError) {
+          console.error('[loginUser] last_logged_in update failed:', lastLoginError.message)
+        }
+
         return savedUser
       } catch (error) {
         this.error = isConnectionError(error) ? 'Unable to connect to Supabase.' : error?.message
@@ -323,9 +331,11 @@ export const useUsersStore = defineStore('Users', {
       }
 
       try {
-        // Profile RLS only allows a session to read its own row, so listing
-        // every user requires a service-role Edge Function to bypass it.
-        const { data, error } = await supabase.functions.invoke(LIST_PROFILES_FUNCTION)
+        // Admins can read every row via the "Admins can view all profiles" RLS policy.
+        const { data, error } = await supabase
+          .from('profile')
+          .select('profile_id, user_id, fname, lname, admin_level, is_active, email, last_logged_in, created_at')
+          .order('created_at', { ascending: false })
 
         if (error) {
           this.error = error.message
@@ -333,13 +343,8 @@ export const useUsersStore = defineStore('Users', {
           return []
         }
 
-        if (data?.error) {
-          this.error = data.error
-          return []
-        }
-
         this.isOffline = false
-        this.users = data?.users || []
+        this.users = data || []
         return this.users
       } catch (error) {
         this.error = error?.message || 'Unable to connect to Supabase.'

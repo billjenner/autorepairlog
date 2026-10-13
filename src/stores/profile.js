@@ -12,11 +12,19 @@ export const useProfileStore = defineStore('Profile', {
 
   actions: {
     buildProfilePayload(userId, profile = {}) {
-      return {
+      const payload = {
         user_id: userId,
         fname: profile.fname?.trim() || '',
         lname: profile.lname?.trim() || '',
       }
+
+      // Only send email when provided so profile edits don't overwrite it with ''.
+      const email = profile.email?.trim().toLowerCase()
+      if (email) {
+        payload.email = email
+      }
+
+      return payload
     },
 
     async loadProfile() {
