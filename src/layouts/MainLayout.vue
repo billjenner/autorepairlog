@@ -138,12 +138,6 @@
         <q-item v-if="isAdmin" clickable v-ripple @click="navigateAndClose('/feedback')">
           <q-item-section>Feedback</q-item-section>
         </q-item>
-        <q-item v-if="isAdmin" clickable v-ripple @click="navigateAndClose('/barcode-scanner')">
-          <q-item-section>Barcode Scanner</q-item-section>
-        </q-item>
-        <q-item v-if="isAdmin" clickable v-ripple @click="navigateAndClose('/tst-food-facts')">
-          <q-item-section>Tst Food Facts</q-item-section>
-        </q-item>
         <q-item
           v-if="!(usersStore.currentUser && usersStore.currentUser.email)"
           clickable
@@ -247,14 +241,7 @@ const userInitials = computed(() => {
 })
 
 const isAdmin = computed(() => {
-  const adminEmail = String(import.meta.env.VITE_FORMSUBMIT_RECIPIENT || '')
-    .trim()
-    .toLowerCase()
-  const currentEmail = String(usersStore.currentUser?.email || '')
-    .trim()
-    .toLowerCase()
-
-  return Boolean(adminEmail) && currentEmail === adminEmail
+  return Number(profileStore.currentProfile?.admin_level) > 4
 })
 
 async function navigate(path) {
