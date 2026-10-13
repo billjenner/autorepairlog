@@ -353,6 +353,44 @@ export const useUsersStore = defineStore('Users', {
       }
     },
 
+    async updateUserAdminSettings(userId, { admin_level, is_active }) {
+      this.error = null
+
+      if (!supabase) {
+        this.error = 'Supabase client is not configured.'
+        this.isOffline = true
+        return null
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('profile')
+          .update({ admin_level: Number(admin_level) || 0, is_active: Boolean(is_active) })
+          .eq('user_id', userId)
+          .select('profile_id, user_id, fname, lname, admin_level, is_active, email, last_logged_in, created_at')
+          .maybeSingle()
+
+        if (error) {
+          this.error = error.message
+          this.isOffline = isConnectionError(error)
+          return null
+        }
+
+        if (!data) {
+          this.error = 'Update was not permitted or the user no longer exists.'
+          return null
+        }
+
+        this.isOffline = false
+        this.users = this.users.map((u) => (u.user_id === userId ? data : u))
+        return data
+      } catch (error) {
+        this.error = error?.message || 'Unable to connect to Supabase.'
+        this.isOffline = isConnectionError(error)
+        return null
+      }
+    },
+
     async clearCurrentUser() {
       const currentEmail = this.currentUser?.email
       if (currentEmail) {

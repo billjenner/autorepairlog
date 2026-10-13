@@ -1,9 +1,8 @@
 <template>
   <q-page class="q-pa-md">
     <q-card class="q-pa-lg" style="max-width: 1100px; margin: 0 auto">
-      <div class="text-h5 text-center q-mb-md">Users</div>
-
-      <div class="text-center q-mb-sm">
+      <div class="row items-center justify-between q-mb-md">
+        <div class="text-h5">Users</div>
         <q-btn color="primary" label="Load users" @click="loadUsers" />
       </div>
 
@@ -20,7 +19,7 @@
         clearable
         debounce="200"
         label="Search users"
-        class="q-mb-md"
+        class="q-mb-xl"
       >
         <template #prepend>
           <q-icon name="search" />
@@ -39,7 +38,41 @@
         :pagination="{ rowsPerPage: 25, sortBy: 'created_at', descending: true }"
         :rows-per-page-options="[10, 25, 50, 0]"
         no-data-label="No users found."
-      />
+      >
+        <template #body-cell-actions="props">
+          <q-td :props="props" auto-width>
+            <q-btn flat dense color="primary" label="Edit" @click="openEdit(props.row)" />
+          </q-td>
+        </template>
+      </q-table>
+
+      <q-dialog v-model="showEditDialog" persistent>
+        <q-card style="width: min(100%, 400px)">
+          <q-card-section>
+            <div class="text-h6">Edit user</div>
+            <div class="text-caption text-grey-7">
+              {{ editForm.fname }} {{ editForm.lname }} | {{ editForm.email }}
+            </div>
+          </q-card-section>
+          <q-card-section class="q-gutter-md">
+            <q-input
+              v-model.number="editForm.admin_level"
+              type="number"
+              min="0"
+              step="1"
+              outlined
+              dense
+              label="Admin level"
+            />
+            <q-toggle v-model="editForm.is_active" label="Active" />
+            <div v-if="saveError" class="text-negative">{{ saveError }}</div>
+          </q-card-section>
+          <q-card-actions align="right">
+            <q-btn flat label="Cancel" :disable="saving" @click="showEditDialog = false" />
+            <q-btn color="primary" label="Save" :loading="saving" @click="saveEdit" />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
 
       <div
         v-if="store.currentUser && !store.isOffline"
@@ -55,7 +88,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useUsersStore } from 'stores/users'
 import OfflineConnectionCard from 'components/OfflineConnectionCard.vue'
 
@@ -112,7 +145,46 @@ const columns = [
     align: 'left',
     sortable: true,
   },
+  { name: 'actions', label: '', field: 'user_id', align: 'right' },
 ]
+
+const showEditDialog = ref(false)
+const saving = ref(false)
+const saveError = ref('')
+const editForm = reactive({
+  user_id: null,
+  fname: '',
+  lname: '',
+  email: '',
+  admin_level: 0,
+  is_active: true,
+})
+
+function openEdit(row) {
+  Object.assign(editForm, {
+    user_id: row.user_id,
+    fname: row.fname,
+    lname: row.lname,
+    email: row.email,
+    admin_level: Number(row.admin_level) || 0,
+    is_active: Boolean(row.is_active),
+  })
+  saveError.value = ''
+  showEditDialog.value = true
+}
+
+async function saveEdit() {
+  saving.value = true
+  saveError.value = ''
+  const result = await store.updateUserAdminSettings(editForm.user_id, editForm)
+  saving.value = false
+
+  if (result) {
+    showEditDialog.value = false
+  } else {
+    saveError.value = store.error || 'Unable to save user.'
+  }
+}
 
 const rows = computed(() => store.users)
 
@@ -126,6 +198,9 @@ function filterRows(allRows, terms) {
 
   return allRows.filter((row) =>
     columns.some((col) => {
+      if (col.name === 'actions') {
+        return false
+      }
       const raw = typeof col.field === 'function' ? col.field(row) : row[col.field]
       const shown = col.format ? col.format(raw) : raw
       return String(shown ?? '')
