@@ -104,3 +104,43 @@ for update
 to authenticated
 using (public.is_admin())
 with check (public.is_admin());
+
+-- ============================================================
+-- Updated RLS - see all records (not just my own)
+-- ============================================================
+-- SELECT
+DROP POLICY IF EXISTS "Authenticated users can view all profiles" ON public.profile;
+
+CREATE POLICY "Authenticated users can view all profiles"
+ON public.profile
+FOR SELECT
+TO authenticated
+USING (true);
+
+-- INSERT
+DROP POLICY IF EXISTS "Authenticated users can insert all profiles" ON public.profile;
+
+CREATE POLICY "Authenticated users can insert all profiles"
+ON public.profile
+FOR INSERT
+TO authenticated
+WITH CHECK (true);
+
+-- UPDATE
+DROP POLICY IF EXISTS "Authenticated users can update all profiles" ON public.profile;
+
+CREATE POLICY "Authenticated users can update all profiles"
+ON public.profile
+FOR UPDATE
+TO authenticated
+USING (true)
+WITH CHECK (true);
+
+-- DELETE
+DROP POLICY IF EXISTS "Authenticated users can delete all profiles" ON public.profile;
+
+CREATE POLICY "Authenticated users can delete all profiles"
+ON public.profile
+FOR DELETE
+TO authenticated
+USING (true);

@@ -175,3 +175,62 @@ create index if not exists auto_profile_id_idx
 -- Refresh
 -- ============================================================
 notify pgrst, 'reload schema';
+
+
+
+-- ============================================================
+-- Updated RLS - see all records (not just my own)
+-- ============================================================
+
+DROP POLICY IF EXISTS "Users can view their own auto"
+ON public.auto;
+
+CREATE POLICY "Authenticated users can view all autos"
+ON public.auto
+FOR SELECT
+TO authenticated
+USING (true);
+
+-- ============================================================
+-- Updated RLS - see all records (not just my own)
+-- ============================================================
+-- SELECT
+DROP POLICY IF EXISTS "Users can view their own auto" ON public.auto;
+DROP POLICY IF EXISTS "Authenticated users can view all autos" ON public.auto;
+
+CREATE POLICY "Authenticated users can view all autos"
+ON public.auto
+FOR SELECT
+TO authenticated
+USING (true);
+
+-- INSERT
+DROP POLICY IF EXISTS "Users can create their own auto" ON public.auto;
+DROP POLICY IF EXISTS "Authenticated users can insert all autos" ON public.auto;
+
+CREATE POLICY "Authenticated users can insert all autos"
+ON public.auto
+FOR INSERT
+TO authenticated
+WITH CHECK (true);
+
+-- UPDATE
+DROP POLICY IF EXISTS "Users can update their own auto" ON public.auto;
+DROP POLICY IF EXISTS "Authenticated users can update all autos" ON public.auto;
+
+CREATE POLICY "Authenticated users can update all autos"
+ON public.auto
+FOR UPDATE
+TO authenticated
+USING (true)
+WITH CHECK (true);
+
+-- DELETE
+DROP POLICY IF EXISTS "Users can delete their own auto" ON public.auto;
+DROP POLICY IF EXISTS "Authenticated users can delete all autos" ON public.auto;
+
+CREATE POLICY "Authenticated users can delete all autos"
+ON public.auto
+FOR DELETE
+TO authenticated
+USING (true);

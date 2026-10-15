@@ -20,3 +20,43 @@ FOR ALL
 TO anon, authenticated
 USING (true)
 WITH CHECK (true);
+
+-- ============================================================
+-- Updated RLS - see all records (not just my own)
+-- ============================================================
+-- SELECT
+DROP POLICY IF EXISTS "Authenticated users can view all services" ON public.service;
+
+CREATE POLICY "Authenticated users can view all services"
+ON public.service
+FOR SELECT
+TO authenticated
+USING (true);
+
+-- INSERT
+DROP POLICY IF EXISTS "Authenticated users can insert all services" ON public.service;
+
+CREATE POLICY "Authenticated users can insert all services"
+ON public.service
+FOR INSERT
+TO authenticated
+WITH CHECK (true);
+
+-- UPDATE
+DROP POLICY IF EXISTS "Authenticated users can update all services" ON public.service;
+
+CREATE POLICY "Authenticated users can update all services"
+ON public.service
+FOR UPDATE
+TO authenticated
+USING (true)
+WITH CHECK (true);
+
+-- DELETE
+DROP POLICY IF EXISTS "Authenticated users can delete all services" ON public.service;
+
+CREATE POLICY "Authenticated users can delete all services"
+ON public.service
+FOR DELETE
+TO authenticated
+USING (true);

@@ -76,8 +76,10 @@
                 <q-btn
                   dense
                   :flat="selectedTemplateScheduleId !== props.row.schedule_id"
-                  color="primary"
-                  :label="selectedTemplateScheduleId === props.row.schedule_id ? 'Selected' : 'Select'"
+                  color="accent"
+                  :label="
+                    selectedTemplateScheduleId === props.row.schedule_id ? 'Selected' : 'Select'
+                  "
                   @click="selectedTemplateScheduleId = props.row.schedule_id"
                 />
               </q-td>
