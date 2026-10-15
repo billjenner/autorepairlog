@@ -2,6 +2,16 @@
   <q-page class="q-pa-md">
     <div class="row justify-center">
       <div class="col-12 col-md-10 col-lg-8">
+        <q-select
+          v-model="form.auto_id"
+          :options="autoOptions"
+          label="Auto template"
+          emit-value
+          map-options
+          clearable
+          filled
+          dense
+        />
         <q-card flat bordered class="q-pa-md">
           <div class="row items-center justify-between q-mx-md q-mb-md">
             <div class="text-h5">Schedules</div>
@@ -30,16 +40,7 @@
               <div class="text-subtitle1 q-mb-sm">
                 {{ editingScheduleId ? 'Edit schedule' : 'Schedule details' }}
               </div>
-              <q-select
-                v-model="form.auto_id"
-                :options="autoOptions"
-                label="Auto template"
-                emit-value
-                map-options
-                clearable
-                filled
-                dense
-              />
+
               <div class="q-mt-md">
                 <div class="text-caption text-grey-7 q-mb-xs">Notes</div>
                 <notes-editor v-model="form.notes" />
@@ -57,8 +58,41 @@
             </div>
           </q-form>
 
+          <div class="text-subtitle1 q-mt-md">Template schedules</div>
           <q-table
-            class="q-mt-md"
+            class="q-mt-sm"
+            :rows="scheduleStore.templateSchedules"
+            :columns="templateColumns"
+            :pagination="{ rowsPerPage: 10 }"
+            :rows-per-page-options="[10, 25, 50, 0]"
+            row-key="schedule_id"
+            flat
+            bordered
+            dense
+            no-data-label="No template schedules."
+          >
+            <template #body-cell-select="props">
+              <q-td :props="props" auto-width>
+                <q-btn
+                  dense
+                  :flat="selectedTemplateScheduleId !== props.row.schedule_id"
+                  color="primary"
+                  :label="selectedTemplateScheduleId === props.row.schedule_id ? 'Selected' : 'Select'"
+                  @click="selectedTemplateScheduleId = props.row.schedule_id"
+                />
+              </q-td>
+            </template>
+            <template #body-cell-auto="props">
+              <q-td :props="props">{{ autoDescription(props.row) }}</q-td>
+            </template>
+            <template #body-cell-created_date="props">
+              <q-td :props="props">{{ formatDate(props.row.created_date) }}</q-td>
+            </template>
+          </q-table>
+
+          <div class="text-subtitle1 q-mt-md">My schedules</div>
+          <q-table
+            class="q-mt-sm"
             :rows="scheduleStore.schedules"
             :columns="columns"
             :loading="scheduleStore.loading"
@@ -71,7 +105,7 @@
             no-data-label="No schedule records yet."
           >
             <template #body-cell-auto="props">
-              <q-td :props="props">{{ autoDescription(props.row.auto_id) }}</q-td>
+              <q-td :props="props">{{ autoDescription(props.row) }}</q-td>
             </template>
             <template #body-cell-created_date="props">
               <q-td :props="props">{{ formatDate(props.row.created_date) }}</q-td>
@@ -117,14 +151,17 @@ import { useQuasar } from 'quasar'
 import NotesEditor from 'components/NotesEditor.vue'
 import { templateAutoLabel, useScheduleStore } from 'src/stores/schedule'
 import { useUsersStore } from 'stores/users'
+import { useProfileStore } from 'stores/profile'
 import { notifySuccess } from '../utils/notify'
 
 const $q = useQuasar()
 const scheduleStore = useScheduleStore()
 const usersStore = useUsersStore()
+const profileStore = useProfileStore()
 const showForm = ref(false)
 const editingScheduleId = ref(null)
 const pendingDeleteSchedule = ref(null)
+const selectedTemplateScheduleId = ref(null)
 const form = reactive({ auto_id: null, notes: '' })
 
 const columns = [
@@ -132,6 +169,11 @@ const columns = [
   { name: 'notes', label: 'Notes', field: 'notes', align: 'left' },
   { name: 'created_date', label: 'Created', field: 'created_date', align: 'left', sortable: true },
   { name: 'actions', label: '', field: 'schedule_id', align: 'right' },
+]
+
+const templateColumns = [
+  { name: 'select', label: '', field: 'schedule_id', align: 'left' },
+  ...columns.filter((col) => col.name !== 'actions'),
 ]
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
@@ -150,8 +192,11 @@ const confirmDeleteOpen = computed({
   },
 })
 
-function autoDescription(autoId) {
-  const auto = scheduleStore.templateAutos.find((item) => item.auto_id === autoId)
+function autoDescription(schedule) {
+  if (schedule.auto) {
+    return templateAutoLabel(schedule.auto) || '—'
+  }
+  const auto = scheduleStore.templateAutos.find((item) => item.auto_id === schedule.auto_id)
   return auto ? templateAutoLabel(auto) : '—'
 }
 
@@ -184,11 +229,19 @@ function editSchedule(schedule) {
 async function load() {
   if (!currentUserId.value) {
     scheduleStore.schedules = []
+    scheduleStore.templateSchedules = []
     return
   }
 
+  const profile = await profileStore.loadCurrentProfile(currentUserId.value)
   await scheduleStore.loadTemplateAutos()
-  await scheduleStore.loadSchedules()
+  await Promise.all([
+    scheduleStore.loadSchedules({
+      isAdmin: Number(profile?.admin_level) > 0,
+      profileId: profile?.profile_id,
+    }),
+    scheduleStore.loadTemplateSchedules(),
+  ])
 }
 
 async function saveSchedule() {
@@ -205,6 +258,7 @@ async function saveSchedule() {
     color: 'positive',
   })
   resetForm()
+  await load()
 }
 
 async function deleteSchedule() {

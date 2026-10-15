@@ -42,6 +42,13 @@ using (
     )
 );
 
+drop policy if exists "Authenticated users can view template autos" on public.auto;
+create policy "Authenticated users can view template autos"
+on public.auto
+for select
+to authenticated
+using ("isTemplate" = true);
+
 drop policy if exists "Users can create their own auto" on public.auto;
 create policy "Users can create their own auto"
 on public.auto

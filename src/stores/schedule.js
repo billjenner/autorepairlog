@@ -13,6 +13,7 @@ export function templateAutoLabel(auto) {
 export const useScheduleStore = defineStore('Schedule', {
   state: () => ({
     schedules: [],
+    templateSchedules: [],
     templateAutos: [],
     error: null,
     loading: false,
@@ -42,7 +43,8 @@ export const useScheduleStore = defineStore('Schedule', {
       return this.templateAutos
     },
 
-    async loadSchedules() {
+    // Non-template schedules. Users with admin_level 0 only see schedules for their own autos.
+    async loadSchedules({ isAdmin = false, profileId = null } = {}) {
       this.error = null
       this.loading = true
 
@@ -52,11 +54,22 @@ export const useScheduleStore = defineStore('Schedule', {
           return []
         }
 
-        const { data, error } = await supabase
+        if (!isAdmin && !profileId) {
+          this.schedules = []
+          return []
+        }
+
+        let query = supabase
           .from('schedule')
-          .select('*')
+          .select('*, auto:auto!inner(profile_id, year, make, model, color)')
           .eq('is_active', true)
-          .order('created_date', { ascending: false })
+          .eq('auto.isTemplate', false)
+
+        if (!isAdmin) {
+          query = query.eq('auto.profile_id', profileId)
+        }
+
+        const { data, error } = await query.order('created_date', { ascending: false })
 
         if (error) {
           this.error = error.message
@@ -68,6 +81,102 @@ export const useScheduleStore = defineStore('Schedule', {
       } finally {
         this.loading = false
       }
+    },
+
+    async loadTemplateSchedules() {
+      if (!supabase) {
+        this.error = 'Supabase client is not configured.'
+        return []
+      }
+
+      // const { data: autos, error: autoError } = await supabase
+      //   .from('auto')
+      //   .select('auto_id, is_active, isTemplate')
+
+      // const { data: schedules, error: scheduleError } = await supabase
+      //   .from('schedule')
+      //   .select('auto_id')
+
+      // console.log('Auto record:', autos?.[0])
+      // console.log('Schedule record:', schedules?.[0])
+      // console.log('Schedule record:', scheduleError?.message)
+
+      // console.log('Auto ID:', autos?.[0]?.auto_id)
+      // console.log('Schedule auto_id:', schedules?.[0]?.auto_id)
+      // console.log('Auto error:', autoError?.message)
+
+      // console.log('IDs match:', String(autos?.[0]?.auto_id) === String(schedules?.[0]?.auto_id))
+
+      // const autoId = autos?.[0]?.auto_id
+
+      // const { data: data5, error: error5 } = await supabase
+      //   .from('schedule')
+      //   .select('*')
+      //   .eq('auto_id', autoId)
+
+      // console.log('Matching schedules:', data5)
+      // console.log('Error:', error5)
+
+      // const { data: data1, error: error1 } = await supabase.from('schedule').select('*')
+
+      // console.log('Data:', data1)
+      // console.log('Error:', error1)
+      // console.log('Row count:', data1?.length)
+
+      // const { data: data2, error: error2 } = await supabase.from('schedule').select('*, auto(*)')
+
+      // console.log('Data:', data2)
+      // console.log('Error:', error2)
+      // console.log('Row count:', data2?.length)
+
+      // const { data: data3, error: error3 } = await supabase
+      //   .from('schedule')
+      //   .select('*, auto(profile_id, year, make, model, color)')
+
+      // console.log('Data:', data3)
+      // console.log('Error:', error3)
+      // console.log('Row count:', data3?.length)
+
+      // const { data: data4, error: error4 } = await supabase
+      //   .from('schedule')
+      //   .select(
+      //     `*,
+      //       auto!schedule_auto_id_fkey!inner(
+      //         profile_id,
+      //         year,
+      //         make,
+      //         model,
+      //         color,
+      //         isTemplate,
+      //         is_active
+      //       )
+      //     `,
+      //   )
+      //   //.eq('auto.isTemplate', true)
+      //   //.eq('auto.is_active', true)
+      //   .order('created_date', { ascending: false })
+
+      // console.log('Data:', data4)
+      // console.log('Error:', error4)
+      // console.log('Row count:', data4?.length)
+
+      const { data, error } = await supabase
+        .from('schedule')
+        .select('*, auto:auto!inner(profile_id, year, make, model, color)')
+      //.eq('is_active', true)
+      // .eq('auto.isTemplate', true)
+      //.order('created_date', { ascending: false })
+      console.log('Data:', data)
+      console.log('Error:', error)
+      console.log('Row count:', data?.length)
+
+      if (error) {
+        this.error = error.message
+        return []
+      }
+
+      this.templateSchedules = data || []
+      return this.templateSchedules
     },
 
     async createSchedule(schedule = {}) {
@@ -125,7 +234,9 @@ export const useScheduleStore = defineStore('Schedule', {
           return null
         }
 
-        this.schedules = this.schedules.map((item) => (item.schedule_id === scheduleId ? data : item))
+        this.schedules = this.schedules.map((item) =>
+          item.schedule_id === scheduleId ? data : item,
+        )
         return data
       } finally {
         this.loading = false
