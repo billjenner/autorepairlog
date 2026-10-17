@@ -57,7 +57,11 @@
               </q-td>
             </template>
             <template #body-cell-auto="props">
-              <q-td :props="props">{{ autoDescription(props.row) }}</q-td>
+              <q-td :props="props">
+                <a href="#" @click.prevent="openDetails(props.row)">
+                  {{ autoDescription(props.row) }}
+                </a>
+              </q-td>
             </template>
             <template #body-cell-count="props">
               <q-td :props="props">
@@ -131,7 +135,11 @@
             no-data-label="No schedule records yet."
           >
             <template #body-cell-auto="props">
-              <q-td :props="props">{{ autoDescription(props.row) }}</q-td>
+              <q-td :props="props">
+                <a href="#" @click.prevent="openDetails(props.row)">
+                  {{ autoDescription(props.row) }}
+                </a>
+              </q-td>
             </template>
             <template #body-cell-count="props">
               <q-td :props="props">
@@ -164,6 +172,11 @@
           </q-table>
 
           <schedule-services-dialog v-model="servicesDialogOpen" :services="servicesForDialog" />
+          <schedule-details-dialog
+            v-model="detailsDialogOpen"
+            :schedule="detailsSchedule"
+            :auto-label="detailsSchedule ? autoDescription(detailsSchedule) : ''"
+          />
 
           <q-dialog v-model="confirmDeleteOpen">
             <q-card style="min-width: 320px">
@@ -192,6 +205,7 @@ import { useQuasar } from 'quasar'
 import DOMPurify from 'dompurify'
 import NotesEditor from 'components/NotesEditor.vue'
 import ScheduleServicesDialog from 'components/schedule/ScheduleServicesDialog.vue'
+import ScheduleDetailsDialog from 'components/schedule/ScheduleDetailsDialog.vue'
 import { templateAutoLabel, useScheduleStore } from 'src/stores/schedule'
 import { useUsersStore } from 'stores/users'
 import { useProfileStore } from 'stores/profile'
@@ -250,6 +264,13 @@ const confirmDeleteOpen = computed({
 })
 
 const servicesDialogOpen = ref(false)
+const detailsDialogOpen = ref(false)
+const detailsSchedule = ref(null)
+
+function openDetails(schedule) {
+  detailsSchedule.value = schedule
+  detailsDialogOpen.value = true
+}
 const servicesForDialog = ref([])
 
 function openServices(schedule) {
