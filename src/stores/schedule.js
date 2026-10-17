@@ -45,8 +45,6 @@ export const useScheduleStore = defineStore('Schedule', {
         .order('make', { ascending: true })
         .order('model', { ascending: true })
 
-      console.log('loadTemplateAutos', { isAdmin, profileId, rows: data, error })
-
       if (error) {
         this.error = error.message
         return []
