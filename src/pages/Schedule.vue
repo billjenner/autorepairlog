@@ -159,6 +159,13 @@
             </template>
             <template #body-cell-actions="props">
               <q-td :props="props" class="text-right">
+                <q-btn
+                  flat
+                  dense
+                  color="primary"
+                  label="Services"
+                  @click="router.push({ path: '/service', query: { schedule_id: props.row.schedule_id } })"
+                />
                 <q-btn flat dense color="primary" label="Edit" @click="editSchedule(props.row)" />
                 <q-btn
                   flat
@@ -202,6 +209,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
+import { useRouter } from 'vue-router'
 import DOMPurify from 'dompurify'
 import NotesEditor from 'components/NotesEditor.vue'
 import ScheduleServicesDialog from 'components/schedule/ScheduleServicesDialog.vue'
@@ -212,6 +220,7 @@ import { useProfileStore } from 'stores/profile'
 import { notifySuccess } from '../utils/notify'
 
 const $q = useQuasar()
+const router = useRouter()
 const scheduleStore = useScheduleStore()
 const usersStore = useUsersStore()
 const profileStore = useProfileStore()

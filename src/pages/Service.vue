@@ -229,6 +229,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
+import { useRoute } from 'vue-router'
 import NotesEditor from 'components/NotesEditor.vue'
 import NotesViewer from 'components/NotesViewer.vue'
 import { useServiceStore } from 'src/stores/service'
@@ -237,6 +238,7 @@ import { useUsersStore } from 'stores/users'
 import { notifySuccess } from '../utils/notify'
 
 const $q = useQuasar()
+const route = useRoute()
 const serviceStore = useServiceStore()
 const usersStore = useUsersStore()
 const showForm = ref(false)
@@ -381,6 +383,15 @@ async function load() {
 
   await serviceStore.loadScheduleOptions()
   await serviceStore.loadServices()
+  applyRouteSchedule()
+}
+
+// Preselect the schedule passed from the Schedule page (?schedule_id=...).
+function applyRouteSchedule() {
+  const routeId = Number(route.query.schedule_id)
+  if (routeId && scheduleOptions.value.some((option) => option.value === routeId)) {
+    selectedScheduleId.value = routeId
+  }
 }
 
 async function saveService() {
@@ -441,5 +452,6 @@ watch(
   { immediate: true },
 )
 watch(currentUserId, load)
+watch(() => route.query.schedule_id, applyRouteSchedule)
 onMounted(load)
 </script>
