@@ -16,6 +16,7 @@
           <div class="row items-center justify-between q-mx-md q-mb-md">
             <div class="text-h5">Schedules</div>
             <q-btn
+              v-if="!hideTemplateTools"
               color="primary"
               :label="showForm ? 'Cancel' : 'Add Schedule'"
               :disable="!usersStore.currentUser"
@@ -58,8 +59,9 @@
             </div>
           </q-form>
 
-          <div class="text-subtitle1 q-mt-md">Template schedules</div>
+          <div v-if="!hideTemplateTools" class="text-subtitle1 q-mt-md">Template schedules</div>
           <q-table
+            v-if="!hideTemplateTools"
             class="q-mt-sm"
             :rows="scheduleStore.templateSchedules"
             :columns="templateColumns"
@@ -164,7 +166,12 @@ const showForm = ref(false)
 const editingScheduleId = ref(null)
 const pendingDeleteSchedule = ref(null)
 const selectedTemplateScheduleId = ref(null)
+const isAdminUser = ref(false)
 const form = reactive({ auto_id: null, notes: '' })
+// Level 0 users who already have a non-template schedule can't add or use templates.
+const hideTemplateTools = computed(
+  () => !isAdminUser.value && scheduleStore.schedules.length > 0,
+)
 
 const columns = [
   { name: 'auto', label: 'Auto', field: 'auto_id', align: 'left' },
@@ -233,6 +240,7 @@ async function load() {
     scheduleStore.schedules = []
     scheduleStore.templateSchedules = []
     scheduleStore.templateAutos = []
+    isAdminUser.value = false
     return
   }
 
@@ -247,8 +255,13 @@ async function load() {
       isAdmin,
       profileId: profile?.profile_id,
     }),
-    scheduleStore.loadTemplateSchedules(),
+    scheduleStore.loadTemplateSchedules({ isAdmin }),
   ])
+  isAdminUser.value = isAdmin
+
+  if (!form.auto_id && autoOptions.value.length === 1) {
+    form.auto_id = autoOptions.value[0].value
+  }
 }
 
 async function saveSchedule() {

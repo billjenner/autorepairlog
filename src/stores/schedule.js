@@ -94,21 +94,23 @@ export const useScheduleStore = defineStore('Schedule', {
       }
     },
 
-    async loadTemplateSchedules() {
+    // Admins see every active schedule (template or not); others only template schedules.
+    async loadTemplateSchedules({ isAdmin = false } = {}) {
       if (!supabase) {
         this.error = 'Supabase client is not configured.'
         return []
       }
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('schedule')
         .select('*, auto:auto!inner(profile_id, year, make, model, color)')
-      //.eq('is_active', true)
-      // .eq('auto.isTemplate', true)
-      //.order('created_date', { ascending: false })
-      console.log('Data:', data)
-      console.log('Error:', error)
-      console.log('Row count:', data?.length)
+        .eq('is_active', true)
+
+      if (!isAdmin) {
+        query = query.eq('auto.isTemplate', true)
+      }
+
+      const { data, error } = await query.order('created_date', { ascending: false })
 
       if (error) {
         this.error = error.message
