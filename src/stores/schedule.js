@@ -20,19 +20,32 @@ export const useScheduleStore = defineStore('Schedule', {
   }),
 
   actions: {
-    async loadTemplateAutos() {
+    async loadTemplateAutos({ isAdmin = false, profileId = null } = {}) {
+      this.error = null
+      this.templateAutos = []
+
       if (!supabase) {
         this.error = 'Supabase client is not configured.'
         return []
       }
 
-      const { data, error } = await supabase
+      if (!isAdmin && !profileId) {
+        return []
+      }
+
+      let query = supabase
         .from('auto')
         .select('auto_id, year, make, model, color')
-        .eq('isTemplate', true)
         .eq('is_active', true)
+
+      // Level 0 users get all of their own autos; admins get the shared templates.
+      query = isAdmin ? query.eq('isTemplate', true) : query.eq('profile_id', profileId)
+
+      const { data, error } = await query
         .order('make', { ascending: true })
         .order('model', { ascending: true })
+
+      console.log('loadTemplateAutos', { isAdmin, profileId, rows: data, error })
 
       if (error) {
         this.error = error.message

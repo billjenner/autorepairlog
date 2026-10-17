@@ -232,14 +232,19 @@ async function load() {
   if (!currentUserId.value) {
     scheduleStore.schedules = []
     scheduleStore.templateSchedules = []
+    scheduleStore.templateAutos = []
     return
   }
 
   const profile = await profileStore.loadCurrentProfile(currentUserId.value)
-  await scheduleStore.loadTemplateAutos()
+  const isAdmin = Number(profile?.admin_level) > 0
+  await scheduleStore.loadTemplateAutos({
+    isAdmin,
+    profileId: profile?.profile_id,
+  })
   await Promise.all([
     scheduleStore.loadSchedules({
-      isAdmin: Number(profile?.admin_level) > 0,
+      isAdmin,
       profileId: profile?.profile_id,
     }),
     scheduleStore.loadTemplateSchedules(),
