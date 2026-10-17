@@ -67,6 +67,11 @@
                 <span v-else>{{ props.value }}</span>
               </q-td>
             </template>
+            <template #body-cell-notes="props">
+              <q-td :props="props">
+                <div v-if="props.row.notes" v-html="sanitizeNotes(props.row.notes)" />
+              </q-td>
+            </template>
             <template #body-cell-created_date="props">
               <q-td :props="props">{{ formatDate(props.row.created_date) }}</q-td>
             </template>
@@ -136,6 +141,11 @@
                 <span v-else>{{ props.value }}</span>
               </q-td>
             </template>
+            <template #body-cell-notes="props">
+              <q-td :props="props">
+                <div v-if="props.row.notes" v-html="sanitizeNotes(props.row.notes)" />
+              </q-td>
+            </template>
             <template #body-cell-created_date="props">
               <q-td :props="props">{{ formatDate(props.row.created_date) }}</q-td>
             </template>
@@ -179,6 +189,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
+import DOMPurify from 'dompurify'
 import NotesEditor from 'components/NotesEditor.vue'
 import ScheduleServicesDialog from 'components/schedule/ScheduleServicesDialog.vue'
 import { templateAutoLabel, useScheduleStore } from 'src/stores/schedule'
@@ -252,6 +263,10 @@ function autoDescription(schedule) {
   }
   const auto = scheduleStore.templateAutos.find((item) => item.auto_id === schedule.auto_id)
   return auto ? templateAutoLabel(auto) : '—'
+}
+
+function sanitizeNotes(notes) {
+  return DOMPurify.sanitize(notes)
 }
 
 function formatDate(value) {
