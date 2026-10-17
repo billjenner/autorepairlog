@@ -15,13 +15,6 @@
         <q-card flat bordered class="q-pa-md">
           <div class="row items-center justify-between q-mx-md q-mb-md">
             <div class="text-h5">Schedules</div>
-            <q-btn
-              v-if="!hideTemplateTools"
-              color="primary"
-              :label="showForm ? 'Cancel' : 'Add Schedule'"
-              :disable="!usersStore.currentUser"
-              @click="toggleForm"
-            />
           </div>
 
           <q-banner v-if="scheduleStore.error" class="bg-negative text-white q-mb-md" rounded>
@@ -35,29 +28,6 @@
           >
             Sign in to manage schedules.
           </q-banner>
-
-          <q-form v-if="showForm" @submit.prevent="saveSchedule" class="q-mt-md q-gutter-md">
-            <q-card flat bordered class="q-pa-md bg-grey-1">
-              <div class="text-subtitle1 q-mb-sm">
-                {{ editingScheduleId ? 'Edit schedule' : 'Schedule details' }}
-              </div>
-
-              <div class="q-mt-md">
-                <div class="text-caption text-grey-7 q-mb-xs">Notes</div>
-                <notes-editor v-model="form.notes" />
-              </div>
-            </q-card>
-
-            <div class="row justify-end q-gutter-sm">
-              <q-btn flat label="Cancel" @click="resetForm" />
-              <q-btn
-                type="submit"
-                color="primary"
-                :label="editingScheduleId ? 'Update schedule' : 'Save schedule'"
-                :loading="scheduleStore.loading"
-              />
-            </div>
-          </q-form>
 
           <div v-if="!hideTemplateTools" class="text-subtitle1 q-mt-md">Template schedules</div>
           <q-table
@@ -89,12 +59,53 @@
             <template #body-cell-auto="props">
               <q-td :props="props">{{ autoDescription(props.row) }}</q-td>
             </template>
+            <template #body-cell-count="props">
+              <q-td :props="props">
+                <a v-if="props.value > 0" href="#" @click.prevent="openServices(props.row)">
+                  {{ props.value }}
+                </a>
+                <span v-else>{{ props.value }}</span>
+              </q-td>
+            </template>
             <template #body-cell-created_date="props">
               <q-td :props="props">{{ formatDate(props.row.created_date) }}</q-td>
             </template>
           </q-table>
 
-          <div class="text-subtitle1 q-mt-md">My schedules</div>
+          <div class="row items-center justify-between q-mt-md">
+            <div class="text-subtitle1">My schedules</div>
+            <q-btn
+              v-if="!hideTemplateTools"
+              color="primary"
+              :label="showForm ? 'Cancel' : 'Add Schedule'"
+              :disable="!usersStore.currentUser"
+              @click="toggleForm"
+            />
+          </div>
+
+          <q-form v-if="showForm" @submit.prevent="saveSchedule" class="q-mt-md q-gutter-md">
+            <q-card flat bordered class="q-pa-md bg-grey-1">
+              <div class="text-subtitle1 q-mb-sm">
+                {{ editingScheduleId ? 'Edit schedule' : 'Schedule details' }}
+              </div>
+
+              <div class="q-mt-md">
+                <div class="text-caption text-grey-7 q-mb-xs">Notes</div>
+                <notes-editor v-model="form.notes" />
+              </div>
+            </q-card>
+
+            <div class="row justify-end q-gutter-sm">
+              <q-btn flat label="Cancel" @click="resetForm" />
+              <q-btn
+                type="submit"
+                color="primary"
+                :label="editingScheduleId ? 'Update schedule' : 'Save schedule'"
+                :loading="scheduleStore.loading"
+              />
+            </div>
+          </q-form>
+
           <q-table
             class="q-mt-sm"
             :rows="scheduleStore.schedules"
@@ -110,6 +121,14 @@
           >
             <template #body-cell-auto="props">
               <q-td :props="props">{{ autoDescription(props.row) }}</q-td>
+            </template>
+            <template #body-cell-count="props">
+              <q-td :props="props">
+                <a v-if="props.value > 0" href="#" @click.prevent="openServices(props.row)">
+                  {{ props.value }}
+                </a>
+                <span v-else>{{ props.value }}</span>
+              </q-td>
             </template>
             <template #body-cell-created_date="props">
               <q-td :props="props">{{ formatDate(props.row.created_date) }}</q-td>
@@ -127,6 +146,8 @@
               </q-td>
             </template>
           </q-table>
+
+          <schedule-services-dialog v-model="servicesDialogOpen" :services="servicesForDialog" />
 
           <q-dialog v-model="confirmDeleteOpen">
             <q-card style="min-width: 320px">
@@ -153,6 +174,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import NotesEditor from 'components/NotesEditor.vue'
+import ScheduleServicesDialog from 'components/schedule/ScheduleServicesDialog.vue'
 import { templateAutoLabel, useScheduleStore } from 'src/stores/schedule'
 import { useUsersStore } from 'stores/users'
 import { useProfileStore } from 'stores/profile'
@@ -175,6 +197,13 @@ const hideTemplateTools = computed(
 
 const columns = [
   { name: 'auto', label: 'Auto', field: 'auto_id', align: 'left' },
+  {
+    name: 'count',
+    label: 'Services',
+    field: (row) => row.service?.length ?? 0,
+    align: 'left',
+    sortable: true,
+  },
   { name: 'notes', label: 'Notes', field: 'notes', align: 'left' },
   { name: 'created_date', label: 'Created', field: 'created_date', align: 'left', sortable: true },
   { name: 'actions', label: '', field: 'schedule_id', align: 'right' },
@@ -200,6 +229,14 @@ const confirmDeleteOpen = computed({
     }
   },
 })
+
+const servicesDialogOpen = ref(false)
+const servicesForDialog = ref([])
+
+function openServices(schedule) {
+  servicesForDialog.value = schedule.service || []
+  servicesDialogOpen.value = true
+}
 
 function autoDescription(schedule) {
   if (schedule.auto) {

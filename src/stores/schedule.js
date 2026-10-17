@@ -1,6 +1,10 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { supabase } from '../lib/supabase'
 
+const SCHEDULE_SELECT =
+  '*, auto:auto!inner(profile_id, year, make, model, color), ' +
+  'service(service_id, type, name, interval_miles, interval_months, interval_years)'
+
 export function templateAutoLabel(auto) {
   if (!auto) {
     return ''
@@ -72,8 +76,9 @@ export const useScheduleStore = defineStore('Schedule', {
 
         let query = supabase
           .from('schedule')
-          .select('*, auto:auto!inner(profile_id, year, make, model, color)')
+          .select(SCHEDULE_SELECT)
           .eq('is_active', true)
+          .eq('service.is_active', true)
           .eq('auto.isTemplate', false)
 
         if (!isAdmin) {
@@ -103,8 +108,9 @@ export const useScheduleStore = defineStore('Schedule', {
 
       let query = supabase
         .from('schedule')
-        .select('*, auto:auto!inner(profile_id, year, make, model, color)')
+        .select(SCHEDULE_SELECT)
         .eq('is_active', true)
+        .eq('service.is_active', true)
 
       if (!isAdmin) {
         query = query.eq('auto.isTemplate', true)
