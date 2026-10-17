@@ -65,16 +65,6 @@
           />
           <q-btn
             flat
-            label="Profile"
-            to="/profile"
-            class="q-mx-sm"
-            style="min-width: 126px"
-            :style="buttonStyle('/profile')"
-            @mouseover="hoveredPath = '/profile'"
-            @mouseleave="hoveredPath = null"
-          />
-          <q-btn
-            flat
             label="Log"
             to="/log"
             class="q-mx-sm"
@@ -99,11 +89,20 @@
             flat
             round
             :label="userInitials"
-            aria-label="Sign out"
+            aria-label="User menu"
             class="q-mx-sm user-initials-button"
-            @click="signOut()"
           >
-            <q-tooltip>Sign out</q-tooltip>
+            <q-menu auto-close>
+              <q-list style="min-width: 140px">
+                <q-item clickable v-close-popup @click="signOut()">
+                  <q-item-section>Sign out</q-item-section>
+                </q-item>
+                <q-separator />
+                <q-item clickable v-close-popup @click="router.push('/profile')">
+                  <q-item-section>Profile</q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
           </q-btn>
         </template>
       </q-toolbar>
@@ -111,6 +110,19 @@
 
     <q-drawer v-model="leftDrawerOpen" side="left" bordered overlay>
       <q-list padding>
+        <template v-if="usersStore.currentUser && usersStore.currentUser.email">
+          <q-item clickable v-ripple aria-label="Sign out" @click="signOut()">
+            <q-item-section avatar>
+              <q-avatar color="accent" text-color="white" size="40px">
+                {{ userInitials }}
+              </q-avatar>
+            </q-item-section>
+            <q-item-section>Sign out</q-item-section>
+          </q-item>
+          <q-item clickable v-ripple @click="navigateAndClose('/profile')">
+            <q-item-section>Profile</q-item-section>
+          </q-item>
+        </template>
         <q-item clickable v-ripple @click="navigateAndClose('/')">
           <q-item-section>Intro</q-item-section>
         </q-item>
