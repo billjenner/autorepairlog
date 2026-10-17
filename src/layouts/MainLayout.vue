@@ -25,12 +25,12 @@
         <template v-if="!$q.screen.lt.md">
           <q-btn
             flat
-            label="Log"
-            to="/log"
+            label="Auto"
+            to="/auto"
             class="q-mx-sm"
             style="min-width: 126px"
-            :style="buttonStyle('/log')"
-            @mouseover="hoveredPath = '/log'"
+            :style="buttonStyle('/auto')"
+            @mouseover="hoveredPath = '/auto'"
             @mouseleave="hoveredPath = null"
           />
           <q-btn
@@ -65,22 +65,22 @@
           />
           <q-btn
             flat
-            label="Auto"
-            to="/auto"
-            class="q-mx-sm"
-            style="min-width: 126px"
-            :style="buttonStyle('/auto')"
-            @mouseover="hoveredPath = '/auto'"
-            @mouseleave="hoveredPath = null"
-          />
-          <q-btn
-            flat
             label="Profile"
             to="/profile"
             class="q-mx-sm"
             style="min-width: 126px"
             :style="buttonStyle('/profile')"
             @mouseover="hoveredPath = '/profile'"
+            @mouseleave="hoveredPath = null"
+          />
+          <q-btn
+            flat
+            label="Log"
+            to="/log"
+            class="q-mx-sm"
+            style="min-width: 126px"
+            :style="buttonStyle('/log')"
+            @mouseover="hoveredPath = '/log'"
             @mouseleave="hoveredPath = null"
           />
           <q-btn
