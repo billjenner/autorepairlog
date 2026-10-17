@@ -148,11 +148,47 @@ export const useScheduleStore = defineStore('Schedule', {
           return null
         }
 
+        if (schedule.template_schedule_id) {
+          const copied = await this.copyServices(schedule.template_schedule_id, data.schedule_id)
+          if (!copied) {
+            await supabase.from('schedule').delete().eq('schedule_id', data.schedule_id)
+            return null
+          }
+        }
+
         this.schedules = [data, ...this.schedules]
         return data
       } finally {
         this.loading = false
       }
+    },
+
+    // Copies the active services of a template schedule onto another schedule.
+    async copyServices(sourceScheduleId, targetScheduleId) {
+      const { data: source, error: selectError } = await supabase
+        .from('service')
+        .select('type, name, description, notes, interval_miles, interval_months, interval_years')
+        .eq('schedule_id', sourceScheduleId)
+        .eq('is_active', true)
+
+      if (selectError) {
+        this.error = selectError.message
+        return false
+      }
+
+      if (!source?.length) {
+        return true
+      }
+
+      const { error: insertError } = await supabase
+        .from('service')
+        .insert(source.map((service) => ({ ...service, schedule_id: targetScheduleId })))
+
+      if (insertError) {
+        this.error = insertError.message
+        return false
+      }
+      return true
     },
 
     async updateSchedule(scheduleId, schedule = {}) {

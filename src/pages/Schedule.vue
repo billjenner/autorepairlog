@@ -78,11 +78,16 @@
               v-if="!hideTemplateTools"
               color="primary"
               :label="showForm ? 'Cancel' : 'Add Schedule'"
-              :disable="!usersStore.currentUser"
+              :disable="!usersStore.currentUser || (!showForm && !hasSelectedTemplate)"
               @click="toggleForm"
-            />
+            >
+              <q-tooltip v-if="!hasSelectedTemplate && !showForm">{{ selectTemplateMessage }}</q-tooltip>
+            </q-btn>
           </div>
 
+          <div v-if="!hideTemplateTools && !hasSelectedTemplate" class="text-caption text-negative">
+            {{ selectTemplateMessage }}
+          </div>
           <q-form v-if="showForm" @submit.prevent="saveSchedule" class="q-mt-md q-gutter-md">
             <q-card flat bordered class="q-pa-md bg-grey-1">
               <div class="text-subtitle1 q-mb-sm">
@@ -102,6 +107,7 @@
                 color="primary"
                 :label="editingScheduleId ? 'Update schedule' : 'Save schedule'"
                 :loading="scheduleStore.loading"
+                :disable="!editingScheduleId && !hasSelectedTemplate"
               />
             </div>
           </q-form>
@@ -188,6 +194,8 @@ const showForm = ref(false)
 const editingScheduleId = ref(null)
 const pendingDeleteSchedule = ref(null)
 const selectedTemplateScheduleId = ref(null)
+const hasSelectedTemplate = computed(() => Boolean(selectedTemplateScheduleId.value))
+const selectTemplateMessage = 'You must select a template schedule to start with.'
 const isAdminUser = ref(false)
 const form = reactive({ auto_id: null, notes: '' })
 // Level 0 users who already have a non-template schedule can't add or use templates.
@@ -305,7 +313,10 @@ async function saveSchedule() {
   const isEditing = Boolean(editingScheduleId.value)
   const saved = isEditing
     ? await scheduleStore.updateSchedule(editingScheduleId.value, form)
-    : await scheduleStore.createSchedule(form)
+    : await scheduleStore.createSchedule({
+        ...form,
+        template_schedule_id: selectedTemplateScheduleId.value,
+      })
 
   if (!saved) {
     return
