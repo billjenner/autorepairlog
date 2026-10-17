@@ -265,8 +265,28 @@ function autoDescription(schedule) {
   return auto ? templateAutoLabel(auto) : '—'
 }
 
-function sanitizeNotes(notes) {
-  return DOMPurify.sanitize(notes)
+function sanitizeNotes(notes, maxChars = 10) {
+  const container = document.createElement('div')
+  container.innerHTML = DOMPurify.sanitize(notes)
+
+  let remaining = maxChars
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT)
+  const textNodes = []
+  while (walker.nextNode()) textNodes.push(walker.currentNode)
+
+  for (const node of textNodes) {
+    const text = node.textContent
+    if (remaining <= 0) {
+      node.remove()
+    } else if (text.length > remaining) {
+      node.textContent = text.slice(0, remaining) + '…'
+      remaining = 0
+    } else {
+      remaining -= text.length
+    }
+  }
+
+  return container.innerHTML
 }
 
 function formatDate(value) {
