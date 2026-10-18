@@ -2,6 +2,21 @@
   <q-page class="q-pa-md">
     <div class="row justify-center">
       <div class="col-12 col-md-10 col-lg-8">
+        <q-select
+          ref="autoSelectRef"
+          v-model="selectedAutoId"
+          :options="autoOptions"
+          label="Auto"
+          emit-value
+          map-options
+          clearable
+          filled
+          dense
+          lazy-rules
+          :rules="[(value) => !showForm || !!value || 'Select an auto.']"
+          class="col-12 col-sm-6"
+        />
+
         <q-card flat bordered class="q-pa-md">
           <div class="row items-center justify-between q-mx-md q-mb-md">
             <div class="text-h5">Mileage</div>
@@ -10,23 +25,6 @@
               :label="showForm ? 'Cancel' : 'Add Mileage'"
               :disable="!autoOptions.length"
               @click="toggleForm"
-            />
-          </div>
-
-          <div class="row q-mx-md q-mb-md">
-            <q-select
-              ref="autoSelectRef"
-              v-model="selectedAutoId"
-              :options="autoOptions"
-              label="Auto"
-              emit-value
-              map-options
-              clearable
-              filled
-              dense
-              lazy-rules
-              :rules="[(value) => !showForm || !!value || 'Select an auto.']"
-              class="col-12 col-sm-6"
             />
           </div>
 

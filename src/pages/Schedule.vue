@@ -11,6 +11,7 @@
           clearable
           filled
           dense
+          class="q-mb-md"
         />
         <q-card flat bordered class="q-pa-md">
           <div class="row items-center justify-between q-mx-md q-mb-md">
