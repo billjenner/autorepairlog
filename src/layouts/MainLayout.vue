@@ -24,6 +24,7 @@
 
         <template v-if="!$q.screen.lt.md">
           <q-btn
+            v-if="usersStore.currentUser && usersStore.currentUser.email"
             flat
             label="Auto"
             to="/auto"
@@ -34,6 +35,7 @@
             @mouseleave="hoveredPath = null"
           />
           <q-btn
+            v-if="usersStore.currentUser && usersStore.currentUser.email"
             flat
             label="Mileage"
             to="/mileage"
@@ -44,6 +46,7 @@
             @mouseleave="hoveredPath = null"
           />
           <q-btn
+            v-if="usersStore.currentUser && usersStore.currentUser.email"
             flat
             label="Schedule"
             to="/schedule"
@@ -54,6 +57,7 @@
             @mouseleave="hoveredPath = null"
           />
           <q-btn
+            v-if="usersStore.currentUser && usersStore.currentUser.email"
             flat
             label="Service"
             to="/service"
@@ -64,6 +68,7 @@
             @mouseleave="hoveredPath = null"
           />
           <q-btn
+            v-if="usersStore.currentUser && usersStore.currentUser.email"
             flat
             label="Log"
             to="/log"
@@ -129,7 +134,12 @@
         <q-item clickable v-ripple @click="navigateAndClose('/log')">
           <q-item-section>Log</q-item-section>
         </q-item>
-        <q-item clickable v-ripple @click="navigateAndClose('/mileage')">
+        <q-item
+          v-if="usersStore.currentUser && usersStore.currentUser.email"
+          clickable
+          v-ripple
+          @click="navigateAndClose('/mileage')"
+        >
           <q-item-section>Mileage</q-item-section>
         </q-item>
         <q-item clickable v-ripple @click="navigateAndClose('/schedule')">
