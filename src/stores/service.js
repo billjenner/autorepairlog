@@ -39,7 +39,7 @@ export const useServiceStore = defineStore('Service', {
         .from('schedule')
         .select('schedule_id, auto:auto_id!inner(year, make, model, color)')
         .eq('is_active', true)
-        .eq('auto.isTemplate', true)
+        //.eq('auto.isTemplate', true)
         .eq('auto.is_active', true)
 
       if (error) {
