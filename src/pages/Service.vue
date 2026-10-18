@@ -233,12 +233,14 @@ import NotesViewer from 'components/NotesViewer.vue'
 import { useServiceStore } from 'src/stores/service'
 import { templateAutoLabel } from 'src/stores/schedule'
 import { useUsersStore } from 'stores/users'
+import { useProfileStore } from 'stores/profile'
 import { notifySuccess } from '../utils/notify'
 
 const $q = useQuasar()
 const route = useRoute()
 const serviceStore = useServiceStore()
 const usersStore = useUsersStore()
+const profileStore = useProfileStore()
 const showForm = ref(false)
 const editingServiceId = ref(null)
 const selectedScheduleId = ref(null)
@@ -376,10 +378,16 @@ function editService(service) {
 async function load() {
   if (!currentUserId.value) {
     serviceStore.services = []
+    serviceStore.scheduleOptions = []
     return
   }
 
-  await serviceStore.loadScheduleOptions()
+  const profile = await profileStore.loadCurrentProfile(currentUserId.value)
+  const isAdmin = Number(profile?.admin_level) > 0
+  await serviceStore.loadScheduleOptions({
+    isAdmin,
+    profileId: profile?.profile_id,
+  })
   await serviceStore.loadServices()
   applyRouteSchedule()
 }

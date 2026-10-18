@@ -28,19 +28,31 @@ export const useServiceStore = defineStore('Service', {
       return Number.isFinite(numericValue) && numericValue > 0 ? Math.trunc(numericValue) : 0
     },
 
-    // Active schedules whose auto is a template
-    async loadScheduleOptions() {
+    // Active schedules for all autos when admin, otherwise only the user's autos.
+    async loadScheduleOptions({ isAdmin = false, profileId = null } = {}) {
+      this.error = null
+      this.scheduleOptions = []
+
       if (!supabase) {
         this.error = 'Supabase client is not configured.'
         return []
       }
 
-      const { data, error } = await supabase
+      if (!isAdmin && !profileId) {
+        return []
+      }
+
+      let query = supabase
         .from('schedule')
-        .select('schedule_id, auto:auto_id!inner(year, make, model, color)')
+        .select('schedule_id, auto:auto_id!inner(profile_id, year, make, model, color)')
         .eq('is_active', true)
-        //.eq('auto.isTemplate', true)
         .eq('auto.is_active', true)
+
+      if (!isAdmin) {
+        query = query.eq('auto.profile_id', profileId)
+      }
+
+      const { data, error } = await query
 
       if (error) {
         this.error = error.message
