@@ -159,9 +159,6 @@
         <q-item clickable v-ripple @click="navigateAndClose('/service')">
           <q-item-section>Service</q-item-section>
         </q-item>
-        <q-item clickable v-ripple @click="navigateAndClose('/dashboard')">
-          <q-item-section>Dashboard</q-item-section>
-        </q-item>
         <q-item clickable v-ripple @click="navigateAndClose('/docs')">
           <q-item-section>Docs</q-item-section>
         </q-item>

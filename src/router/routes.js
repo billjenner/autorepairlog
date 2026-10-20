@@ -15,17 +15,6 @@ const routes = [
         },
       },
       {
-        path: 'dashboard',
-        component: () => import('pages/Dashboard.vue'),
-        meta: {
-          seo: {
-            title: 'Dashboard',
-            description: 'Overview of your Auto Repair Log activities.',
-            canonicalPath: '/dashboard',
-          },
-        },
-      },
-      {
         path: 'docs',
         component: () => import('pages/Docs.vue'),
         meta: {
