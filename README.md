@@ -1,6 +1,6 @@
 # 🚗 Auto Repair Log
 
-> 🚀 **[Open the live app](https://autorepairlog.onrender.com)**
+> 🚀 **[Open the live app](https://autorepairlog.com)**
 
 ![Auto Repair Log](public/AutoRepairLog_Screen.jpg)
 
