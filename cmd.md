@@ -23,3 +23,7 @@ If Admin, ability to edit and delete schedule
 ### Multifactor Auth - Off / On
 
 > Supabase > DB > Authentication > Sign In / PRoviders > Confirm Email = Off,
+
+### Now Published
+
+Yes
