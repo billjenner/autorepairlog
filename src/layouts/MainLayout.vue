@@ -71,22 +71,22 @@
             v-if="usersStore.currentUser && usersStore.currentUser.email"
             flat
             label="Service Order"
-            to="/auto"
+            to="/service-order"
             class="q-mx-sm"
             style="min-width: 135px"
-            :style="buttonStyle('/auto')"
-            @mouseover="hoveredPath = '/auto'"
+            :style="buttonStyle('/service-order')"
+            @mouseover="hoveredPath = '/service-order'"
             @mouseleave="hoveredPath = null"
           />
           <q-btn
             v-if="usersStore.currentUser && usersStore.currentUser.email"
             flat
             label="Service log"
-            to="/auto"
+            to="/service-log"
             class="q-mx-sm"
             style="min-width: 135px"
-            :style="buttonStyle('/auto')"
-            @mouseover="hoveredPath = '/auto'"
+            :style="buttonStyle('/service-log')"
+            @mouseover="hoveredPath = '/service-log'"
             @mouseleave="hoveredPath = null"
           />
           <q-btn

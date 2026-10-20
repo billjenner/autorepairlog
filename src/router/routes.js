@@ -187,6 +187,30 @@ const routes = [
         },
       },
       {
+        path: 'service-order',
+        component: () => import('pages/ServiceOrder.vue'),
+        meta: {
+          requiresAuth: true,
+          seo: {
+            title: 'Service Order',
+            description: 'Create and manage your service orders.',
+            canonicalPath: '/service-order',
+          },
+        },
+      },
+      {
+        path: 'service-log',
+        component: () => import('pages/ServiceLog.vue'),
+        meta: {
+          requiresAuth: true,
+          seo: {
+            title: 'Service Log',
+            description: 'Create and manage your service logs.',
+            canonicalPath: '/service-log',
+          },
+        },
+      },
+      {
         path: 'users',
         component: () => import('pages/Users.vue'),
         meta: {
