@@ -10,11 +10,11 @@ import routes from './routes'
 const defaultSeo = {
   title: 'Auto Repair Log',
   description:
-    'Explore Auto Repair Log, an diary for tracking your health and wellness. Log your meals, monitor your progress. Track Macros, Workouts, supplements, and Weight.',
+    'Track your Auto records, manage maintenance and repair schedules, and stay ahead with a clear view of upcoming service needs.',
   image: '/icons/icon-512x512.png',
   type: 'website',
   robots: 'index,follow',
-  themeColor: '#690808',
+  themeColor: '#94a0ac',
 }
 
 function applySeoMeta(route) {
@@ -25,7 +25,7 @@ function applySeoMeta(route) {
   const origin =
     typeof window !== 'undefined' && window.location?.origin
       ? window.location.origin
-      : 'https://slimMacros.com'
+      : 'https://autorepairlog.com'
   const canonicalUrl = `${origin}${canonicalPath === '/' ? '/' : `/${canonicalPath.replace(/^\/+/, '').replace(/\/+$/, '')}`}`
 
   document.title = title
