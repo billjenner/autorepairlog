@@ -1,5 +1,7 @@
 # 🚗 Auto Repair Log
 
+> 🚀 **[Open the live app](https://autorepairlog.onrender.com)**
+
 ![Auto Repair Log](public/AutoRepairLog_Screen.jpg)
 
 > **Track your Auto records, manage maintenance and repair schedules, and stay ahead with a clear view of upcoming service needs.**
