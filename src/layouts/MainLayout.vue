@@ -149,8 +149,11 @@
           v-if="usersStore.currentUser && usersStore.currentUser.email"
           clickable
           v-ripple
-          @click="navigateAndClose('/mileage')"
+          @click="navigateAndClose('/auto')"
         >
+          <q-item-section>Auto</q-item-section>
+        </q-item>
+        <q-item clickable v-ripple @click="navigateAndClose('/mileage')">
           <q-item-section>Mileage</q-item-section>
         </q-item>
         <q-item clickable v-ripple @click="navigateAndClose('/schedule')">
@@ -158,6 +161,12 @@
         </q-item>
         <q-item clickable v-ripple @click="navigateAndClose('/service')">
           <q-item-section>Service</q-item-section>
+        </q-item>
+        <q-item clickable v-ripple @click="navigateAndClose('/serviceorder')">
+          <q-item-section>Service Order</q-item-section>
+        </q-item>
+        <q-item clickable v-ripple @click="navigateAndClose('/servicelog')">
+          <q-item-section>Service Log</q-item-section>
         </q-item>
         <q-item clickable v-ripple @click="navigateAndClose('/docs')">
           <q-item-section>Docs</q-item-section>
