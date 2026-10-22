@@ -1,11 +1,11 @@
-import { boot } from 'quasar/wrappers'
-import { useUsersStore } from 'stores/users'
+import { defineBoot } from '#q-app'
+import { useUsersStore } from '../stores/users'
 import { isConnectionError } from '../utils/connection'
 
 // Mirrors the browser's online/offline state into the users store so the UI
 // (OfflineConnectionCard) reacts to connection changes, and re-signals it
 // every time a fetch fails because of the connection.
-export default boot(() => {
+export default defineBoot(() => {
   if (typeof window === 'undefined') {
     return
   }

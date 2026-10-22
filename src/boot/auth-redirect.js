@@ -1,8 +1,8 @@
 // auth-redirect.js
-import { boot } from 'quasar/wrappers'
+import { defineBoot } from '#q-app'
 import { supabase } from '../lib/supabase'
 
-export default boot(({ router }) => {
+export default defineBoot(({ router }) => {
   if (!supabase) {
     return
   }

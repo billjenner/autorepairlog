@@ -307,11 +307,6 @@ async function navigateAndClose(path) {
   await navigate(path)
 }
 
-// TODO: Use with capacitor
-// async function exitApp() {
-//   await App.exitApp()
-// }
-
 function buttonStyle(path) {
   if (route.path === path) {
     return { backgroundColor: 'var(--q-secondary)' }

@@ -1,4 +1,4 @@
-import { defineRouter } from '#q-app/wrappers'
+import { defineRouter } from '#q-app'
 import {
   createRouter,
   createMemoryHistory,
@@ -93,7 +93,7 @@ export default defineRouter(async (/* { store, ssrContext } */) => {
 
   // Navigation guard to protect certain routes when user not logged in
   try {
-    const { useUsersStore } = await import('../stores/users')
+    const { useUsersStore } = await import('@/stores/users')
     const store = useUsersStore()
 
     Router.beforeEach(async (to) => {
@@ -111,7 +111,7 @@ export default defineRouter(async (/* { store, ssrContext } */) => {
       }
 
       if (requiresAuth && to.path !== '/profile') {
-        const { useProfileStore } = await import('../stores/profile')
+        const { useProfileStore } = await import('@/stores/profile')
         const profileStore = useProfileStore()
         const userId = store.currentUser?.user_id
 
@@ -129,7 +129,7 @@ export default defineRouter(async (/* { store, ssrContext } */) => {
       }
 
       if (requiresAdmin) {
-        const { useProfileStore } = await import('../stores/profile')
+        const { useProfileStore } = await import('@/stores/profile')
         const profileStore = useProfileStore()
         const userId = store.currentUser?.user_id
 

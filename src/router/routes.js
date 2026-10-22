@@ -1,11 +1,11 @@
 const routes = [
   {
     path: '/',
-    component: () => import('layouts/MainLayout.vue'),
+    component: () => import('@/layouts/MainLayout.vue'),
     children: [
       {
         path: '',
-        component: () => import('pages/Intro.vue'),
+        component: () => import('@/pages/Intro.vue'),
         meta: {
           seo: {
             title: 'Home',
@@ -16,7 +16,7 @@ const routes = [
       },
       {
         path: 'docs',
-        component: () => import('pages/Docs.vue'),
+        component: () => import('@/pages/Docs.vue'),
         meta: {
           seo: {
             title: 'Docs',
@@ -27,7 +27,7 @@ const routes = [
       },
       {
         path: 'auto',
-        component: () => import('pages/Auto.vue'),
+        component: () => import('@/pages/Auto.vue'),
         meta: {
           seo: {
             title: 'Auto',
@@ -38,7 +38,7 @@ const routes = [
       },
       {
         path: 'profile',
-        component: () => import('pages/Profile.vue'),
+        component: () => import('@/pages/Profile.vue'),
         meta: {
           seo: {
             title: 'Profile',
@@ -49,7 +49,7 @@ const routes = [
       },
       {
         path: 'login',
-        component: () => import('pages/Login.vue'),
+        component: () => import('@/pages/Login.vue'),
         meta: {
           seo: {
             title: 'Login',
@@ -60,7 +60,7 @@ const routes = [
       },
       {
         path: 'barcode-scanner',
-        component: () => import('pages/BarcodeScanner.vue'),
+        component: () => import('@/pages/BarcodeScanner.vue'),
         meta: {
           requiresAuth: true,
           seo: {
@@ -72,7 +72,7 @@ const routes = [
       },
       {
         path: 'create-login',
-        component: () => import('pages/CreateLogin.vue'),
+        component: () => import('@/pages/CreateLogin.vue'),
         meta: {
           seo: {
             title: 'Create account',
@@ -83,7 +83,7 @@ const routes = [
       },
       {
         path: 'forgot-password',
-        component: () => import('pages/ForgotPassword.vue'),
+        component: () => import('@/pages/ForgotPassword.vue'),
         meta: {
           seo: {
             title: 'Forgot password',
@@ -94,7 +94,7 @@ const routes = [
       },
       {
         path: 'reset-password',
-        component: () => import('pages/ResetPassword.vue'),
+        component: () => import('@/pages/ResetPassword.vue'),
         meta: {
           seo: {
             title: 'Reset password',
@@ -105,7 +105,7 @@ const routes = [
       },
       {
         path: 'change-password',
-        component: () => import('pages/ChangePassword.vue'),
+        component: () => import('@/pages/ChangePassword.vue'),
         meta: {
           requiresAuth: true,
           seo: {
@@ -117,7 +117,7 @@ const routes = [
       },
       {
         path: 'profile',
-        component: () => import('src/pages/Profile.vue'),
+        component: () => import('@/pages/Profile.vue'),
         meta: {
           requiresAuth: true,
           seo: {
@@ -129,7 +129,7 @@ const routes = [
       },
       {
         path: 'auto',
-        component: () => import('pages/Auto.vue'),
+        component: () => import('@/pages/Auto.vue'),
         meta: {
           requiresAuth: true,
           seo: {
@@ -141,7 +141,7 @@ const routes = [
       },
       {
         path: 'mileage',
-        component: () => import('pages/Mileage.vue'),
+        component: () => import('@/pages/Mileage.vue'),
         meta: {
           requiresAuth: true,
           seo: {
@@ -153,7 +153,7 @@ const routes = [
       },
       {
         path: 'schedule',
-        component: () => import('pages/Schedule.vue'),
+        component: () => import('@/pages/Schedule.vue'),
         meta: {
           requiresAuth: true,
           seo: {
@@ -165,7 +165,7 @@ const routes = [
       },
       {
         path: 'service',
-        component: () => import('pages/Service.vue'),
+        component: () => import('@/pages/Service.vue'),
         meta: {
           requiresAuth: true,
           seo: {
@@ -177,7 +177,7 @@ const routes = [
       },
       {
         path: 'service-order',
-        component: () => import('pages/ServiceOrder.vue'),
+        component: () => import('@/pages/ServiceOrder.vue'),
         meta: {
           requiresAuth: true,
           seo: {
@@ -189,7 +189,7 @@ const routes = [
       },
       {
         path: 'service-log',
-        component: () => import('pages/ServiceLog.vue'),
+        component: () => import('@/pages/ServiceLog.vue'),
         meta: {
           requiresAuth: true,
           seo: {
@@ -201,7 +201,7 @@ const routes = [
       },
       {
         path: 'users',
-        component: () => import('pages/Users.vue'),
+        component: () => import('@/pages/Users.vue'),
         meta: {
           requiresAuth: true,
           requiresAdmin: true,
@@ -214,7 +214,7 @@ const routes = [
       },
       {
         path: 'feedback',
-        component: () => import('pages/Feedback.vue'),
+        component: () => import('@/pages/Feedback.vue'),
         meta: {
           requiresAuth: true,
           requiresAdmin: true,
@@ -232,7 +232,7 @@ const routes = [
   // but you can also remove it
   {
     path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorNotFound.vue'),
+    component: () => import('@/pages/ErrorNotFound.vue'),
     meta: {
       seo: {
         title: 'Page not found',
