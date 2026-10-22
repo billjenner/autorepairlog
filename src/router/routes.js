@@ -59,18 +59,6 @@ const routes = [
         },
       },
       {
-        path: 'barcode-scanner',
-        component: () => import('@/pages/BarcodeScanner.vue'),
-        meta: {
-          requiresAuth: true,
-          seo: {
-            title: 'Barcode Scanner',
-            description: 'Scan barcodes using your device camera.',
-            canonicalPath: '/barcode-scanner',
-          },
-        },
-      },
-      {
         path: 'create-login',
         component: () => import('@/pages/CreateLogin.vue'),
         meta: {
