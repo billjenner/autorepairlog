@@ -13,7 +13,7 @@ console.log({
   prod: import.meta.env.PROD,
   dev: import.meta.env.DEV,
   mode: import.meta.env.MODE,
-  nodeEnv: process.env.NODE_ENV,
+  nodeEnv: import.meta.env.MODE,
 })
 
 export default defineStore((/* { ssrContext } */) => {

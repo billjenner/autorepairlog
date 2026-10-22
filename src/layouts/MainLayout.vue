@@ -265,8 +265,8 @@ const showInstallDialog = ref(false)
 const showSignOutDialog = ref(false)
 const showOfflineDialog = ref(false)
 
-const appVersion = process.env.APP_VERSION
-const appCommit = process.env.APP_COMMIT
+const appVersion = import.meta.env.APP_VERSION
+const appCommit = import.meta.env.APP_COMMIT
 
 const userInitials = computed(() => {
   const firstInitial = String(profileStore.currentProfile?.fname || '')
