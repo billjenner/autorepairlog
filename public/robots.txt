@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://slimmacros.com/sitemap.xml
+Sitemap: https://autorepairlog.com/sitemap.xml

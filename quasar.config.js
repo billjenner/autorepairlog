@@ -111,7 +111,9 @@ export default defineConfig((/* ctx */) => {
     // animations: 'all', // --- includes all animations
     // https://v2.quasar.dev/options/animations
     animations: [],
-
+    sourceFiles: {
+      pwaRegisterServiceWorker: 'src-pwa/register-service-worker',
+    },
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#sourcefiles
     // sourceFiles: {
     //   rootComponent: 'src/App.vue',
@@ -153,13 +155,13 @@ export default defineConfig((/* ctx */) => {
     pwa: {
       workboxMode: 'GenerateSW', // 'GenerateSW' or 'InjectManifest'
       extendGenerateSWOptions(workboxOptions) {
-        workboxOptions.globIgnores = [...(workboxOptions.globIgnores || []), '**/SlimMacros.png']
+        workboxOptions.globIgnores = [...(workboxOptions.globIgnores || []), '**/AutoRepairLog.png']
         workboxOptions.runtimeCaching = [
           ...(workboxOptions.runtimeCaching || []),
           {
-            urlPattern: /\/SlimMacros\.png$/,
+            urlPattern: /\/AutoRepairLog\.png$/,
             handler: 'StaleWhileRevalidate',
-            options: { cacheName: 'slimmacros-image' },
+            options: { cacheName: 'autorepairlog-image' },
           },
         ]
       },
@@ -212,7 +214,7 @@ export default defineConfig((/* ctx */) => {
       builder: {
         // https://www.electron.build/configuration
 
-        appId: 'slimmacros',
+        appId: 'autorepairlog',
       },
     },
 

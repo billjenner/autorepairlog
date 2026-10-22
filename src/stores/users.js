@@ -2,7 +2,7 @@ import { defineStore, acceptHMRUpdate } from 'pinia'
 import { supabase } from '../lib/supabase'
 import { isConnectionError } from '../utils/connection'
 
-const CURRENT_USER_STORAGE_KEY = 'slimmacros.currentUser'
+const CURRENT_USER_STORAGE_KEY = 'autorepairlog.currentUser'
 const USERS_LOGGED_IN_FUNCTION = 'users-logged-in'
 const appUrl = import.meta.env.VITE_APP_URL
 
@@ -303,18 +303,18 @@ export const useUsersStore = defineStore('Users', {
       }
 
       try {
-      const { data, error } = await supabase.functions.invoke(USERS_LOGGED_IN_FUNCTION, {
-        body: {
-          action: isLoggedIn ? 'login' : 'logout',
-          email: normalizedEmail,
-        },
-      })
+        const { data, error } = await supabase.functions.invoke(USERS_LOGGED_IN_FUNCTION, {
+          body: {
+            action: isLoggedIn ? 'login' : 'logout',
+            email: normalizedEmail,
+          },
+        })
 
-      if (error) {
-        console.error('[users-logged-in] sync failed:', error.message, data)
-      }
+        if (error) {
+          console.error('[users-logged-in] sync failed:', error.message, data)
+        }
 
-      return !error
+        return !error
       } catch (error) {
         console.error('[users-logged-in] sync failed:', error?.message)
         return false
@@ -334,7 +334,9 @@ export const useUsersStore = defineStore('Users', {
         // Admins can read every row via the "Admins can view all profiles" RLS policy.
         const { data, error } = await supabase
           .from('profile')
-          .select('profile_id, user_id, fname, lname, admin_level, is_active, email, last_logged_in, created_at')
+          .select(
+            'profile_id, user_id, fname, lname, admin_level, is_active, email, last_logged_in, created_at',
+          )
           .order('created_at', { ascending: false })
 
         if (error) {
@@ -367,7 +369,9 @@ export const useUsersStore = defineStore('Users', {
           .from('profile')
           .update({ admin_level: Number(admin_level) || 0, is_active: Boolean(is_active) })
           .eq('user_id', userId)
-          .select('profile_id, user_id, fname, lname, admin_level, is_active, email, last_logged_in, created_at')
+          .select(
+            'profile_id, user_id, fname, lname, admin_level, is_active, email, last_logged_in, created_at',
+          )
           .maybeSingle()
 
         if (error) {

@@ -26,7 +26,7 @@
                   transition-hide="jump-up"
                 >
                   <template v-slot:header>
-                    <q-chip>Slim-Macro Quick Start</q-chip>
+                    <q-chip>Auto Repair Log Quick Start</q-chip>
                   </template>
 
                   <q-card-section>
