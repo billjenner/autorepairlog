@@ -817,8 +817,8 @@
 <script setup>
 import { reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
-import { useUsersStore } from 'stores/users'
-import { useFeedbackStore } from 'stores/feedback'
+import { useUsersStore } from '@/stores/users'
+import { useFeedbackStore } from '@/stores/feedback'
 import { sanitizeInput } from '../utils/sanitize'
 import { notifySuccess } from '../utils/notify'
 

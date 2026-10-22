@@ -91,7 +91,9 @@
               :disable="!usersStore.currentUser || (!showForm && !hasSelectedTemplate)"
               @click="toggleForm"
             >
-              <q-tooltip v-if="!hasSelectedTemplate && !showForm">{{ selectTemplateMessage }}</q-tooltip>
+              <q-tooltip v-if="!hasSelectedTemplate && !showForm">{{
+                selectTemplateMessage
+              }}</q-tooltip>
             </q-btn>
           </div>
 
@@ -165,7 +167,9 @@
                   dense
                   color="primary"
                   label="Services"
-                  @click="router.push({ path: '/service', query: { schedule_id: props.row.schedule_id } })"
+                  @click="
+                    router.push({ path: '/service', query: { schedule_id: props.row.schedule_id } })
+                  "
                 />
                 <q-btn flat dense color="primary" label="Edit" @click="editSchedule(props.row)" />
                 <q-btn
@@ -212,12 +216,12 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import DOMPurify from 'dompurify'
-import NotesEditor from 'components/NotesEditor.vue'
-import ScheduleServicesDialog from 'components/schedule/ScheduleServicesDialog.vue'
-import ScheduleDetailsDialog from 'components/schedule/ScheduleDetailsDialog.vue'
-import { templateAutoLabel, useScheduleStore } from 'src/stores/schedule'
-import { useUsersStore } from 'stores/users'
-import { useProfileStore } from 'stores/profile'
+import NotesEditor from '@/components/NotesEditor.vue'
+import ScheduleServicesDialog from '@/components/schedule/ScheduleServicesDialog.vue'
+import ScheduleDetailsDialog from '@/components/schedule/ScheduleDetailsDialog.vue'
+import { templateAutoLabel, useScheduleStore } from '@/stores/schedule'
+import { useUsersStore } from '@/stores/users'
+import { useProfileStore } from '@/stores/profile'
 import { notifySuccess } from '../utils/notify'
 
 const $q = useQuasar()
@@ -234,9 +238,7 @@ const selectTemplateMessage = 'You must select a template schedule to start with
 const isAdminUser = ref(false)
 const form = reactive({ auto_id: null, notes: '' })
 // Level 0 users who already have a non-template schedule can't add or use templates.
-const hideTemplateTools = computed(
-  () => !isAdminUser.value && scheduleStore.schedules.length > 0,
-)
+const hideTemplateTools = computed(() => !isAdminUser.value && scheduleStore.schedules.length > 0)
 
 const columns = [
   { name: 'auto', label: 'Auto', field: 'auto_id', align: 'left' },

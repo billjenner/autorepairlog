@@ -246,9 +246,9 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
-import { useAutoStore } from 'src/stores/auto'
-import { useProfileStore } from 'stores/profile'
-import { useUsersStore } from 'stores/users'
+import { useAutoStore } from '@/stores/auto'
+import { useProfileStore } from '@/stores/profile'
+import { useUsersStore } from '@/stores/users'
 import { notifySuccess } from '../utils/notify'
 
 defineProps({

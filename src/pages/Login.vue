@@ -61,8 +61,8 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useUsersStore } from 'stores/users'
-import OfflineConnectionCard from 'components/OfflineConnectionCard.vue'
+import { useUsersStore } from '@/stores/users'
+import OfflineConnectionCard from '@/components/OfflineConnectionCard.vue'
 
 const email = ref('')
 const password = ref('')

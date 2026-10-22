@@ -96,7 +96,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { useFoodDatabaseStore } from 'stores/food-database'
+import { useFoodDatabaseStore } from '@/stores/food-database'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },

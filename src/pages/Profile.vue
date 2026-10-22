@@ -80,8 +80,8 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
-import { useUsersStore } from 'stores/users'
-import { useProfileStore } from 'stores/profile'
+import { useUsersStore } from '@/stores/users'
+import { useProfileStore } from '@/stores/profile'
 import { notifySuccess } from '../utils/notify'
 
 defineProps({

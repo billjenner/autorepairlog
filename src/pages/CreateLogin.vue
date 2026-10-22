@@ -73,8 +73,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
-import { useUsersStore } from 'stores/users'
-import { useProfileStore } from 'stores/profile'
+import { useUsersStore } from '@/stores/users'
+import { useProfileStore } from '@/stores/profile'
 import { notifySuccess } from '../utils/notify'
 
 const router = useRouter()

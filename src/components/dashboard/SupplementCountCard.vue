@@ -46,9 +46,9 @@
 <script setup>
 import { Chart } from 'chart.js/auto'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
-import { useProfileStore } from 'stores/profile'
-import { usesupplementsLogStore } from 'stores/supplements_log'
-import { useUsersStore } from 'stores/users'
+import { useProfileStore } from '@/stores/profile'
+import { usesupplementsLogStore } from '@/stores/supplements_log'
+import { useUsersStore } from '@/stores/users'
 
 const profileStore = useProfileStore()
 const supplementLogsStore = usesupplementsLogStore()

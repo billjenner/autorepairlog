@@ -28,7 +28,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
-import { useUsersStore } from 'stores/users'
+import { useUsersStore } from '@/stores/users'
 import { notifySuccess } from '../utils/notify'
 
 const router = useRouter()

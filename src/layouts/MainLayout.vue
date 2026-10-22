@@ -249,9 +249,9 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
-import { useUsersStore } from 'stores/users'
-import { useProfileStore } from 'stores/profile'
-import OfflineConnectionCard from 'components/OfflineConnectionCard.vue'
+import { useUsersStore } from '@/stores/users'
+import { useProfileStore } from '@/stores/profile'
+import OfflineConnectionCard from '@/components/OfflineConnectionCard.vue'
 
 const $q = useQuasar()
 const route = useRoute()

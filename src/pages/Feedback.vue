@@ -35,7 +35,7 @@
 
 <script setup>
 import { onMounted } from 'vue'
-import { useFeedbackStore } from 'stores/feedback'
+import { useFeedbackStore } from '@/stores/feedback'
 
 const store = useFeedbackStore()
 

@@ -193,12 +193,12 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
-import NotesEditor from 'components/NotesEditor.vue'
-import NotesViewer from 'components/NotesViewer.vue'
-import { useServiceLogStore } from 'src/stores/serviceLog'
-import { templateAutoLabel } from 'src/stores/schedule'
-import { useUsersStore } from 'stores/users'
-import { useProfileStore } from 'stores/profile'
+import NotesEditor from '@/components/NotesEditor.vue'
+import NotesViewer from '@/components/NotesViewer.vue'
+import { useServiceLogStore } from '@/stores/serviceLog'
+import { templateAutoLabel } from '@/stores/schedule'
+import { useUsersStore } from '@/stores/users'
+import { useProfileStore } from '@/stores/profile'
 import { notifySuccess } from '../utils/notify'
 
 const $q = useQuasar()
@@ -243,7 +243,7 @@ const columns = [
     field: (row) => row.service_order?.mileage_at_service,
     align: 'right',
     sortable: true,
-    format: (value) => (value ?? '—'),
+    format: (value) => value ?? '—',
   },
   { name: 'type', label: 'Type', field: 'type', align: 'left', sortable: true },
   { name: 'name', label: 'Name', field: 'name', align: 'left', sortable: true },

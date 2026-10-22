@@ -89,8 +89,8 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { useUsersStore } from 'stores/users'
-import OfflineConnectionCard from 'components/OfflineConnectionCard.vue'
+import { useUsersStore } from '@/stores/users'
+import OfflineConnectionCard from '@/components/OfflineConnectionCard.vue'
 
 const store = useUsersStore()
 const showOfflineDialog = ref(false)

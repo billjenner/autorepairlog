@@ -190,10 +190,10 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRoute } from 'vue-router'
-import { useAutoStore } from 'stores/auto'
-import { useMileageStore } from 'stores/mileage'
-import { useProfileStore } from 'stores/profile'
-import { useUsersStore } from 'stores/users'
+import { useAutoStore } from '@/stores/auto'
+import { useMileageStore } from '@/stores/mileage'
+import { useProfileStore } from '@/stores/profile'
+import { useUsersStore } from '@/stores/users'
 import { notifySuccess } from '../utils/notify'
 
 const $q = useQuasar()

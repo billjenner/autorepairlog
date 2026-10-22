@@ -43,9 +43,9 @@
 <script setup>
 import { Chart } from 'chart.js/auto'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
-import { useProfileStore } from 'stores/profile'
-import { useUsersStore } from 'stores/users'
-import { useWeightLogsStore } from 'stores/weight-logs'
+import { useProfileStore } from '@/stores/profile'
+import { useUsersStore } from '@/stores/users'
+import { useWeightLogsStore } from '@/stores/weight-logs'
 
 const profileStore = useProfileStore()
 const usersStore = useUsersStore()

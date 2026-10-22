@@ -60,7 +60,13 @@
                   <q-input v-model.trim="form.name" label="Name" filled dense />
                 </div>
                 <div class="col-12 col-sm-4">
-                  <q-input v-model="form.service_date" type="date" label="Service date" filled dense />
+                  <q-input
+                    v-model="form.service_date"
+                    type="date"
+                    label="Service date"
+                    filled
+                    dense
+                  />
                 </div>
                 <div class="col-12 col-sm-4">
                   <q-input
@@ -162,7 +168,13 @@
             </template>
             <template #body-cell-actions="props">
               <q-td :props="props" class="text-right">
-                <q-btn flat dense color="accent" label="Details" @click="detailsOrder = props.row" />
+                <q-btn
+                  flat
+                  dense
+                  color="accent"
+                  label="Details"
+                  @click="detailsOrder = props.row"
+                />
                 <q-btn flat dense color="primary" label="Edit" @click="editOrder(props.row)" />
                 <q-btn
                   flat
@@ -188,7 +200,9 @@
                 <div>Total: {{ formatMoney(detailsOrder?.total_cost) }}</div>
                 <div v-if="safeInvoiceUrl">
                   Invoice:
-                  <a :href="safeInvoiceUrl" target="_blank" rel="noopener noreferrer">View invoice</a>
+                  <a :href="safeInvoiceUrl" target="_blank" rel="noopener noreferrer"
+                    >View invoice</a
+                  >
                 </div>
               </q-card-section>
               <q-card-section class="q-pt-none">
@@ -206,7 +220,9 @@
               <q-card-section class="text-h6">Delete service order?</q-card-section>
               <q-card-section>
                 This removes
-                {{ pendingDeleteOrder?.name || pendingDeleteOrder?.shop_name || 'this service order' }}
+                {{
+                  pendingDeleteOrder?.name || pendingDeleteOrder?.shop_name || 'this service order'
+                }}
                 from your list.
               </q-card-section>
               <q-card-actions align="right">
@@ -229,12 +245,12 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
-import NotesEditor from 'components/NotesEditor.vue'
-import NotesViewer from 'components/NotesViewer.vue'
-import { useServiceOrderStore } from 'src/stores/serviceOrder'
-import { templateAutoLabel } from 'src/stores/schedule'
-import { useUsersStore } from 'stores/users'
-import { useProfileStore } from 'stores/profile'
+import NotesEditor from '@/components/NotesEditor.vue'
+import NotesViewer from '@/components/NotesViewer.vue'
+import { useServiceOrderStore } from '@/stores/serviceOrder'
+import { templateAutoLabel } from '@/stores/schedule'
+import { useUsersStore } from '@/stores/users'
+import { useProfileStore } from '@/stores/profile'
 import { notifySuccess } from '../utils/notify'
 
 const $q = useQuasar()

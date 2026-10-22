@@ -173,12 +173,12 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { ref } from 'vue'
 import { useQuasar } from 'quasar'
-import { useProfileStore } from 'stores/profile'
-import { usesupplementsLogStore } from 'stores/supplements_log'
-import { useWeightLogsStore } from 'stores/weight-logs'
-import { useWorkoutLogsStore } from 'stores/workout-logs'
-import { useFoodLogsStore } from 'stores/food-logs'
-import { useUsersStore } from 'stores/users'
+import { useProfileStore } from '@/stores/profile'
+import { usesupplementsLogStore } from '@/stores/supplements_log'
+import { useWeightLogsStore } from '@/stores/weight-logs'
+import { useWorkoutLogsStore } from '@/stores/workout-logs'
+import { useFoodLogsStore } from '@/stores/food-logs'
+import { useUsersStore } from '@/stores/users'
 
 const profileStore = useProfileStore()
 const supplementLogsStore = usesupplementsLogStore()

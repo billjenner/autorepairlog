@@ -228,12 +228,12 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRoute } from 'vue-router'
-import NotesEditor from 'components/NotesEditor.vue'
-import NotesViewer from 'components/NotesViewer.vue'
-import { useServiceStore } from 'src/stores/service'
-import { templateAutoLabel } from 'src/stores/schedule'
-import { useUsersStore } from 'stores/users'
-import { useProfileStore } from 'stores/profile'
+import NotesEditor from '@/components/NotesEditor.vue'
+import NotesViewer from '@/components/NotesViewer.vue'
+import { useServiceStore } from '@/stores/service'
+import { templateAutoLabel } from '@/stores/schedule'
+import { useUsersStore } from '@/stores/users'
+import { useProfileStore } from '@/stores/profile'
 import { notifySuccess } from '../utils/notify'
 
 const $q = useQuasar()
