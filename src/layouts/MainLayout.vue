@@ -145,12 +145,7 @@
         <q-item clickable v-ripple @click="navigateAndClose('/log')">
           <q-item-section>Log</q-item-section>
         </q-item>
-        <q-item
-          v-if="usersStore.currentUser && usersStore.currentUser.email"
-          clickable
-          v-ripple
-          @click="navigateAndClose('/auto')"
-        >
+        <q-item clickable v-ripple @click="navigateAndClose('/auto')">
           <q-item-section>Auto</q-item-section>
         </q-item>
         <q-item clickable v-ripple @click="navigateAndClose('/mileage')">
