@@ -42,9 +42,13 @@ export default defineConfig((/* ctx */) => {
         browser: 'baseline-widely-available',
         node: 'node22',
       },
+      // Expose .env variables prefixed with VITE_ (Quasar's default is QCLI_)
       env: {
-        APP_VERSION: JSON.stringify(gitDate),
-        APP_COMMIT: JSON.stringify(gitHash),
+        clientPrefix: 'VITE_',
+      },
+      defineEnv: {
+        APP_VERSION: gitDate,
+        APP_COMMIT: gitHash,
       },
       vueRouterMode: 'history', // available values: 'hash', 'history'
       // vueRouterBase,

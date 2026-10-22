@@ -75,9 +75,9 @@ function applySeoMeta(route) {
  */
 
 export default defineRouter(async (/* { store, ssrContext } */) => {
-  const createHistory = import.meta.env.SSR
+  const createHistory = import.meta.env.QUASAR_SERVER
     ? createMemoryHistory
-    : import.meta.env.VUE_ROUTER_MODE === 'history'
+    : import.meta.env.QUASAR_VUE_ROUTER_MODE === 'history'
       ? createWebHistory
       : createWebHashHistory
 
@@ -88,7 +88,7 @@ export default defineRouter(async (/* { store, ssrContext } */) => {
     // Leave this as is and make changes in quasar.conf.js instead!
     // quasar.conf.js -> build -> vueRouterMode
     // quasar.conf.js -> build -> publicPath
-    history: createHistory(import.meta.env.VUE_ROUTER_BASE),
+    history: createHistory(import.meta.env.QUASAR_VUE_ROUTER_BASE),
   })
 
   // Navigation guard to protect certain routes when user not logged in
