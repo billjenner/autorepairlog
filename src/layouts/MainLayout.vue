@@ -338,12 +338,39 @@ function handleAppInstalled() {
   showInstallDialog.value = false
 }
 
+// A user who appears logged in but has no loaded profile (initials fall back to 'U')
+// has a stale local login; confirm with Supabase and sign out if the session is gone.
+async function verifyLoggedInState() {
+  const userId = usersStore.currentUser?.user_id
+  if (!userId) {
+    return
+  }
+
+  const profile = await profileStore.loadCurrentProfile(userId)
+  if (profile || profileStore.isOffline || usersStore.currentUser?.user_id !== userId) {
+    return
+  }
+
+  if (!(await usersStore.hasValidSession())) {
+    await usersStore.clearCurrentUser()
+    profileStore.currentProfile = null
+    router.push('/login')
+  }
+}
+
+function handleVisibilityChange() {
+  if (document.visibilityState === 'visible' && userInitials.value === 'U') {
+    verifyLoggedInState()
+  }
+}
+
 onMounted(() => {
   window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
   window.addEventListener('appinstalled', handleAppInstalled)
+  document.addEventListener('visibilitychange', handleVisibilityChange)
 
   if (usersStore.currentUser?.user_id) {
-    profileStore.loadCurrentProfile(usersStore.currentUser.user_id)
+    verifyLoggedInState()
   }
 })
 
@@ -351,7 +378,7 @@ watch(
   () => usersStore.currentUser?.user_id,
   (userId) => {
     if (userId) {
-      profileStore.loadCurrentProfile(userId)
+      verifyLoggedInState()
     } else {
       profileStore.currentProfile = null
     }
@@ -379,6 +406,7 @@ watch(
 onBeforeUnmount(() => {
   window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
   window.removeEventListener('appinstalled', handleAppInstalled)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
 </script>
 

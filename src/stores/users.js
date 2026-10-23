@@ -251,6 +251,34 @@ export const useUsersStore = defineStore('Users', {
       persistCurrentUser(user)
     },
 
+    // Returns false only when Supabase confirms there is no valid session;
+    // connection failures return true so offline use is not logged out.
+    async hasValidSession() {
+      if (!supabase) {
+        return true
+      }
+
+      try {
+        const { data, error } = await supabase.auth.getUser()
+
+        if (data?.user) {
+          return true
+        }
+
+        if (!error) {
+          return false
+        }
+
+        const status = Number(error.status)
+        return !(
+          error.name === 'AuthSessionMissingError' ||
+          (status >= 400 && status < 500)
+        )
+      } catch {
+        return true
+      }
+    },
+
     async logoutUser() {
       if (supabase) {
         let { error } = await supabase.auth.signOut()
