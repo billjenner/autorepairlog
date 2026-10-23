@@ -275,6 +275,57 @@ export const useServiceOrderStore = defineStore('ServiceOrder', {
       }
     },
 
+    async deleteInvoice(serviceOrderId) {
+      this.error = null
+      this.loading = true
+
+      try {
+        if (!supabase) {
+          this.error = 'Supabase client is not configured.'
+          return null
+        }
+
+        const { data: current, error: readError } = await supabase
+          .from('service_order')
+          .select('invoice_url')
+          .eq('service_order_id', serviceOrderId)
+          .single()
+
+        if (readError) {
+          this.error = readError.message
+          return null
+        }
+
+        const { data, error } = await supabase
+          .from('service_order')
+          .update({ invoice_url: null })
+          .eq('service_order_id', serviceOrderId)
+          .select()
+          .single()
+
+        if (error) {
+          this.error = error.message
+          return null
+        }
+
+        this.serviceOrders = this.serviceOrders.map((item) =>
+          item.service_order_id === serviceOrderId ? data : item,
+        )
+
+        const path = current?.invoice_url
+        if (path && !/^https?:\/\//i.test(path)) {
+          const { error: removeError } = await supabase.storage.from(INVOICE_BUCKET).remove([path])
+          if (removeError) {
+            this.error = `Invoice removed, but the file could not be deleted: ${removeError.message}`
+          }
+        }
+
+        return data
+      } finally {
+        this.loading = false
+      }
+    },
+
     async deleteServiceOrder(serviceOrderId) {
       this.error = null
       this.loading = true

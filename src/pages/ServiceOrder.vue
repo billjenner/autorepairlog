@@ -261,37 +261,49 @@
                   <notes-editor v-model="form.notes" />
                 </div>
               </div>
-              <div class="row q-col-gutter-md q-mt-sm">
-                <div class="col-12 flex items-center">
+
+              <div class="row q-col-gutter-md q-mt-sm items-center">
+                <div class="col-12 col-sm-3 flex items-center">
                   <q-toggle v-model="attachInvoice" dense label="Attach Invoice" />
                 </div>
-              </div>
-              <div v-if="attachInvoice" class="row q-col-gutter-md">
-                <div class="col-12">
-                  <q-file
-                    v-model="invoiceFile"
-                    label="Invoice (PDF or image)"
-                    accept="application/pdf,image/*"
-                    max-file-size="10485760"
-                    filled
-                    dense
-                    clearable
-                    @rejected="onInvoiceRejected"
-                  >
-                    <template #prepend>
-                      <q-icon name="attach_file" />
+                <template v-if="attachInvoice">
+                  <div class="col-12 col-sm-5">
+                    <q-file
+                      v-model="invoiceFile"
+                      label="Invoice (PDF or image)"
+                      accept="application/pdf,image/*"
+                      max-file-size="10485760"
+                      filled
+                      dense
+                      clearable
+                      @rejected="onInvoiceRejected"
+                    >
+                      <template #prepend>
+                        <q-icon name="attach_file" />
+                      </template>
+                    </q-file>
+                  </div>
+                  <div class="col-12 col-sm-4">
+                    <template v-if="currentInvoiceUrl">
+                      <q-btn
+                        flat
+                        round
+                        dense
+                        icon="delete"
+                        color="negative"
+                        aria-label="Delete invoice"
+                        @click="confirmDeleteInvoiceOpen = true"
+                      />
+                      Current invoice:
+                      <a :href="currentInvoiceUrl" target="_blank" rel="noopener noreferrer"
+                        >View invoice</a
+                      >
+                      <span v-if="invoiceFile" class="text-grey-7">
+                        (replaced when the order is saved)</span
+                      >
                     </template>
-                  </q-file>
-                </div>
-                <div v-if="currentInvoiceUrl" class="col-12">
-                  Current invoice:
-                  <a :href="currentInvoiceUrl" target="_blank" rel="noopener noreferrer"
-                    >View invoice</a
-                  >
-                  <span v-if="invoiceFile" class="text-grey-7">
-                    (replaced when the order is saved)</span
-                  >
-                </div>
+                  </div>
+                </template>
               </div>
             </q-card>
 
@@ -389,6 +401,22 @@
                   color="negative"
                   :loading="serviceOrderStore.loading"
                   @click="deleteServiceOrder"
+                />
+              </q-card-actions>
+            </q-card>
+          </q-dialog>
+
+          <q-dialog v-model="confirmDeleteInvoiceOpen">
+            <q-card style="min-width: 320px">
+              <q-card-section class="text-h6">Delete invoice?</q-card-section>
+              <q-card-section>Delete the attached invoice from this service order?</q-card-section>
+              <q-card-actions align="right">
+                <q-btn flat label="No" color="primary" @click="confirmDeleteInvoiceOpen = false" />
+                <q-btn
+                  label="Yes"
+                  color="negative"
+                  :loading="serviceOrderStore.loading"
+                  @click="deleteInvoice"
                 />
               </q-card-actions>
             </q-card>
@@ -584,7 +612,8 @@ function entryTotal(entry) {
 
 // Parts/labor changes refill the total, which the user can still overwrite.
 function recalcEntryTotal(entry) {
-  const cents = Math.round((Number(entry.parts) || 0) * 100) + Math.round((Number(entry.labor) || 0) * 100)
+  const cents =
+    Math.round((Number(entry.parts) || 0) * 100) + Math.round((Number(entry.labor) || 0) * 100)
   entry.total = cents / 100
 }
 
@@ -605,6 +634,19 @@ function ensureTrailingEntry() {
   if (entries[entries.length - 1]?.service_id) {
     entries.push(createServiceEntry())
   }
+}
+
+const confirmDeleteInvoiceOpen = ref(false)
+
+async function deleteInvoice() {
+  const updated = await serviceOrderStore.deleteInvoice(editingOrderId.value)
+  if (!updated) {
+    return
+  }
+
+  confirmDeleteInvoiceOpen.value = false
+  form.invoice_url = ''
+  notifySuccess($q, 'Invoice deleted successfully.', { color: 'negative' })
 }
 
 const pendingRemoval = ref(null)
@@ -865,8 +907,14 @@ watch(
   ([entries, logs]) => {
     const selected = entries.filter((entry) => findService(entry.service_id))
     if (selected.length || logs.length) {
-      const entryCents = selected.reduce((sum, entry) => sum + Math.round(entryTotal(entry) * 100), 0)
-      const logCents = logs.reduce((sum, log) => sum + Math.round(Number(log.total_cost || 0) * 100), 0)
+      const entryCents = selected.reduce(
+        (sum, entry) => sum + Math.round(entryTotal(entry) * 100),
+        0,
+      )
+      const logCents = logs.reduce(
+        (sum, log) => sum + Math.round(Number(log.total_cost || 0) * 100),
+        0,
+      )
       form.total_cost = (entryCents + logCents) / 100
     }
   },
