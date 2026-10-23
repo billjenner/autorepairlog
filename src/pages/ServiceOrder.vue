@@ -92,11 +92,11 @@
                     dense
                   />
                 </div>
-                <div class="col-12 col-sm-4">
+                <div class="col-12 col-sm-2">
                   <q-input v-model.trim="form.invoice_number" label="Invoice number" filled dense />
                 </div>
-                <div class="col-12 col-sm-4 flex items-center">
-                  <q-toggle v-model="form.is_complete" label="Complete" />
+                <div class="col-12 col-sm-2 offset-sm-4 flex items-center">
+                  <q-toggle v-model="form.is_complete" label="Work Complete" />
                 </div>
               </div>
               <div
@@ -175,8 +175,8 @@
                 </div>
               </div>
               <div class="row q-col-gutter-md">
-                <div class="col-12 col-sm-10">
-                  <q-input v-model.trim="form.invoice_url" label="Invoice URL" filled dense />
+                <div class="col-12 col-sm-10 flex items-center">
+                  <q-toggle v-model="showNotes" dense label="Notes" />
                 </div>
                 <div class="col-12 col-sm-2">
                   <q-input
@@ -191,13 +191,19 @@
                   />
                 </div>
               </div>
-              <div class="row q-col-gutter-md">
+              <div v-if="showNotes" class="row q-col-gutter-md q-mt-sm">
                 <div class="col-12">
-                  <div class="row items-center q-mb-xs">
-                    <div class="text-caption text-grey-7">Notes</div>
-                    <q-toggle v-model="showNotes" dense class="q-ml-sm" />
-                  </div>
-                  <notes-editor v-if="showNotes" v-model="form.notes" />
+                  <notes-editor v-model="form.notes" />
+                </div>
+              </div>
+              <div class="row q-col-gutter-md q-mt-sm">
+                <div class="col-12 flex items-center">
+                  <q-toggle v-model="attachInvoice" label="Attach Invoice" />
+                </div>
+              </div>
+              <div v-if="attachInvoice" class="row q-col-gutter-md">
+                <div class="col-12">
+                  <q-input v-model.trim="form.invoice_url" label="Invoice URL" filled dense />
                 </div>
               </div>
             </q-card>
@@ -329,6 +335,7 @@ const usersStore = useUsersStore()
 const profileStore = useProfileStore()
 const showForm = ref(false)
 const showNotes = ref(false)
+const attachInvoice = ref(false)
 const editingOrderId = ref(null)
 const selectedAutoId = ref(null)
 let nextEntryKey = 0
@@ -373,7 +380,7 @@ const columns = [
     sortable: true,
     format: (value) => formatMoney(value),
   },
-  { name: 'is_complete', label: 'Complete', field: 'is_complete', align: 'left', sortable: true },
+  { name: 'is_complete', label: 'Complete', field: 'is_complete', align: 'right', sortable: true },
   { name: 'actions', label: '', field: 'service_order_id', align: 'right' },
 ]
 
@@ -441,6 +448,7 @@ function resetForm() {
   Object.assign(form, createEmptyForm())
   resetServiceEntry()
   showNotes.value = false
+  attachInvoice.value = false
   editingOrderId.value = null
   showForm.value = false
 }
@@ -569,6 +577,7 @@ function editOrder(order) {
   selectedAutoId.value = order.auto_id
   resetServiceEntry()
   showNotes.value = Boolean(order.notes)
+  attachInvoice.value = Boolean(order.invoice_url)
   editingOrderId.value = order.service_order_id
   showForm.value = true
 }
