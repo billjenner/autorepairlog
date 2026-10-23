@@ -160,6 +160,9 @@
         <q-item clickable v-ripple @click="navigateAndClose('/service-log')">
           <q-item-section>Service Log</q-item-section>
         </q-item>
+        <q-item clickable v-ripple @click="navigateAndClose('/users')">
+          <q-item-section>Users</q-item-section>
+        </q-item>
         <q-item clickable v-ripple @click="navigateAndClose('/docs')">
           <q-item-section>Docs</q-item-section>
         </q-item>

@@ -15,6 +15,17 @@ const routes = [
         },
       },
       {
+        path: 'users',
+        component: () => import('@/pages/Users.vue'),
+        meta: {
+          seo: {
+            title: 'Users',
+            description: 'Manage users in Auto Repair Log.',
+            canonicalPath: '/users',
+          },
+        },
+      },
+      {
         path: 'docs',
         component: () => import('@/pages/Docs.vue'),
         meta: {
