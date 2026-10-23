@@ -2,21 +2,37 @@
   <q-page class="q-pa-md">
     <div class="row justify-center">
       <div class="col-12 col-md-10 col-lg-8">
-        <q-select
-          ref="orderSelectRef"
-          v-model="selectedOrderId"
-          :options="orderOptions"
-          label="Service order"
-          emit-value
-          map-options
-          clearable
-          filled
-          dense
-          lazy-rules
-          :rules="[(value) => !showForm || !!value || 'Select a service order.']"
-          class="col-12 col-sm-6"
-        />
-
+        <div class="row q-col-gutter-md q-mb-md">
+          <div class="col-12 col-sm-6">
+            <q-select
+              v-model="selectedAutoId"
+              :options="autoOptions"
+              label="Auto"
+              emit-value
+              map-options
+              clearable
+              filled
+              dense
+            />
+          </div>
+          <div class="col-12 col-sm-6">
+            <q-select
+              ref="orderSelectRef"
+              v-model="selectedOrderId"
+              :options="orderOptions"
+              label="Service order"
+              emit-value
+              map-options
+              filled
+              dense
+              lazy-rules
+              :rules="[
+                (value) =>
+                  !showForm || (!!value && value !== ALL_ORDERS) || 'Select a service order.',
+              ]"
+            />
+          </div>
+        </div>
         <q-card flat bordered class="q-pa-md">
           <div class="row items-center justify-between q-mx-md q-mb-md">
             <div class="text-h5">Service Log</div>
@@ -46,17 +62,7 @@
                 {{ editingLogId ? 'Edit service log' : 'Service log details' }}
               </div>
               <div class="row q-col-gutter-md">
-                <div class="col-12">
-                  <q-input
-                    :model-value="selectedOrderLabel"
-                    label="Service order"
-                    readonly
-                    filled
-                    dense
-                    hint="Change the service order using the selector above."
-                  />
-                </div>
-                <div class="col-12 col-sm-4">
+                <div class="col-12 col-sm-2">
                   <q-select
                     v-model="form.type"
                     :options="typeOptions"
@@ -70,6 +76,16 @@
                 <div class="col-12 col-sm-5">
                   <q-input v-model.trim="form.name" label="Name" filled dense />
                 </div>
+                <div class="col-5">
+                  <q-input
+                    :model-value="selectedOrderLabel"
+                    label="Service order"
+                    readonly
+                    filled
+                    dense
+                    hint="Change the service order using the selector above."
+                  />
+                </div>
                 <div class="col-12 col-sm-4">
                   <q-input
                     v-model="form.parts"
@@ -80,6 +96,7 @@
                     step="0.01"
                     filled
                     dense
+                    @update:model-value="recalcTotal"
                   />
                 </div>
                 <div class="col-12 col-sm-4">
@@ -92,18 +109,22 @@
                     step="0.01"
                     filled
                     dense
+                    @update:model-value="recalcTotal"
                   />
                 </div>
                 <div class="col-12 col-sm-4">
                   <q-input
-                    :model-value="formatMoney(totalCost)"
+                    v-model="form.total_cost"
+                    type="number"
                     label="Total cost"
-                    readonly
+                    prefix="$"
+                    min="0"
+                    step="0.01"
                     filled
                     dense
                   />
                 </div>
-                <div class="col-12">
+                <!-- <div class="col-12">
                   <q-input
                     v-model.trim="form.description"
                     type="textarea"
@@ -112,7 +133,7 @@
                     filled
                     dense
                   />
-                </div>
+                </div> -->
                 <div class="col-12 flex items-center">
                   <q-toggle v-model="showNotes" dense label="Notes" />
                 </div>
@@ -239,7 +260,9 @@ const profileStore = useProfileStore()
 const showForm = ref(false)
 const showNotes = ref(false)
 const editingLogId = ref(null)
-const selectedOrderId = ref(null)
+const ALL_ORDERS = 'all'
+const selectedOrderId = ref(ALL_ORDERS)
+const selectedAutoId = ref(null)
 const orderSelectRef = ref(null)
 const pendingDeleteLog = ref(null)
 const detailsLog = ref(null)
@@ -292,34 +315,66 @@ const columns = [
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
 const hasRequiredFields = computed(
-  () => Boolean(selectedOrderId.value) && Boolean(form.type) && Boolean(form.name?.trim()),
+  () =>
+    Boolean(selectedOrderId.value) &&
+    selectedOrderId.value !== ALL_ORDERS &&
+    Boolean(form.type) &&
+    Boolean(form.name?.trim()),
 )
-const totalCost = computed(() => {
+// Parts/labor changes refill the total, which the user can still overwrite.
+function recalcTotal() {
   const parts = Number(form.parts)
   const labor = Number(form.labor)
-  const partsInCents =
-    Number.isFinite(parts) && parts > 0 ? Math.round(parts * 100) : 0
-  const laborInCents =
-    Number.isFinite(labor) && labor > 0 ? Math.round(labor * 100) : 0
+  const partsInCents = Number.isFinite(parts) && parts > 0 ? Math.round(parts * 100) : 0
+  const laborInCents = Number.isFinite(labor) && labor > 0 ? Math.round(labor * 100) : 0
 
-  return (partsInCents + laborInCents) / 100
+  form.total_cost = (partsInCents + laborInCents) / 100
+}
+const orderOptions = computed(() => [
+  { label: 'All', value: ALL_ORDERS },
+  ...serviceLogStore.orderOptions
+    .filter((order) => !selectedAutoId.value || order.auto_id === selectedAutoId.value)
+    .map((order) => ({
+      label: [templateAutoLabel(order.auto), order.service_date, order.invoice_number]
+        .filter(Boolean)
+        .join(' — '),
+      value: order.service_order_id,
+    })),
+])
+// Autos are derived from the loaded service orders, since a log needs an order.
+const autoOptions = computed(() => {
+  const autos = new Map()
+  for (const order of serviceLogStore.orderOptions) {
+    if (!autos.has(order.auto_id)) {
+      autos.set(order.auto_id, { label: templateAutoLabel(order.auto), value: order.auto_id })
+    }
+  }
+  return [...autos.values()].sort((a, b) => a.label.localeCompare(b.label))
 })
-const orderOptions = computed(() =>
-  serviceLogStore.orderOptions.map((order) => ({
-    label: [templateAutoLabel(order.auto), order.service_date, order.invoice_number]
-      .filter(Boolean)
-      .join(' — '),
-    value: order.service_order_id,
-  })),
-)
 const selectedOrderLabel = computed(
-  () => orderOptions.value.find((option) => option.value === selectedOrderId.value)?.label || '—',
+  () =>
+    serviceLogStore.orderOptions
+      .filter((order) => order.service_order_id === selectedOrderId.value)
+      .map((order) =>
+        [templateAutoLabel(order.auto), order.service_date, order.invoice_number]
+          .filter(Boolean)
+          .join(' — '),
+      )[0] || '—',
 )
-const visibleLogs = computed(() =>
-  selectedOrderId.value
-    ? serviceLogStore.serviceLogs.filter((item) => item.service_order_id === selectedOrderId.value)
-    : [],
-)
+const visibleLogs = computed(() => {
+  if (selectedOrderId.value !== ALL_ORDERS) {
+    return serviceLogStore.serviceLogs.filter(
+      (item) => item.service_order_id === selectedOrderId.value,
+    )
+  }
+
+  const orderIds = new Set(
+    serviceLogStore.orderOptions
+      .filter((order) => !selectedAutoId.value || order.auto_id === selectedAutoId.value)
+      .map((order) => order.service_order_id),
+  )
+  return serviceLogStore.serviceLogs.filter((item) => orderIds.has(item.service_order_id))
+})
 const confirmDeleteOpen = computed({
   get: () => Boolean(pendingDeleteLog.value),
   set: (open) => {
@@ -355,10 +410,13 @@ function toggleForm() {
     return
   }
 
-  if (!selectedOrderId.value && orderOptions.value.length === 1) {
-    selectedOrderId.value = orderOptions.value[0].value
+  if (selectedOrderId.value === ALL_ORDERS && orderOptions.value.length === 2) {
+    selectedOrderId.value = orderOptions.value[1].value
   }
-  Object.assign(form, { ...createEmptyForm(), service_order_id: selectedOrderId.value })
+  Object.assign(form, {
+    ...createEmptyForm(),
+    service_order_id: selectedOrderId.value === ALL_ORDERS ? null : selectedOrderId.value,
+  })
   showForm.value = true
 }
 
@@ -402,8 +460,8 @@ async function saveServiceLog() {
 
   const isEditing = Boolean(editingLogId.value)
   const saved = isEditing
-    ? await serviceLogStore.updateServiceLog(editingLogId.value, form)
-    : await serviceLogStore.createServiceLog(form)
+    ? await serviceLogStore.updateServiceLog(editingLogId.value, { ...form, use_total_cost: true })
+    : await serviceLogStore.createServiceLog({ ...form, use_total_cost: true })
 
   if (!saved) {
     return
@@ -429,17 +487,30 @@ async function deleteServiceLog() {
 
 watch(selectedOrderId, (orderId) => {
   if (showForm.value) {
-    form.service_order_id = orderId
+    form.service_order_id = orderId === ALL_ORDERS ? null : orderId
+  }
+  const order = serviceLogStore.orderOptions.find((item) => item.service_order_id === orderId)
+  if (order && order.auto_id !== selectedAutoId.value) {
+    selectedAutoId.value = order.auto_id
   }
 })
 watch(
+  autoOptions,
+  (options) => {
+    if (selectedAutoId.value && !options.some((o) => o.value === selectedAutoId.value)) {
+      selectedAutoId.value = null
+    }
+    if (!selectedAutoId.value && options.length === 1) {
+      selectedAutoId.value = options[0].value
+    }
+  },
+  { immediate: true },
+)
+watch(
   orderOptions,
   (options) => {
-    if (selectedOrderId.value && !options.some((o) => o.value === selectedOrderId.value)) {
-      selectedOrderId.value = null
-    }
-    if (!selectedOrderId.value && options.length === 1) {
-      selectedOrderId.value = options[0].value
+    if (!selectedOrderId.value || !options.some((o) => o.value === selectedOrderId.value)) {
+      selectedOrderId.value = ALL_ORDERS
     }
   },
   { immediate: true },

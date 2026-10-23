@@ -20,6 +20,9 @@ export const useServiceLogStore = defineStore('ServiceLog', {
       const normalizedLabor =
         Number.isFinite(labor) && labor > 0 ? Math.round(labor * 100) / 100 : 0
 
+      const totalCost = Number(log.total_cost)
+      const calculatedTotal = Math.round((normalizedParts + normalizedLabor) * 100) / 100
+
       return {
         service_order_id: log.service_order_id || null,
         type: log.type || null,
@@ -28,7 +31,11 @@ export const useServiceLogStore = defineStore('ServiceLog', {
         notes: log.notes?.trim() || null,
         parts: normalizedParts,
         labor: normalizedLabor,
-        total_cost: Math.round((normalizedParts + normalizedLabor) * 100) / 100,
+        // A caller-supplied total is only honored when explicitly flagged.
+        total_cost:
+          log.use_total_cost && Number.isFinite(totalCost) && totalCost >= 0
+            ? Math.round(totalCost * 100) / 100
+            : calculatedTotal,
       }
     },
 
@@ -49,7 +56,7 @@ export const useServiceLogStore = defineStore('ServiceLog', {
       let query = supabase
         .from('service_order')
         .select(
-          'service_order_id, invoice_number, service_date, auto:auto_id!inner(profile_id, year, make, model, color)',
+          'service_order_id, invoice_number, service_date, auto_id, auto:auto_id!inner(profile_id, year, make, model, color)',
         )
         .eq('is_active', true)
         .eq('auto.is_active', true)

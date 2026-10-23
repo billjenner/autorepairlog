@@ -114,7 +114,7 @@
                         icon="delete"
                         color="negative"
                         aria-label="Remove service"
-                        @click="removeExistingLog(log)"
+                        @click="requestRemoveLog(log)"
                       />
                     </template>
                   </q-input>
@@ -178,7 +178,7 @@
                         icon="delete"
                         color="negative"
                         aria-label="Remove service"
-                        @click.stop="removeEntry(entry)"
+                        @click.stop="requestRemoveEntry(entry)"
                       />
                     </template>
                     <template #option="scope">
@@ -210,6 +210,7 @@
                     step="0.01"
                     filled
                     dense
+                    @update:model-value="recalcEntryTotal(entry)"
                   />
                 </div>
                 <div class="col-12 col-sm-2">
@@ -222,13 +223,17 @@
                     step="0.01"
                     filled
                     dense
+                    @update:model-value="recalcEntryTotal(entry)"
                   />
                 </div>
                 <div class="col-12 col-sm-2">
                   <q-input
-                    :model-value="formatMoney(entryTotal(entry))"
+                    v-model="entry.total"
+                    type="number"
                     label="Total cost"
-                    readonly
+                    prefix="$"
+                    min="0"
+                    step="0.01"
                     filled
                     dense
                   />
@@ -388,6 +393,24 @@
               </q-card-actions>
             </q-card>
           </q-dialog>
+
+          <q-dialog v-model="confirmRemoveOpen">
+            <q-card style="min-width: 320px">
+              <q-card-section class="text-h6">Remove service?</q-card-section>
+              <q-card-section>
+                Remove {{ pendingRemoval?.name || 'this service' }} from this service order?
+              </q-card-section>
+              <q-card-actions align="right">
+                <q-btn flat label="No" color="primary" @click="pendingRemoval = null" />
+                <q-btn
+                  label="Yes"
+                  color="negative"
+                  :loading="serviceLogStore.loading"
+                  @click="confirmRemoval"
+                />
+              </q-card-actions>
+            </q-card>
+          </q-dialog>
         </q-card>
       </div>
     </div>
@@ -539,7 +562,7 @@ function resetForm() {
 }
 
 function createServiceEntry() {
-  return { key: nextEntryKey++, service_id: null, search: '', parts: 0, labor: 0 }
+  return { key: nextEntryKey++, service_id: null, search: '', parts: 0, labor: 0, total: 0 }
 }
 
 function resetServiceEntry() {
@@ -556,7 +579,13 @@ function findService(serviceId) {
 // }
 
 function entryTotal(entry) {
-  return (Number(entry.parts) || 0) + (Number(entry.labor) || 0)
+  return Number(entry.total) || 0
+}
+
+// Parts/labor changes refill the total, which the user can still overwrite.
+function recalcEntryTotal(entry) {
+  const cents = Math.round((Number(entry.parts) || 0) * 100) + Math.round((Number(entry.labor) || 0) * 100)
+  entry.total = cents / 100
 }
 
 function filteredServices(entry) {
@@ -576,6 +605,38 @@ function ensureTrailingEntry() {
   if (entries[entries.length - 1]?.service_id) {
     entries.push(createServiceEntry())
   }
+}
+
+const pendingRemoval = ref(null)
+const confirmRemoveOpen = computed({
+  get: () => Boolean(pendingRemoval.value),
+  set: (open) => {
+    if (!open) {
+      pendingRemoval.value = null
+    }
+  },
+})
+
+function requestRemoveEntry(entry) {
+  pendingRemoval.value = { kind: 'entry', target: entry, name: findService(entry.service_id)?.name }
+}
+
+function requestRemoveLog(log) {
+  pendingRemoval.value = { kind: 'log', target: log, name: log.name }
+}
+
+async function confirmRemoval() {
+  const removal = pendingRemoval.value
+  if (!removal) {
+    return
+  }
+
+  if (removal.kind === 'entry') {
+    removeEntry(removal.target)
+  } else if (!(await removeExistingLog(removal.target))) {
+    return
+  }
+  pendingRemoval.value = null
 }
 
 function removeEntry(entry) {
@@ -689,7 +750,9 @@ async function removeExistingLog(log) {
     existingLogs.value = existingLogs.value.filter(
       (item) => item.service_log_id !== log.service_log_id,
     )
+    return true
   }
+  return false
 }
 
 function onInvoiceRejected() {
@@ -766,6 +829,8 @@ async function saveServiceOrder() {
       description: service.description,
       parts: entry.parts,
       labor: entry.labor,
+      total_cost: entryTotal(entry),
+      use_total_cost: true,
     })
     if (!log) {
       // Drop rows already saved so a retry does not duplicate them.
