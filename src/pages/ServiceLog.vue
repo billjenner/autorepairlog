@@ -113,8 +113,10 @@
                     dense
                   />
                 </div>
-                <div class="col-12">
-                  <div class="text-caption text-grey-7 q-mb-xs">Notes</div>
+                <div class="col-12 flex items-center">
+                  <q-toggle v-model="showNotes" dense label="Notes" />
+                </div>
+                <div v-if="showNotes" class="col-12">
                   <notes-editor v-model="form.notes" />
                 </div>
               </div>
@@ -235,6 +237,7 @@ const serviceLogStore = useServiceLogStore()
 const usersStore = useUsersStore()
 const profileStore = useProfileStore()
 const showForm = ref(false)
+const showNotes = ref(false)
 const editingLogId = ref(null)
 const selectedOrderId = ref(null)
 const orderSelectRef = ref(null)
@@ -342,6 +345,7 @@ function createEmptyForm() {
 function resetForm() {
   Object.assign(form, createEmptyForm())
   editingLogId.value = null
+  showNotes.value = false
   showForm.value = false
 }
 
@@ -371,6 +375,7 @@ function editLog(log) {
   })
   selectedOrderId.value = log.service_order_id
   editingLogId.value = log.service_log_id
+  showNotes.value = Boolean(log.notes)
   showForm.value = true
 }
 
