@@ -93,7 +93,7 @@
                   />
                 </div>
                 <div class="col-12 col-sm-4">
-                  <q-input v-model.trim="form.invoice_url" label="Invoice URL" filled dense />
+                  <q-input v-model.trim="form.invoice_number" label="Invoice number" filled dense />
                 </div>
                 <div class="col-12 col-sm-4 flex items-center">
                   <q-toggle v-model="form.is_complete" label="Complete" />
@@ -175,10 +175,10 @@
                 </div>
               </div>
               <div class="row q-col-gutter-md">
-                <div class="col-12 col-sm-3">
-                  <q-input v-model.trim="form.invoice_number" label="Invoice number" filled dense />
+                <div class="col-12 col-sm-10">
+                  <q-input v-model.trim="form.invoice_url" label="Invoice URL" filled dense />
                 </div>
-                <div class="col-12 col-sm-3 offset-sm-6">
+                <div class="col-12 col-sm-2">
                   <q-input
                     v-model="form.total_cost"
                     type="number"
