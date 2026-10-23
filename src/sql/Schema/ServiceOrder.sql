@@ -62,3 +62,98 @@ ON public.service_order
 FOR DELETE
 TO authenticated
 USING (true);
+
+-- ============================================================
+-- SERVICE INVOICE STORAGE Bucket (PDF or image invoices)
+-- Object path: {profile_id}/{auto_id}/{uuid}.{ext}
+-- service_order.invoice_url stores this object path.
+-- ============================================================
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+    'service-invoices',
+    'service-invoices',
+    false,
+    10485760,
+    ARRAY['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/gif']
+)
+ON CONFLICT (id) DO UPDATE
+SET public = EXCLUDED.public,
+    file_size_limit = EXCLUDED.file_size_limit,
+    allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+-- ============================================================
+-- SERVICE INVOICE STORAGE POLICIES (auto owner or admin)
+-- ============================================================
+DROP POLICY IF EXISTS "Users can view invoices for their own autos" ON storage.objects;
+CREATE POLICY "Users can view invoices for their own autos"
+ON storage.objects
+FOR SELECT
+TO authenticated
+USING (
+    bucket_id = 'service-invoices'
+    AND EXISTS (
+        SELECT 1
+        FROM public.auto a
+        JOIN public.profile p ON p.profile_id = a.profile_id
+        WHERE p.profile_id::text = (storage.foldername(name))[1]
+          AND a.auto_id::text = (storage.foldername(name))[2]
+          AND (
+              p.user_id = auth.uid()
+              OR EXISTS (
+                  SELECT 1 FROM public.profile admin_profile
+                  WHERE admin_profile.user_id = auth.uid()
+                    AND admin_profile.admin_level > 0
+              )
+          )
+    )
+);
+
+DROP POLICY IF EXISTS "Users can upload invoices for their own autos" ON storage.objects;
+CREATE POLICY "Users can upload invoices for their own autos"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+    bucket_id = 'service-invoices'
+    AND EXISTS (
+        SELECT 1
+        FROM public.auto a
+        JOIN public.profile p ON p.profile_id = a.profile_id
+        WHERE p.profile_id::text = (storage.foldername(name))[1]
+          AND a.auto_id::text = (storage.foldername(name))[2]
+          AND (
+              p.user_id = auth.uid()
+              OR EXISTS (
+                  SELECT 1 FROM public.profile admin_profile
+                  WHERE admin_profile.user_id = auth.uid()
+                    AND admin_profile.admin_level > 0
+              )
+          )
+    )
+);
+
+DROP POLICY IF EXISTS "Users can delete invoices for their own autos" ON storage.objects;
+CREATE POLICY "Users can delete invoices for their own autos"
+ON storage.objects
+FOR DELETE
+TO authenticated
+USING (
+    bucket_id = 'service-invoices'
+    AND EXISTS (
+        SELECT 1
+        FROM public.auto a
+        JOIN public.profile p ON p.profile_id = a.profile_id
+        WHERE p.profile_id::text = (storage.foldername(name))[1]
+          AND a.auto_id::text = (storage.foldername(name))[2]
+          AND (
+              p.user_id = auth.uid()
+              OR EXISTS (
+                  SELECT 1 FROM public.profile admin_profile
+                  WHERE admin_profile.user_id = auth.uid()
+                    AND admin_profile.admin_level > 0
+              )
+          )
+    )
+);
+
+NOTIFY pgrst, 'reload schema';

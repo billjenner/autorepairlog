@@ -1,6 +1,9 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { supabase } from '../lib/supabase'
 
+const INVOICE_BUCKET = 'service-invoices'
+const INVOICE_MAX_BYTES = 10 * 1024 * 1024
+
 const toNumber = (value) => {
   const numericValue = Number(value)
   return Number.isFinite(numericValue) && numericValue > 0 ? numericValue : 0
@@ -157,6 +160,115 @@ export const useServiceOrderStore = defineStore('ServiceOrder', {
         this.serviceOrders = this.serviceOrders.map((item) =>
           item.service_order_id === serviceOrderId ? data : item,
         )
+        return data
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // invoice_url holds a storage object path; legacy http(s) links are returned unchanged.
+    async getInvoiceUrl(invoicePath) {
+      if (!invoicePath) {
+        return null
+      }
+
+      if (/^https?:\/\//i.test(invoicePath)) {
+        return invoicePath
+      }
+
+      this.error = null
+
+      if (!supabase) {
+        this.error = 'Supabase client is not configured.'
+        return null
+      }
+
+      const { data, error } = await supabase.storage
+        .from(INVOICE_BUCKET)
+        .createSignedUrl(invoicePath, 3600)
+
+      if (error) {
+        this.error = error.message
+        return null
+      }
+
+      return data.signedUrl
+    },
+
+    async uploadInvoice(profileId, autoId, serviceOrderId, file) {
+      this.error = null
+      this.loading = true
+
+      try {
+        if (!supabase) {
+          this.error = 'Supabase client is not configured.'
+          return null
+        }
+
+        if (!profileId || !autoId || !serviceOrderId || !file) {
+          this.error = 'An auto, service order, and invoice file are required to attach an invoice.'
+          return null
+        }
+
+        if (file.type !== 'application/pdf' && !file.type.startsWith('image/')) {
+          this.error = 'Choose a PDF or image file to attach.'
+          return null
+        }
+
+        if (file.size > INVOICE_MAX_BYTES) {
+          this.error = 'The invoice file must be 10 MB or smaller.'
+          return null
+        }
+
+        const extension = file.name
+          .split('.')
+          .pop()
+          ?.toLowerCase()
+          .replace(/[^a-z0-9]/g, '')
+        const invoicePath = `${profileId}/${autoId}/${crypto.randomUUID()}${extension ? `.${extension}` : ''}`
+        const { error: uploadError } = await supabase.storage
+          .from(INVOICE_BUCKET)
+          .upload(invoicePath, file, { contentType: file.type, upsert: false })
+
+        if (uploadError) {
+          this.error = uploadError.message
+          return null
+        }
+
+        const previousPath = this.serviceOrders.find(
+          (item) => item.service_order_id === serviceOrderId,
+        )?.invoice_url
+        const { data, error } = await supabase
+          .from('service_order')
+          .update({ invoice_url: invoicePath })
+          .eq('service_order_id', serviceOrderId)
+          .select()
+          .single()
+
+        if (error) {
+          const { error: cleanupError } = await supabase.storage
+            .from(INVOICE_BUCKET)
+            .remove([invoicePath])
+          this.error = cleanupError
+            ? `${error.message} The uploaded invoice could not be cleaned up: ${cleanupError.message}`
+            : error.message
+          return null
+        }
+
+        this.serviceOrders = this.serviceOrders.map((item) =>
+          item.service_order_id === serviceOrderId ? data : item,
+        )
+
+        if (previousPath && !/^https?:\/\//i.test(previousPath) && previousPath !== invoicePath) {
+          const { error: cleanupError } = await supabase.storage
+            .from(INVOICE_BUCKET)
+            .remove([previousPath])
+
+          if (cleanupError) {
+            this.error = `Invoice updated, but the previous file could not be removed: ${cleanupError.message}`
+          }
+        }
+
         return data
       } finally {
         this.loading = false

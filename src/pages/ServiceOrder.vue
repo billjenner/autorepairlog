@@ -198,12 +198,34 @@
               </div>
               <div class="row q-col-gutter-md q-mt-sm">
                 <div class="col-12 flex items-center">
-                  <q-toggle v-model="attachInvoice" label="Attach Invoice" />
+                  <q-toggle v-model="attachInvoice" dense label="Attach Invoice" />
                 </div>
               </div>
               <div v-if="attachInvoice" class="row q-col-gutter-md">
                 <div class="col-12">
-                  <q-input v-model.trim="form.invoice_url" label="Invoice URL" filled dense />
+                  <q-file
+                    v-model="invoiceFile"
+                    label="Invoice (PDF or image)"
+                    accept="application/pdf,image/*"
+                    max-file-size="10485760"
+                    filled
+                    dense
+                    clearable
+                    @rejected="onInvoiceRejected"
+                  >
+                    <template #prepend>
+                      <q-icon name="attach_file" />
+                    </template>
+                  </q-file>
+                </div>
+                <div v-if="currentInvoiceUrl" class="col-12">
+                  Current invoice:
+                  <a :href="currentInvoiceUrl" target="_blank" rel="noopener noreferrer"
+                    >View invoice</a
+                  >
+                  <span v-if="invoiceFile" class="text-grey-7">
+                    (replaced when the order is saved)</span
+                  >
                 </div>
               </div>
             </q-card>
@@ -266,9 +288,9 @@
                 <div>Shop: {{ detailsOrder?.shop_name || '—' }}</div>
                 <div>Mechanic: {{ detailsOrder?.mechanic_name || '—' }}</div>
                 <div>Total: {{ formatMoney(detailsOrder?.total_cost) }}</div>
-                <div v-if="safeInvoiceUrl">
+                <div v-if="detailsInvoiceUrl">
                   Invoice:
-                  <a :href="safeInvoiceUrl" target="_blank" rel="noopener noreferrer"
+                  <a :href="detailsInvoiceUrl" target="_blank" rel="noopener noreferrer"
                     >View invoice</a
                   >
                 </div>
@@ -336,6 +358,7 @@ const profileStore = useProfileStore()
 const showForm = ref(false)
 const showNotes = ref(false)
 const attachInvoice = ref(false)
+const invoiceFile = ref(null)
 const editingOrderId = ref(null)
 const selectedAutoId = ref(null)
 let nextEntryKey = 0
@@ -416,10 +439,8 @@ const visibleOrders = computed(() =>
     ? serviceOrderStore.serviceOrders.filter((item) => item.auto_id === selectedAutoId.value)
     : [],
 )
-const safeInvoiceUrl = computed(() => {
-  const url = detailsOrder.value?.invoice_url
-  return url && /^https?:\/\//i.test(url) ? url : ''
-})
+const detailsInvoiceUrl = ref('')
+const currentInvoiceUrl = ref('')
 const confirmDeleteOpen = computed({
   get: () => Boolean(pendingDeleteOrder.value),
   set: (open) => {
@@ -449,6 +470,8 @@ function resetForm() {
   resetServiceEntry()
   showNotes.value = false
   attachInvoice.value = false
+  invoiceFile.value = null
+  currentInvoiceUrl.value = ''
   editingOrderId.value = null
   showForm.value = false
 }
@@ -578,8 +601,16 @@ function editOrder(order) {
   resetServiceEntry()
   showNotes.value = Boolean(order.notes)
   attachInvoice.value = Boolean(order.invoice_url)
+  invoiceFile.value = null
   editingOrderId.value = order.service_order_id
   showForm.value = true
+}
+
+function onInvoiceRejected() {
+  $q.notify({
+    color: 'negative',
+    message: 'Choose a PDF or image file that is 10 MB or smaller.',
+  })
 }
 
 async function load() {
@@ -621,6 +652,23 @@ async function saveServiceOrder() {
     return
   }
 
+  // Keep the saved order in edit mode so a retry after a later failure updates it.
+  editingOrderId.value = saved.service_order_id
+
+  if (invoiceFile.value) {
+    const auto = serviceOrderStore.autoOptions.find((item) => item.auto_id === saved.auto_id)
+    const withInvoice = await serviceOrderStore.uploadInvoice(
+      auto?.profile_id,
+      saved.auto_id,
+      saved.service_order_id,
+      invoiceFile.value,
+    )
+    if (!withInvoice) {
+      return
+    }
+    form.invoice_url = withInvoice.invoice_url || ''
+    invoiceFile.value = null
+  }
   // Each selected service is recorded as a service log entry on the saved order.
   const selectedEntries = serviceEntries.value.filter((entry) => findService(entry.service_id))
   for (const entry of selectedEntries) {
@@ -671,6 +719,30 @@ watch(
     }
   },
   { deep: true },
+)
+let invoiceUrlRequestId = 0
+watch(
+  () => form.invoice_url,
+  async (path) => {
+    const requestId = ++invoiceUrlRequestId
+    const url = path ? await serviceOrderStore.getInvoiceUrl(path) : ''
+    if (requestId === invoiceUrlRequestId) {
+      currentInvoiceUrl.value = url || ''
+    }
+  },
+)
+watch(
+  () => detailsOrder.value?.invoice_url,
+  async (path) => {
+    detailsInvoiceUrl.value = ''
+    if (!path) {
+      return
+    }
+    const url = await serviceOrderStore.getInvoiceUrl(path)
+    if (detailsOrder.value?.invoice_url === path) {
+      detailsInvoiceUrl.value = url || ''
+    }
+  },
 )
 watch(selectedAutoId, (autoId) => {
   resetServiceEntry()
