@@ -99,6 +99,28 @@ export const useServiceLogStore = defineStore('ServiceLog', {
       }
     },
 
+    async fetchLogsForOrder(serviceOrderId) {
+      this.error = null
+
+      if (!supabase) {
+        this.error = 'Supabase client is not configured.'
+        return []
+      }
+
+      const { data, error } = await supabase
+        .from('service_log')
+        .select('*')
+        .eq('service_order_id', serviceOrderId)
+        .order('created_date', { ascending: true })
+
+      if (error) {
+        this.error = error.message
+        return []
+      }
+
+      return data || []
+    },
+
     async createServiceLog(log = {}) {
       this.error = null
       this.loading = true

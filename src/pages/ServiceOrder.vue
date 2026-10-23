@@ -100,6 +100,54 @@
                 </div>
               </div>
               <div
+                v-for="log in existingLogs"
+                :key="log.service_log_id"
+                class="row q-col-gutter-md q-my-md"
+              >
+                <div class="col-12 col-sm-6">
+                  <q-input :model-value="log.name" label="Service" readonly filled dense>
+                    <template #append>
+                      <q-btn
+                        flat
+                        round
+                        dense
+                        icon="delete"
+                        color="negative"
+                        aria-label="Remove service"
+                        @click="removeExistingLog(log)"
+                      />
+                    </template>
+                  </q-input>
+                </div>
+                <div class="col-12 col-sm-2">
+                  <q-input
+                    :model-value="formatMoney(log.parts)"
+                    label="Parts"
+                    readonly
+                    filled
+                    dense
+                  />
+                </div>
+                <div class="col-12 col-sm-2">
+                  <q-input
+                    :model-value="formatMoney(log.labor)"
+                    label="Labor"
+                    readonly
+                    filled
+                    dense
+                  />
+                </div>
+                <div class="col-12 col-sm-2">
+                  <q-input
+                    :model-value="formatMoney(log.total_cost)"
+                    label="Total cost"
+                    readonly
+                    filled
+                    dense
+                  />
+                </div>
+              </div>
+              <div
                 v-for="entry in serviceEntries"
                 :key="entry.key"
                 class="row q-col-gutter-md q-my-md"
@@ -121,6 +169,18 @@
                     @filter="(value, update) => filterServices(entry, value, update)"
                     @update:model-value="ensureTrailingEntry"
                   >
+                    <template #append>
+                      <q-btn
+                        v-if="entry.service_id"
+                        flat
+                        round
+                        dense
+                        icon="delete"
+                        color="negative"
+                        aria-label="Remove service"
+                        @click.stop="removeEntry(entry)"
+                      />
+                    </template>
                     <template #option="scope">
                       <q-item v-bind="scope.itemProps">
                         <q-item-section>
@@ -363,6 +423,7 @@ const editingOrderId = ref(null)
 const selectedAutoId = ref(null)
 let nextEntryKey = 0
 const serviceEntries = ref([])
+const existingLogs = ref([])
 const autoSelectRef = ref(null)
 const pendingDeleteOrder = ref(null)
 const detailsOrder = ref(null)
@@ -472,6 +533,7 @@ function resetForm() {
   attachInvoice.value = false
   invoiceFile.value = null
   currentInvoiceUrl.value = ''
+  existingLogs.value = []
   editingOrderId.value = null
   showForm.value = false
 }
@@ -513,6 +575,13 @@ function ensureTrailingEntry() {
   const entries = serviceEntries.value
   if (entries[entries.length - 1]?.service_id) {
     entries.push(createServiceEntry())
+  }
+}
+
+function removeEntry(entry) {
+  serviceEntries.value = serviceEntries.value.filter((item) => item !== entry)
+  if (!serviceEntries.value.length || serviceEntries.value.at(-1).service_id) {
+    serviceEntries.value.push(createServiceEntry())
   }
 }
 
@@ -602,8 +671,25 @@ function editOrder(order) {
   showNotes.value = Boolean(order.notes)
   attachInvoice.value = Boolean(order.invoice_url)
   invoiceFile.value = null
+  existingLogs.value = []
   editingOrderId.value = order.service_order_id
   showForm.value = true
+  loadExistingLogs(order.service_order_id)
+}
+
+async function loadExistingLogs(serviceOrderId) {
+  const logs = await serviceLogStore.fetchLogsForOrder(serviceOrderId)
+  if (editingOrderId.value === serviceOrderId) {
+    existingLogs.value = logs
+  }
+}
+
+async function removeExistingLog(log) {
+  if (await serviceLogStore.deleteServiceLog(log.service_log_id)) {
+    existingLogs.value = existingLogs.value.filter(
+      (item) => item.service_log_id !== log.service_log_id,
+    )
+  }
 }
 
 function onInvoiceRejected() {
@@ -710,12 +796,13 @@ async function deleteServiceOrder() {
 }
 
 watch(
-  serviceEntries,
-  (entries) => {
+  [serviceEntries, existingLogs],
+  ([entries, logs]) => {
     const selected = entries.filter((entry) => findService(entry.service_id))
-    if (selected.length) {
-      const cents = selected.reduce((sum, entry) => sum + Math.round(entryTotal(entry) * 100), 0)
-      form.total_cost = cents / 100
+    if (selected.length || logs.length) {
+      const entryCents = selected.reduce((sum, entry) => sum + Math.round(entryTotal(entry) * 100), 0)
+      const logCents = logs.reduce((sum, log) => sum + Math.round(Number(log.total_cost || 0) * 100), 0)
+      form.total_cost = (entryCents + logCents) / 100
     }
   },
   { deep: true },
