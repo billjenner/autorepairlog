@@ -44,7 +44,7 @@ export const useServiceStore = defineStore('Service', {
 
       let query = supabase
         .from('schedule')
-        .select('schedule_id, auto:auto_id!inner(profile_id, year, make, model, color)')
+        .select('schedule_id, auto_id, auto:auto_id!inner(profile_id, year, make, model, color)')
         .eq('is_active', true)
         .eq('auto.is_active', true)
 

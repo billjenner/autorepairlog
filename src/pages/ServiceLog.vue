@@ -70,14 +70,35 @@
                 <div class="col-12 col-sm-5">
                   <q-input v-model.trim="form.name" label="Name" filled dense />
                 </div>
-                <div class="col-12 col-sm-3">
+                <div class="col-12 col-sm-4">
                   <q-input
-                    v-model="form.cost"
+                    v-model="form.parts"
                     type="number"
-                    label="Cost"
+                    label="Parts"
                     prefix="$"
                     min="0"
                     step="0.01"
+                    filled
+                    dense
+                  />
+                </div>
+                <div class="col-12 col-sm-4">
+                  <q-input
+                    v-model="form.labor"
+                    type="number"
+                    label="Labor"
+                    prefix="$"
+                    min="0"
+                    step="0.01"
+                    filled
+                    dense
+                  />
+                </div>
+                <div class="col-12 col-sm-4">
+                  <q-input
+                    :model-value="formatMoney(totalCost)"
+                    label="Total cost"
+                    readonly
                     filled
                     dense
                   />
@@ -127,6 +148,9 @@
             <template #body-cell-type="props">
               <q-td :props="props">{{ props.row.type ? props.row.type.toUpperCase() : '—' }}</q-td>
             </template>
+            <template #body-cell-total_cost="props">
+              <q-td :props="props">{{ formatMoney(props.row.total_cost) }}</q-td>
+            </template>
             <template #body-cell-actions="props">
               <q-td :props="props" class="text-right">
                 <q-btn flat dense color="accent" label="Details" @click="detailsLog = props.row" />
@@ -146,6 +170,11 @@
             <q-card style="min-width: 360px; max-width: 600px; width: 100%">
               <q-card-section class="text-h6">
                 {{ detailsLog?.name || 'Service log details' }}
+              </q-card-section>
+              <q-card-section class="q-pt-none">
+                <div>Parts: {{ formatMoney(detailsLog?.parts) }}</div>
+                <div>Labor: {{ formatMoney(detailsLog?.labor) }}</div>
+                <div>Total: {{ formatMoney(detailsLog?.total_cost) }}</div>
               </q-card-section>
               <q-card-section class="q-pt-none">
                 <q-input
@@ -248,9 +277,9 @@ const columns = [
   { name: 'type', label: 'Type', field: 'type', align: 'left', sortable: true },
   { name: 'name', label: 'Name', field: 'name', align: 'left', sortable: true },
   {
-    name: 'cost',
-    label: 'Cost',
-    field: 'cost',
+    name: 'total_cost',
+    label: 'Total',
+    field: 'total_cost',
     align: 'right',
     sortable: true,
     format: (value) => formatMoney(value),
@@ -262,6 +291,16 @@ const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
 const hasRequiredFields = computed(
   () => Boolean(selectedOrderId.value) && Boolean(form.type) && Boolean(form.name?.trim()),
 )
+const totalCost = computed(() => {
+  const parts = Number(form.parts)
+  const labor = Number(form.labor)
+  const partsInCents =
+    Number.isFinite(parts) && parts > 0 ? Math.round(parts * 100) : 0
+  const laborInCents =
+    Number.isFinite(labor) && labor > 0 ? Math.round(labor * 100) : 0
+
+  return (partsInCents + laborInCents) / 100
+})
 const orderOptions = computed(() =>
   serviceLogStore.orderOptions.map((order) => ({
     label: [templateAutoLabel(order.auto), order.service_date, order.name]
@@ -294,7 +333,9 @@ function createEmptyForm() {
     name: '',
     description: '',
     notes: '',
-    cost: 0,
+    parts: 0,
+    labor: 0,
+    total_cost: 0,
   }
 }
 
@@ -324,7 +365,9 @@ function editLog(log) {
     name: log.name || '',
     description: log.description || '',
     notes: log.notes || '',
-    cost: log.cost ?? 0,
+    parts: log.parts ?? 0,
+    labor: log.labor ?? 0,
+    total_cost: log.total_cost ?? 0,
   })
   selectedOrderId.value = log.service_order_id
   editingLogId.value = log.service_log_id

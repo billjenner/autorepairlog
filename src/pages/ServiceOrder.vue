@@ -28,8 +28,8 @@
             />
           </div>
 
-          <q-banner v-if="serviceOrderStore.error" class="bg-negative text-white q-mb-md" rounded>
-            {{ serviceOrderStore.error }}
+          <q-banner v-if="storeError" class="bg-negative text-white q-mb-md" rounded>
+            {{ storeError }}
           </q-banner>
 
           <q-banner
@@ -56,18 +56,8 @@
                     hint="Change the auto using the selector above."
                   />
                 </div>
-                <div class="col-12 col-sm-8">
-                  <q-input v-model.trim="form.name" label="Name" filled dense />
-                </div>
-                <div class="col-12 col-sm-4">
-                  <q-input
-                    v-model="form.service_date"
-                    type="date"
-                    label="Service date"
-                    filled
-                    dense
-                  />
-                </div>
+              </div>
+              <div class="row q-col-gutter-md">
                 <div class="col-12 col-sm-4">
                   <q-input
                     v-model.trim="form.shop_name"
@@ -92,7 +82,65 @@
                     dense
                   />
                 </div>
+              </div>
+              <div class="row q-col-gutter-md">
                 <div class="col-12 col-sm-4">
+                  <q-input
+                    v-model="form.service_date"
+                    type="date"
+                    label="Service date"
+                    filled
+                    dense
+                  />
+                </div>
+                <div class="col-12 col-sm-4">
+                  <q-input v-model.trim="form.invoice_url" label="Invoice URL" filled dense />
+                </div>
+                <div class="col-12 col-sm-4 flex items-center">
+                  <q-toggle v-model="form.is_complete" label="Complete" />
+                </div>
+              </div>
+              <div class="row q-col-gutter-md">
+                <div class="col-12">
+                  <q-select
+                    v-model="selectedServiceId"
+                    :options="filteredServices"
+                    label="Select a service"
+                    option-label="name"
+                    option-value="service_id"
+                    emit-value
+                    map-options
+                    use-input
+                    :filter-options="false"
+                    clearable
+                    filled
+                    dense
+                    hint="Selecting a service fills the Name field below."
+                    @filter="filterServices"
+                    @update:model-value="selectService"
+                  >
+                    <template #option="scope">
+                      <q-item v-bind="scope.itemProps">
+                        <q-item-section>
+                          <q-item-label>
+                            <template
+                              v-for="(part, index) in serviceNameParts(scope.opt.name)"
+                              :key="index"
+                            >
+                              <span :class="{ 'bg-yellow-3': part.match }">{{ part.text }}</span>
+                            </template>
+                          </q-item-label>
+                        </q-item-section>
+                      </q-item>
+                    </template>
+                  </q-select>
+                </div>
+              </div>
+              <div class="row q-col-gutter-md">
+                <div class="col-12 col-sm-3">
+                  <q-input v-model.trim="form.name" label="Name" filled dense />
+                </div>
+                <div class="col-12 col-sm-3">
                   <q-input
                     v-model="form.parts"
                     type="number"
@@ -104,7 +152,7 @@
                     dense
                   />
                 </div>
-                <div class="col-12 col-sm-4">
+                <div class="col-12 col-sm-3">
                   <q-input
                     v-model="form.labor"
                     type="number"
@@ -116,7 +164,7 @@
                     dense
                   />
                 </div>
-                <div class="col-12 col-sm-4">
+                <div class="col-12 col-sm-3">
                   <q-input
                     :model-value="formatMoney(totalCost)"
                     label="Total cost"
@@ -125,12 +173,8 @@
                     dense
                   />
                 </div>
-                <div class="col-12 col-sm-8">
-                  <q-input v-model.trim="form.invoice_url" label="Invoice URL" filled dense />
-                </div>
-                <div class="col-12 col-sm-4">
-                  <q-toggle v-model="form.is_complete" label="Complete" />
-                </div>
+              </div>
+              <div class="row q-col-gutter-md">
                 <div class="col-12">
                   <div class="text-caption text-grey-7 q-mb-xs">Notes</div>
                   <notes-editor v-model="form.notes" />
@@ -248,6 +292,7 @@ import { useQuasar } from 'quasar'
 import NotesEditor from '@/components/NotesEditor.vue'
 import NotesViewer from '@/components/NotesViewer.vue'
 import { useServiceOrderStore } from '@/stores/serviceOrder'
+import { useServiceStore } from '@/stores/service'
 import { templateAutoLabel } from '@/stores/schedule'
 import { useUsersStore } from '@/stores/users'
 import { useProfileStore } from '@/stores/profile'
@@ -255,11 +300,14 @@ import { notifySuccess } from '../utils/notify'
 
 const $q = useQuasar()
 const serviceOrderStore = useServiceOrderStore()
+const serviceStore = useServiceStore()
 const usersStore = useUsersStore()
 const profileStore = useProfileStore()
 const showForm = ref(false)
 const editingOrderId = ref(null)
 const selectedAutoId = ref(null)
+const selectedServiceId = ref(null)
+const serviceSearch = ref('')
 const autoSelectRef = ref(null)
 const pendingDeleteOrder = ref(null)
 const detailsOrder = ref(null)
@@ -299,6 +347,7 @@ const columns = [
 ]
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
+const storeError = computed(() => serviceOrderStore.error || serviceStore.error)
 const hasRequiredFields = computed(
   () => Boolean(selectedAutoId.value) && Boolean(form.shop_name?.trim()),
 )
@@ -312,6 +361,27 @@ const autoOptions = computed(() =>
 const selectedAutoLabel = computed(
   () => autoOptions.value.find((option) => option.value === selectedAutoId.value)?.label || '—',
 )
+const servicesForAuto = computed(() => {
+  const scheduleIds = new Set(
+    serviceStore.scheduleOptions
+      .filter((schedule) => schedule.auto_id === selectedAutoId.value)
+      .map((schedule) => schedule.schedule_id),
+  )
+
+  return serviceStore.services
+    .filter((service) => service.name && scheduleIds.has(service.schedule_id))
+    .sort((left, right) => String(left.name || '').localeCompare(String(right.name || '')))
+})
+const filteredServices = computed(() => {
+  const search = serviceSearch.value.trim().toLocaleLowerCase()
+  if (!search) {
+    return servicesForAuto.value
+  }
+
+  return servicesForAuto.value.filter((service) =>
+    service.name.toLocaleLowerCase().includes(search),
+  )
+})
 const visibleOrders = computed(() =>
   selectedAutoId.value
     ? serviceOrderStore.serviceOrders.filter((item) => item.auto_id === selectedAutoId.value)
@@ -348,6 +418,8 @@ function createEmptyForm() {
 
 function resetForm() {
   Object.assign(form, createEmptyForm())
+  selectedServiceId.value = null
+  serviceSearch.value = ''
   editingOrderId.value = null
   showForm.value = false
 }
@@ -362,7 +434,50 @@ function toggleForm() {
     selectedAutoId.value = autoOptions.value[0].value
   }
   Object.assign(form, { ...createEmptyForm(), auto_id: selectedAutoId.value })
+  selectedServiceId.value = null
+  serviceSearch.value = ''
   showForm.value = true
+}
+
+function filterServices(value, update) {
+  update(() => {
+    serviceSearch.value = String(value || '')
+  })
+}
+
+function serviceNameParts(name) {
+  const text = String(name || '')
+  const search = serviceSearch.value.trim()
+  if (!search) {
+    return [{ text, match: false }]
+  }
+
+  const lowerText = text.toLocaleLowerCase()
+  const lowerSearch = search.toLocaleLowerCase()
+  const parts = []
+  let start = 0
+  let matchIndex = lowerText.indexOf(lowerSearch, start)
+
+  while (matchIndex !== -1) {
+    if (matchIndex > start) {
+      parts.push({ text: text.slice(start, matchIndex), match: false })
+    }
+    parts.push({ text: text.slice(matchIndex, matchIndex + search.length), match: true })
+    start = matchIndex + search.length
+    matchIndex = lowerText.indexOf(lowerSearch, start)
+  }
+
+  if (start < text.length) {
+    parts.push({ text: text.slice(start), match: false })
+  }
+  return parts
+}
+
+function selectService(serviceId) {
+  const service = servicesForAuto.value.find((item) => item.service_id === serviceId)
+  if (service) {
+    form.name = service.name || ''
+  }
 }
 
 function editOrder(order) {
@@ -388,16 +503,25 @@ async function load() {
   if (!currentUserId.value) {
     serviceOrderStore.serviceOrders = []
     serviceOrderStore.autoOptions = []
+    serviceStore.services = []
+    serviceStore.scheduleOptions = []
     return
   }
 
   const profile = await profileStore.loadCurrentProfile(currentUserId.value)
   const isAdmin = Number(profile?.admin_level) > 0
-  await serviceOrderStore.loadAutoOptions({
-    isAdmin,
-    profileId: profile?.profile_id,
-  })
-  await serviceOrderStore.loadServiceOrders()
+  await Promise.all([
+    serviceOrderStore.loadAutoOptions({
+      isAdmin,
+      profileId: profile?.profile_id,
+    }),
+    serviceOrderStore.loadServiceOrders(),
+    serviceStore.loadScheduleOptions({
+      isAdmin,
+      profileId: profile?.profile_id,
+    }),
+    serviceStore.loadServices(),
+  ])
 }
 
 async function saveServiceOrder() {
@@ -433,6 +557,8 @@ async function deleteServiceOrder() {
 }
 
 watch(selectedAutoId, (autoId) => {
+  selectedServiceId.value = null
+  serviceSearch.value = ''
   if (showForm.value) {
     form.auto_id = autoId
   }

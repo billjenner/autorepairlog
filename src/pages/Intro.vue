@@ -6,9 +6,9 @@
       style="
         border-radius: 12px;
         max-width: 100%;
-        width: 32%;
+        width: 40%;
         margin-top: 32px;
-        margin-bottom: 32px;
+        margin-bottom: 12px;
       "
     />
 
@@ -16,9 +16,9 @@
       style="
         max-width: 720px;
         width: 60%;
-        margin: 40px auto 40px;
+        margin: 32px auto 32px;
         text-align: justify;
-        font-size: 1.05rem;
+        font-size: 1.2rem;
         line-height: 1.6;
       "
     >
@@ -27,7 +27,7 @@
     </h5>
 
     <div class="q-pa-md text-center" style="max-width: 720px; width: 100%">
-      <q-btn color="secondary" label="Let's Go!" to="/login" style="margin-top: 8px" />
+      <q-btn color="secondary" label="Let's Go!" to="/auto" style="margin-top: 8px" />
     </div>
   </q-page>
 </template>

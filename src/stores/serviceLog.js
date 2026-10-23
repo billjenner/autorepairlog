@@ -13,7 +13,12 @@ export const useServiceLogStore = defineStore('ServiceLog', {
 
   actions: {
     buildPayload(log = {}) {
-      const cost = Number(log.cost)
+      const parts = Number(log.parts)
+      const labor = Number(log.labor)
+      const normalizedParts =
+        Number.isFinite(parts) && parts > 0 ? Math.round(parts * 100) / 100 : 0
+      const normalizedLabor =
+        Number.isFinite(labor) && labor > 0 ? Math.round(labor * 100) / 100 : 0
 
       return {
         service_order_id: log.service_order_id || null,
@@ -21,7 +26,9 @@ export const useServiceLogStore = defineStore('ServiceLog', {
         name: log.name?.trim() || null,
         description: log.description?.trim() || null,
         notes: log.notes?.trim() || null,
-        cost: Number.isFinite(cost) && cost > 0 ? Math.round(cost * 100) / 100 : 0,
+        parts: normalizedParts,
+        labor: normalizedLabor,
+        total_cost: Math.round((normalizedParts + normalizedLabor) * 100) / 100,
       }
     },
 

@@ -142,9 +142,6 @@
         <q-item clickable v-ripple @click="navigateAndClose('/')">
           <q-item-section>Intro</q-item-section>
         </q-item>
-        <q-item clickable v-ripple @click="navigateAndClose('/log')">
-          <q-item-section>Log</q-item-section>
-        </q-item>
         <q-item clickable v-ripple @click="navigateAndClose('/auto')">
           <q-item-section>Auto</q-item-section>
         </q-item>
@@ -157,10 +154,10 @@
         <q-item clickable v-ripple @click="navigateAndClose('/service')">
           <q-item-section>Service</q-item-section>
         </q-item>
-        <q-item clickable v-ripple @click="navigateAndClose('/serviceorder')">
+        <q-item clickable v-ripple @click="navigateAndClose('/service-order')">
           <q-item-section>Service Order</q-item-section>
         </q-item>
-        <q-item clickable v-ripple @click="navigateAndClose('/servicelog')">
+        <q-item clickable v-ripple @click="navigateAndClose('/service-log')">
           <q-item-section>Service Log</q-item-section>
         </q-item>
         <q-item clickable v-ripple @click="navigateAndClose('/docs')">

@@ -12,7 +12,9 @@ CREATE TABLE public.service_log (
     description TEXT,
     notes TEXT,
 
-    cost NUMERIC(10,2) NOT NULL DEFAULT 0,
+    parts NUMERIC(10,2) NOT NULL DEFAULT 0,
+    labor NUMERIC(10,2) NOT NULL DEFAULT 0,
+    total_cost NUMERIC(10,2) NOT NULL DEFAULT 0,
 
     created_date TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
