@@ -58,7 +58,7 @@
                 </div>
               </div>
               <div class="row q-col-gutter-md">
-                <div class="col-12 col-sm-4">
+                <div class="col-12 col-sm-5">
                   <q-input
                     v-model.trim="form.shop_name"
                     label="Shop name"
@@ -68,10 +68,10 @@
                     :rules="[(value) => !!value || 'Enter a shop name.']"
                   />
                 </div>
-                <div class="col-12 col-sm-4">
+                <div class="col-12 col-sm-5">
                   <q-input v-model.trim="form.mechanic_name" label="Mechanic" filled dense />
                 </div>
-                <div class="col-12 col-sm-4">
+                <div class="col-12 col-sm-2">
                   <q-input
                     v-model="form.mileage_at_service"
                     type="number"
@@ -100,11 +100,15 @@
                   <q-toggle v-model="form.is_complete" label="Complete" />
                 </div>
               </div>
-              <div class="row q-col-gutter-md q-my-md">
-                <div class="col-12 col-sm-5">
+              <div
+                v-for="entry in serviceEntries"
+                :key="entry.key"
+                class="row q-col-gutter-md q-my-md"
+              >
+                <div class="col-12 col-sm-6">
                   <q-select
-                    v-model="selectedServiceId"
-                    :options="filteredServices"
+                    v-model="entry.service_id"
+                    :options="filteredServices(entry)"
                     label="Select a service"
                     option-label="name"
                     option-value="service_id"
@@ -115,14 +119,15 @@
                     clearable
                     filled
                     dense
-                    @filter="filterServices"
+                    @filter="(value, update) => filterServices(entry, value, update)"
+                    @update:model-value="ensureTrailingEntry"
                   >
                     <template #option="scope">
                       <q-item v-bind="scope.itemProps">
                         <q-item-section>
                           <q-item-label>
                             <template
-                              v-for="(part, index) in serviceNameParts(scope.opt.name)"
+                              v-for="(part, index) in serviceNameParts(scope.opt.name, entry)"
                               :key="index"
                             >
                               <span :class="{ 'bg-yellow-3': part.match }">{{ part.text }}</span>
@@ -133,12 +138,12 @@
                     </template>
                   </q-select>
                 </div>
-                <div class="col-12 col-sm-1">
-                  <q-input :model-value="selectedServiceType" label="Type" readonly filled dense />
-                </div>
+                <!-- <div class="col-12 col-sm-1 flex items-center justify-center text-subtitle1">
+                  {{ serviceType(entry) }}
+                </div> -->
                 <div class="col-12 col-sm-2">
                   <q-input
-                    v-model="serviceEntry.parts"
+                    v-model="entry.parts"
                     type="number"
                     label="Parts"
                     prefix="$"
@@ -150,7 +155,7 @@
                 </div>
                 <div class="col-12 col-sm-2">
                   <q-input
-                    v-model="serviceEntry.labor"
+                    v-model="entry.labor"
                     type="number"
                     label="Labor"
                     prefix="$"
@@ -162,7 +167,7 @@
                 </div>
                 <div class="col-12 col-sm-2">
                   <q-input
-                    :model-value="formatMoney(serviceEntryTotal)"
+                    :model-value="formatMoney(entryTotal(entry))"
                     label="Total cost"
                     readonly
                     filled
@@ -171,7 +176,7 @@
                 </div>
               </div>
               <div class="row q-col-gutter-md">
-                <div class="col-12 col-sm-3">
+                <!-- <div class="col-12 col-sm-3">
                   <q-input v-model.trim="form.name" label="Name" filled dense />
                 </div>
                 <div class="col-12 col-sm-3">
@@ -197,8 +202,8 @@
                     filled
                     dense
                   />
-                </div>
-                <div class="col-12 col-sm-3">
+                </div> -->
+                <div class="col-12 col-sm-2 offset-sm-10">
                   <q-input
                     :model-value="formatMoney(totalCost)"
                     label="Total cost"
@@ -210,8 +215,11 @@
               </div>
               <div class="row q-col-gutter-md">
                 <div class="col-12">
-                  <div class="text-caption text-grey-7 q-mb-xs">Notes</div>
-                  <notes-editor v-model="form.notes" />
+                  <div class="row items-center q-mb-xs">
+                    <div class="text-caption text-grey-7">Notes</div>
+                    <q-toggle v-model="showNotes" dense class="q-ml-sm" />
+                  </div>
+                  <notes-editor v-if="showNotes" v-model="form.notes" />
                 </div>
               </div>
             </q-card>
@@ -328,6 +336,7 @@ import NotesViewer from '@/components/NotesViewer.vue'
 import { useServiceOrderStore } from '@/stores/serviceOrder'
 import { useServiceStore } from '@/stores/service'
 import { useServiceLogStore } from '@/stores/serviceLog'
+import { useMileageStore } from '@/stores/mileage'
 import { templateAutoLabel } from '@/stores/schedule'
 import { useUsersStore } from '@/stores/users'
 import { useProfileStore } from '@/stores/profile'
@@ -337,14 +346,15 @@ const $q = useQuasar()
 const serviceOrderStore = useServiceOrderStore()
 const serviceStore = useServiceStore()
 const serviceLogStore = useServiceLogStore()
+const mileageStore = useMileageStore()
 const usersStore = useUsersStore()
 const profileStore = useProfileStore()
 const showForm = ref(false)
+const showNotes = ref(false)
 const editingOrderId = ref(null)
 const selectedAutoId = ref(null)
-const selectedServiceId = ref(null)
-const serviceSearch = ref('')
-const serviceEntry = reactive({ parts: 0, labor: 0 })
+let nextEntryKey = 0
+const serviceEntries = ref([])
 const autoSelectRef = ref(null)
 const pendingDeleteOrder = ref(null)
 const detailsOrder = ref(null)
@@ -391,9 +401,6 @@ const hasRequiredFields = computed(
   () => Boolean(selectedAutoId.value) && Boolean(form.shop_name?.trim()),
 )
 const totalCost = computed(() => (Number(form.parts) || 0) + (Number(form.labor) || 0))
-const serviceEntryTotal = computed(
-  () => (Number(serviceEntry.parts) || 0) + (Number(serviceEntry.labor) || 0),
-)
 const autoOptions = computed(() =>
   serviceOrderStore.autoOptions.map((auto) => ({
     label: templateAutoLabel(auto),
@@ -413,20 +420,6 @@ const servicesForAuto = computed(() => {
   return serviceStore.services
     .filter((service) => service.name && scheduleIds.has(service.schedule_id))
     .sort((left, right) => String(left.name || '').localeCompare(String(right.name || '')))
-})
-const selectedServiceType = computed(() => {
-  const service = servicesForAuto.value.find((item) => item.service_id === selectedServiceId.value)
-  return service?.type ? service.type.toUpperCase() : ''
-})
-const filteredServices = computed(() => {
-  const search = serviceSearch.value.trim().toLocaleLowerCase()
-  if (!search) {
-    return servicesForAuto.value
-  }
-
-  return servicesForAuto.value.filter((service) =>
-    service.name.toLocaleLowerCase().includes(search),
-  )
 })
 const visibleOrders = computed(() =>
   selectedAutoId.value
@@ -465,14 +458,49 @@ function createEmptyForm() {
 function resetForm() {
   Object.assign(form, createEmptyForm())
   resetServiceEntry()
+  showNotes.value = false
   editingOrderId.value = null
   showForm.value = false
 }
 
+function createServiceEntry() {
+  return { key: nextEntryKey++, service_id: null, search: '', parts: 0, labor: 0 }
+}
+
 function resetServiceEntry() {
-  selectedServiceId.value = null
-  serviceSearch.value = ''
-  Object.assign(serviceEntry, { parts: 0, labor: 0 })
+  serviceEntries.value = [createServiceEntry()]
+}
+
+function findService(serviceId) {
+  return servicesForAuto.value.find((item) => item.service_id === serviceId)
+}
+
+// function serviceType(entry) {
+//   const type = findService(entry.service_id)?.type
+//   return type ? type.toUpperCase() : ''
+// }
+
+function entryTotal(entry) {
+  return (Number(entry.parts) || 0) + (Number(entry.labor) || 0)
+}
+
+function filteredServices(entry) {
+  const search = entry.search.trim().toLocaleLowerCase()
+  if (!search) {
+    return servicesForAuto.value
+  }
+
+  return servicesForAuto.value.filter((service) =>
+    service.name.toLocaleLowerCase().includes(search),
+  )
+}
+
+// Keeps one empty row at the end so more services can be added.
+function ensureTrailingEntry() {
+  const entries = serviceEntries.value
+  if (entries[entries.length - 1]?.service_id) {
+    entries.push(createServiceEntry())
+  }
 }
 
 function toggleForm() {
@@ -487,17 +515,37 @@ function toggleForm() {
   Object.assign(form, { ...createEmptyForm(), auto_id: selectedAutoId.value })
   resetServiceEntry()
   showForm.value = true
+  prefillMileage()
 }
 
-function filterServices(value, update) {
+// Fills a blank mileage field for a new order from the auto's latest mileage record.
+async function prefillMileage() {
+  const autoId = selectedAutoId.value
+  if (!autoId || editingOrderId.value) {
+    return
+  }
+
+  const miles = await mileageStore.fetchLatestMiles(autoId)
+  if (
+    miles !== null &&
+    showForm.value &&
+    !editingOrderId.value &&
+    selectedAutoId.value === autoId &&
+    form.mileage_at_service === ''
+  ) {
+    form.mileage_at_service = miles
+  }
+}
+
+function filterServices(entry, value, update) {
   update(() => {
-    serviceSearch.value = String(value || '')
+    entry.search = String(value || '')
   })
 }
 
-function serviceNameParts(name) {
+function serviceNameParts(name, entry) {
   const text = String(name || '')
-  const search = serviceSearch.value.trim()
+  const search = entry.search.trim()
   if (!search) {
     return [{ text, match: false }]
   }
@@ -539,6 +587,7 @@ function editOrder(order) {
   })
   selectedAutoId.value = order.auto_id
   resetServiceEntry()
+  showNotes.value = Boolean(order.notes)
   editingOrderId.value = order.service_order_id
   showForm.value = true
 }
@@ -582,20 +631,24 @@ async function saveServiceOrder() {
     return
   }
 
-  // A selected service is recorded as a service log entry on the saved order.
-  const selectedService = servicesForAuto.value.find(
-    (item) => item.service_id === selectedServiceId.value,
-  )
-  if (selectedService) {
+  // Each selected service is recorded as a service log entry on the saved order.
+  const selectedEntries = serviceEntries.value.filter((entry) => findService(entry.service_id))
+  for (const entry of selectedEntries) {
+    const service = findService(entry.service_id)
     const log = await serviceLogStore.createServiceLog({
       service_order_id: saved.service_order_id,
-      type: selectedService.type,
-      name: selectedService.name,
-      description: selectedService.description,
-      parts: serviceEntry.parts,
-      labor: serviceEntry.labor,
+      type: service.type,
+      name: service.name,
+      description: service.description,
+      parts: entry.parts,
+      labor: entry.labor,
     })
     if (!log) {
+      // Drop rows already saved so a retry does not duplicate them.
+      serviceEntries.value = serviceEntries.value.filter(
+        (item) => selectedEntries.indexOf(item) >= selectedEntries.indexOf(entry),
+      )
+      ensureTrailingEntry()
       return
     }
   }
@@ -619,10 +672,13 @@ async function deleteServiceOrder() {
 }
 
 watch(selectedAutoId, (autoId) => {
-  selectedServiceId.value = null
-  serviceSearch.value = ''
+  resetServiceEntry()
   if (showForm.value) {
     form.auto_id = autoId
+    if (!editingOrderId.value) {
+      form.mileage_at_service = ''
+      prefillMileage()
+    }
   }
 })
 watch(
