@@ -100,8 +100,8 @@
                   <q-toggle v-model="form.is_complete" label="Complete" />
                 </div>
               </div>
-              <div class="row q-col-gutter-md">
-                <div class="col-12">
+              <div class="row q-col-gutter-md q-my-md">
+                <div class="col-12 col-sm-5">
                   <q-select
                     v-model="selectedServiceId"
                     :options="filteredServices"
@@ -115,9 +115,7 @@
                     clearable
                     filled
                     dense
-                    hint="Selecting a service fills the Name field below."
                     @filter="filterServices"
-                    @update:model-value="selectService"
                   >
                     <template #option="scope">
                       <q-item v-bind="scope.itemProps">
@@ -134,6 +132,42 @@
                       </q-item>
                     </template>
                   </q-select>
+                </div>
+                <div class="col-12 col-sm-1">
+                  <q-input :model-value="selectedServiceType" label="Type" readonly filled dense />
+                </div>
+                <div class="col-12 col-sm-2">
+                  <q-input
+                    v-model="serviceEntry.parts"
+                    type="number"
+                    label="Parts"
+                    prefix="$"
+                    min="0"
+                    step="0.01"
+                    filled
+                    dense
+                  />
+                </div>
+                <div class="col-12 col-sm-2">
+                  <q-input
+                    v-model="serviceEntry.labor"
+                    type="number"
+                    label="Labor"
+                    prefix="$"
+                    min="0"
+                    step="0.01"
+                    filled
+                    dense
+                  />
+                </div>
+                <div class="col-12 col-sm-2">
+                  <q-input
+                    :model-value="formatMoney(serviceEntryTotal)"
+                    label="Total cost"
+                    readonly
+                    filled
+                    dense
+                  />
                 </div>
               </div>
               <div class="row q-col-gutter-md">
@@ -293,6 +327,7 @@ import NotesEditor from '@/components/NotesEditor.vue'
 import NotesViewer from '@/components/NotesViewer.vue'
 import { useServiceOrderStore } from '@/stores/serviceOrder'
 import { useServiceStore } from '@/stores/service'
+import { useServiceLogStore } from '@/stores/serviceLog'
 import { templateAutoLabel } from '@/stores/schedule'
 import { useUsersStore } from '@/stores/users'
 import { useProfileStore } from '@/stores/profile'
@@ -301,6 +336,7 @@ import { notifySuccess } from '../utils/notify'
 const $q = useQuasar()
 const serviceOrderStore = useServiceOrderStore()
 const serviceStore = useServiceStore()
+const serviceLogStore = useServiceLogStore()
 const usersStore = useUsersStore()
 const profileStore = useProfileStore()
 const showForm = ref(false)
@@ -308,6 +344,7 @@ const editingOrderId = ref(null)
 const selectedAutoId = ref(null)
 const selectedServiceId = ref(null)
 const serviceSearch = ref('')
+const serviceEntry = reactive({ parts: 0, labor: 0 })
 const autoSelectRef = ref(null)
 const pendingDeleteOrder = ref(null)
 const detailsOrder = ref(null)
@@ -347,11 +384,16 @@ const columns = [
 ]
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
-const storeError = computed(() => serviceOrderStore.error || serviceStore.error)
+const storeError = computed(
+  () => serviceOrderStore.error || serviceStore.error || serviceLogStore.error,
+)
 const hasRequiredFields = computed(
   () => Boolean(selectedAutoId.value) && Boolean(form.shop_name?.trim()),
 )
 const totalCost = computed(() => (Number(form.parts) || 0) + (Number(form.labor) || 0))
+const serviceEntryTotal = computed(
+  () => (Number(serviceEntry.parts) || 0) + (Number(serviceEntry.labor) || 0),
+)
 const autoOptions = computed(() =>
   serviceOrderStore.autoOptions.map((auto) => ({
     label: templateAutoLabel(auto),
@@ -371,6 +413,10 @@ const servicesForAuto = computed(() => {
   return serviceStore.services
     .filter((service) => service.name && scheduleIds.has(service.schedule_id))
     .sort((left, right) => String(left.name || '').localeCompare(String(right.name || '')))
+})
+const selectedServiceType = computed(() => {
+  const service = servicesForAuto.value.find((item) => item.service_id === selectedServiceId.value)
+  return service?.type ? service.type.toUpperCase() : ''
 })
 const filteredServices = computed(() => {
   const search = serviceSearch.value.trim().toLocaleLowerCase()
@@ -418,10 +464,15 @@ function createEmptyForm() {
 
 function resetForm() {
   Object.assign(form, createEmptyForm())
-  selectedServiceId.value = null
-  serviceSearch.value = ''
+  resetServiceEntry()
   editingOrderId.value = null
   showForm.value = false
+}
+
+function resetServiceEntry() {
+  selectedServiceId.value = null
+  serviceSearch.value = ''
+  Object.assign(serviceEntry, { parts: 0, labor: 0 })
 }
 
 function toggleForm() {
@@ -434,8 +485,7 @@ function toggleForm() {
     selectedAutoId.value = autoOptions.value[0].value
   }
   Object.assign(form, { ...createEmptyForm(), auto_id: selectedAutoId.value })
-  selectedServiceId.value = null
-  serviceSearch.value = ''
+  resetServiceEntry()
   showForm.value = true
 }
 
@@ -473,13 +523,6 @@ function serviceNameParts(name) {
   return parts
 }
 
-function selectService(serviceId) {
-  const service = servicesForAuto.value.find((item) => item.service_id === serviceId)
-  if (service) {
-    form.name = service.name || ''
-  }
-}
-
 function editOrder(order) {
   Object.assign(form, {
     auto_id: order.auto_id,
@@ -495,6 +538,7 @@ function editOrder(order) {
     is_complete: Boolean(order.is_complete),
   })
   selectedAutoId.value = order.auto_id
+  resetServiceEntry()
   editingOrderId.value = order.service_order_id
   showForm.value = true
 }
@@ -536,6 +580,24 @@ async function saveServiceOrder() {
 
   if (!saved) {
     return
+  }
+
+  // A selected service is recorded as a service log entry on the saved order.
+  const selectedService = servicesForAuto.value.find(
+    (item) => item.service_id === selectedServiceId.value,
+  )
+  if (selectedService) {
+    const log = await serviceLogStore.createServiceLog({
+      service_order_id: saved.service_order_id,
+      type: selectedService.type,
+      name: selectedService.name,
+      description: selectedService.description,
+      parts: serviceEntry.parts,
+      labor: serviceEntry.labor,
+    })
+    if (!log) {
+      return
+    }
   }
 
   notifySuccess($q, `Service order ${isEditing ? 'updated' : 'saved'} successfully.`, {
