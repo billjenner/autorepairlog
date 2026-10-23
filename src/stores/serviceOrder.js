@@ -16,23 +16,19 @@ export const useServiceOrderStore = defineStore('ServiceOrder', {
 
   actions: {
     buildPayload(order = {}) {
-      const parts = toNumber(order.parts)
-      const labor = toNumber(order.labor)
       const mileage = Number(order.mileage_at_service)
 
       return {
         auto_id: order.auto_id || null,
         shop_name: order.shop_name?.trim() || null,
         mechanic_name: order.mechanic_name?.trim() || null,
-        name: order.name?.trim() || null,
+        invoice_number: order.invoice_number?.trim() || null,
         service_date: order.service_date || null,
         mileage_at_service:
           order.mileage_at_service !== '' && order.mileage_at_service !== null && mileage >= 0
             ? Math.trunc(mileage)
             : null,
-        parts,
-        labor,
-        total_cost: Math.round((parts + labor) * 100) / 100,
+        total_cost: Math.round(toNumber(order.total_cost) * 100) / 100,
         invoice_url: order.invoice_url?.trim() || null,
         notes: order.notes?.trim() || null,
         is_complete: Boolean(order.is_complete),

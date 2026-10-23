@@ -7,12 +7,10 @@ CREATE TABLE public.service_order (
 
     shop_name TEXT NOT NULL,
     mechanic_name TEXT NULL,
-    name TEXT,
+    invoice_number TEXT,
     service_date DATE,
     mileage_at_service INTEGER,
 
-    parts NUMERIC(10,2) NOT NULL DEFAULT 0,
-    labor NUMERIC(10,2) NOT NULL DEFAULT 0,
     total_cost NUMERIC(10,2) NOT NULL DEFAULT 0,
 
     invoice_url TEXT,

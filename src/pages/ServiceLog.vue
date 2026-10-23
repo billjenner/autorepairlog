@@ -303,7 +303,7 @@ const totalCost = computed(() => {
 })
 const orderOptions = computed(() =>
   serviceLogStore.orderOptions.map((order) => ({
-    label: [templateAutoLabel(order.auto), order.service_date, order.name]
+    label: [templateAutoLabel(order.auto), order.service_date, order.invoice_number]
       .filter(Boolean)
       .join(' — '),
     value: order.service_order_id,

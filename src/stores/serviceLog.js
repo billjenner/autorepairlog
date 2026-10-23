@@ -49,7 +49,7 @@ export const useServiceLogStore = defineStore('ServiceLog', {
       let query = supabase
         .from('service_order')
         .select(
-          'service_order_id, name, service_date, auto:auto_id!inner(profile_id, year, make, model, color)',
+          'service_order_id, invoice_number, service_date, auto:auto_id!inner(profile_id, year, make, model, color)',
         )
         .eq('is_active', true)
         .eq('auto.is_active', true)

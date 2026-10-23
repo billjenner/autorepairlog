@@ -45,18 +45,7 @@
               <div class="text-subtitle1 q-mb-sm">
                 {{ editingOrderId ? 'Edit service order' : 'Service order details' }}
               </div>
-              <div class="row q-col-gutter-md">
-                <div class="col-12">
-                  <q-input
-                    :model-value="selectedAutoLabel"
-                    label="Auto"
-                    readonly
-                    filled
-                    dense
-                    hint="Change the auto using the selector above."
-                  />
-                </div>
-              </div>
+              <div class="row q-col-gutter-md"></div>
               <div class="row q-col-gutter-md">
                 <div class="col-12 col-sm-5">
                   <q-input
@@ -68,8 +57,29 @@
                     :rules="[(value) => !!value || 'Enter a shop name.']"
                   />
                 </div>
-                <div class="col-12 col-sm-5">
+                <div class="col-12 col-sm-3">
                   <q-input v-model.trim="form.mechanic_name" label="Mechanic" filled dense />
+                </div>
+                <div class="col-4">
+                  <q-input
+                    :model-value="selectedAutoLabel"
+                    label="Auto"
+                    readonly
+                    filled
+                    dense
+                    hint="Change the auto using the selector above."
+                  />
+                </div>
+              </div>
+              <div class="row q-col-gutter-md">
+                <div class="col-12 col-sm-2">
+                  <q-input
+                    v-model="form.service_date"
+                    type="date"
+                    label="Service date"
+                    filled
+                    dense
+                  />
                 </div>
                 <div class="col-12 col-sm-2">
                   <q-input
@@ -78,17 +88,6 @@
                     label="Mileage at service"
                     min="0"
                     step="1"
-                    filled
-                    dense
-                  />
-                </div>
-              </div>
-              <div class="row q-col-gutter-md">
-                <div class="col-12 col-sm-4">
-                  <q-input
-                    v-model="form.service_date"
-                    type="date"
-                    label="Service date"
                     filled
                     dense
                   />
@@ -176,38 +175,17 @@
                 </div>
               </div>
               <div class="row q-col-gutter-md">
-                <!-- <div class="col-12 col-sm-3">
-                  <q-input v-model.trim="form.name" label="Name" filled dense />
-                </div>
                 <div class="col-12 col-sm-3">
-                  <q-input
-                    v-model="form.parts"
-                    type="number"
-                    label="Parts"
-                    prefix="$"
-                    min="0"
-                    step="0.01"
-                    filled
-                    dense
-                  />
+                  <q-input v-model.trim="form.invoice_number" label="Invoice number" filled dense />
                 </div>
-                <div class="col-12 col-sm-3">
+                <div class="col-12 col-sm-3 offset-sm-6">
                   <q-input
-                    v-model="form.labor"
+                    v-model="form.total_cost"
                     type="number"
-                    label="Labor"
-                    prefix="$"
-                    min="0"
-                    step="0.01"
-                    filled
-                    dense
-                  />
-                </div> -->
-                <div class="col-12 col-sm-2 offset-sm-10">
-                  <q-input
-                    :model-value="formatMoney(totalCost)"
                     label="Total cost"
-                    readonly
+                    prefix="$"
+                    min="0"
+                    step="0.01"
                     filled
                     dense
                   />
@@ -276,13 +254,11 @@
           <q-dialog v-model="detailsOpen">
             <q-card style="min-width: 360px; max-width: 600px; width: 100%">
               <q-card-section class="text-h6">
-                {{ detailsOrder?.name || 'Service order details' }}
+                {{ detailsOrder?.invoice_number || 'Service order details' }}
               </q-card-section>
               <q-card-section class="q-pt-none">
                 <div>Shop: {{ detailsOrder?.shop_name || '—' }}</div>
                 <div>Mechanic: {{ detailsOrder?.mechanic_name || '—' }}</div>
-                <div>Parts: {{ formatMoney(detailsOrder?.parts) }}</div>
-                <div>Labor: {{ formatMoney(detailsOrder?.labor) }}</div>
                 <div>Total: {{ formatMoney(detailsOrder?.total_cost) }}</div>
                 <div v-if="safeInvoiceUrl">
                   Invoice:
@@ -307,7 +283,9 @@
               <q-card-section>
                 This removes
                 {{
-                  pendingDeleteOrder?.name || pendingDeleteOrder?.shop_name || 'this service order'
+                  pendingDeleteOrder?.invoice_number ||
+                  pendingDeleteOrder?.shop_name ||
+                  'this service order'
                 }}
                 from your list.
               </q-card-section>
@@ -372,7 +350,13 @@ const formatMoney = (value) => `$${Number(value || 0).toFixed(2)}`
 
 const columns = [
   { name: 'service_date', label: 'Date', field: 'service_date', align: 'left', sortable: true },
-  { name: 'name', label: 'Name', field: 'name', align: 'left', sortable: true },
+  {
+    name: 'invoice_number',
+    label: 'Invoice #',
+    field: 'invoice_number',
+    align: 'left',
+    sortable: true,
+  },
   { name: 'shop_name', label: 'Shop', field: 'shop_name', align: 'left', sortable: true },
   {
     name: 'mileage_at_service',
@@ -400,7 +384,6 @@ const storeError = computed(
 const hasRequiredFields = computed(
   () => Boolean(selectedAutoId.value) && Boolean(form.shop_name?.trim()),
 )
-const totalCost = computed(() => (Number(form.parts) || 0) + (Number(form.labor) || 0))
 const autoOptions = computed(() =>
   serviceOrderStore.autoOptions.map((auto) => ({
     label: templateAutoLabel(auto),
@@ -444,11 +427,10 @@ function createEmptyForm() {
     auto_id: null,
     shop_name: '',
     mechanic_name: '',
-    name: '',
+    invoice_number: '',
     service_date: new Date().toISOString().slice(0, 10),
     mileage_at_service: '',
-    parts: 0,
-    labor: 0,
+    total_cost: 0,
     invoice_url: '',
     notes: '',
     is_complete: true,
@@ -576,11 +558,10 @@ function editOrder(order) {
     auto_id: order.auto_id,
     shop_name: order.shop_name || '',
     mechanic_name: order.mechanic_name || '',
-    name: order.name || '',
+    invoice_number: order.invoice_number || '',
     service_date: order.service_date || '',
     mileage_at_service: order.mileage_at_service ?? '',
-    parts: order.parts ?? 0,
-    labor: order.labor ?? 0,
+    total_cost: order.total_cost ?? 0,
     invoice_url: order.invoice_url || '',
     notes: order.notes || '',
     is_complete: Boolean(order.is_complete),
@@ -671,6 +652,17 @@ async function deleteServiceOrder() {
   }
 }
 
+watch(
+  serviceEntries,
+  (entries) => {
+    const selected = entries.filter((entry) => findService(entry.service_id))
+    if (selected.length) {
+      const cents = selected.reduce((sum, entry) => sum + Math.round(entryTotal(entry) * 100), 0)
+      form.total_cost = cents / 100
+    }
+  },
+  { deep: true },
+)
 watch(selectedAutoId, (autoId) => {
   resetServiceEntry()
   if (showForm.value) {
