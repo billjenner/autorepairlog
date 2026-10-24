@@ -76,7 +76,7 @@
                 <div class="col-12 col-sm-5">
                   <q-input v-model.trim="form.name" label="Name" filled dense />
                 </div>
-                <div class="col-5">
+                <div class="col-12 col-sm-5">
                   <q-input
                     :model-value="selectedOrderLabel"
                     label="Service order"

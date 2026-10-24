@@ -322,7 +322,7 @@
                 color="primary"
                 :label="editingOrderId ? 'Update service order' : 'Save service order'"
                 :loading="serviceOrderStore.loading"
-                :disable="!hasRequiredFields"
+                :disable="!hasRequiredFields || !hasAtLeastOneService"
               />
             </div>
           </q-form>
@@ -547,6 +547,11 @@ const servicesForAuto = computed(() => {
     .filter((service) => service.name && scheduleIds.has(service.schedule_id))
     .sort((left, right) => String(left.name || '').localeCompare(String(right.name || '')))
 })
+const hasAtLeastOneService = computed(
+  () =>
+    existingLogs.value.length > 0 ||
+    serviceEntries.value.some((entry) => findService(entry.service_id)),
+)
 const visibleOrders = computed(() =>
   selectedAutoId.value
     ? serviceOrderStore.serviceOrders.filter((item) => item.auto_id === selectedAutoId.value)
@@ -843,7 +848,11 @@ async function load() {
 }
 
 async function saveServiceOrder() {
-  if (!(await autoSelectRef.value?.validate()) || !hasRequiredFields.value) {
+  if (
+    !(await autoSelectRef.value?.validate()) ||
+    !hasRequiredFields.value ||
+    !hasAtLeastOneService.value
+  ) {
     return
   }
 
