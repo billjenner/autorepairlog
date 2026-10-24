@@ -27,7 +27,6 @@ export const useServiceLogStore = defineStore('ServiceLog', {
         service_order_id: log.service_order_id || null,
         type: log.type || null,
         name: log.name?.trim() || null,
-        description: log.description?.trim() || null,
         notes: log.notes?.trim() || null,
         parts: normalizedParts,
         labor: normalizedLabor,

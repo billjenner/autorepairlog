@@ -890,7 +890,6 @@ async function saveServiceOrder() {
       service_order_id: saved.service_order_id,
       type: service.type,
       name: service.name,
-      description: service.description,
       parts: entry.parts,
       labor: entry.labor,
       total_cost: entryTotal(entry),

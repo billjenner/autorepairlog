@@ -124,16 +124,6 @@
                     dense
                   />
                 </div>
-                <!-- <div class="col-12">
-                  <q-input
-                    v-model.trim="form.description"
-                    type="textarea"
-                    label="Description"
-                    autogrow
-                    filled
-                    dense
-                  />
-                </div> -->
                 <div class="col-12 flex items-center">
                   <q-toggle v-model="showNotes" dense label="Notes" />
                 </div>
@@ -199,16 +189,6 @@
                 <div>Parts: {{ formatMoney(detailsLog?.parts) }}</div>
                 <div>Labor: {{ formatMoney(detailsLog?.labor) }}</div>
                 <div>Total: {{ formatMoney(detailsLog?.total_cost) }}</div>
-              </q-card-section>
-              <q-card-section class="q-pt-none">
-                <q-input
-                  :model-value="detailsLog?.description || ''"
-                  type="textarea"
-                  label="Description"
-                  readonly
-                  autogrow
-                  filled
-                />
               </q-card-section>
               <q-card-section class="q-pt-none">
                 <div class="text-caption text-grey-7 q-mb-xs">Notes</div>
@@ -390,7 +370,6 @@ function createEmptyForm() {
     service_order_id: null,
     type: 'm',
     name: '',
-    description: '',
     notes: '',
     parts: 0,
     labor: 0,
@@ -426,7 +405,6 @@ function editLog(log) {
     service_order_id: log.service_order_id,
     type: log.type,
     name: log.name || '',
-    description: log.description || '',
     notes: log.notes || '',
     parts: log.parts ?? 0,
     labor: log.labor ?? 0,

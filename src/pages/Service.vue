@@ -71,16 +71,6 @@
                 <div class="col-12 col-sm-8">
                   <q-input v-model.trim="form.name" label="Name" filled dense />
                 </div>
-                <div class="col-12">
-                  <q-input
-                    v-model.trim="form.description"
-                    type="textarea"
-                    label="Description"
-                    autogrow
-                    filled
-                    dense
-                  />
-                </div>
                 <div class="col-12 col-sm-4">
                   <q-input
                     v-model="form.interval_miles"
@@ -178,16 +168,6 @@
             <q-card style="min-width: 360px; max-width: 600px; width: 100%">
               <q-card-section class="text-h6">
                 {{ detailsService?.name || 'Service details' }}
-              </q-card-section>
-              <q-card-section class="q-pt-none">
-                <q-input
-                  :model-value="detailsService?.description || ''"
-                  type="textarea"
-                  label="Description"
-                  readonly
-                  autogrow
-                  filled
-                />
               </q-card-section>
               <q-card-section class="q-pt-none">
                 <div class="text-caption text-grey-7 q-mb-xs">Details</div>
@@ -302,7 +282,7 @@ const scheduleOptions = computed(() =>
     value: schedule.schedule_id,
   })),
 )
-const selectedScheduleLabel = computed(() => scheduleDescription(selectedScheduleId.value))
+const selectedScheduleLabel = computed(() => scheduleLabel(selectedScheduleId.value))
 const visibleServices = computed(() =>
   selectedScheduleId.value
     ? serviceStore.services.filter((item) => item.schedule_id === selectedScheduleId.value)
@@ -322,7 +302,6 @@ function createEmptyForm() {
     schedule_id: null,
     type: 'm',
     name: '',
-    description: '',
     notes: '',
     interval_miles: 0,
     interval_months: 0,
@@ -330,7 +309,7 @@ function createEmptyForm() {
   }
 }
 
-function scheduleDescription(scheduleId) {
+function scheduleLabel(scheduleId) {
   return scheduleOptions.value.find((option) => option.value === scheduleId)?.label || '—'
 }
 
@@ -362,7 +341,6 @@ function editService(service) {
     schedule_id: service.schedule_id,
     type: service.type,
     name: service.name || '',
-    description: service.description || '',
     notes: service.notes || '',
     interval_miles: service.interval_miles ?? 0,
     interval_months: service.interval_months ?? 0,

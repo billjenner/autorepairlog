@@ -15,7 +15,6 @@ export const useServiceStore = defineStore('Service', {
         schedule_id: service.schedule_id || null,
         type: service.type || null,
         name: service.name?.trim() || null,
-        description: service.description?.trim() || null,
         notes: service.notes?.trim() || null,
         interval_miles: this.toNonNegativeInteger(service.interval_miles),
         interval_months: this.toNonNegativeInteger(service.interval_months),
