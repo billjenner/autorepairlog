@@ -132,52 +132,6 @@
 
     <q-drawer v-model="leftDrawerOpen" side="left" bordered overlay>
       <q-list padding>
-        <template v-if="usersStore.currentUser && usersStore.currentUser.email">
-          <q-item clickable v-ripple aria-label="Sign out" @click="signOut()">
-            <q-item-section avatar>
-              <q-avatar color="accent" text-color="white" size="40px">
-                {{ userInitials }}
-              </q-avatar>
-            </q-item-section>
-            <q-item-section>Sign out</q-item-section>
-          </q-item>
-          <q-item clickable v-ripple @click="navigateAndClose('/profile')">
-            <q-item-section>Profile</q-item-section>
-          </q-item>
-        </template>
-        <q-item clickable v-ripple @click="navigateAndClose('/')">
-          <q-item-section>Intro</q-item-section>
-        </q-item>
-        <q-item clickable v-ripple @click="navigateAndClose('/auto')">
-          <q-item-section>Auto</q-item-section>
-        </q-item>
-        <q-item clickable v-ripple @click="navigateAndClose('/mileage')">
-          <q-item-section>Mileage</q-item-section>
-        </q-item>
-        <q-item clickable v-ripple @click="navigateAndClose('/schedule')">
-          <q-item-section>Schedule</q-item-section>
-        </q-item>
-        <q-item clickable v-ripple @click="navigateAndClose('/service')">
-          <q-item-section>Service</q-item-section>
-        </q-item>
-        <q-item clickable v-ripple @click="navigateAndClose('/service-order')">
-          <q-item-section>Service Order</q-item-section>
-        </q-item>
-        <q-item clickable v-ripple @click="navigateAndClose('/service-log')">
-          <q-item-section>Service Log</q-item-section>
-        </q-item>
-        <q-item clickable v-ripple @click="navigateAndClose('/users')">
-          <q-item-section>Users</q-item-section>
-        </q-item>
-        <q-item clickable v-ripple @click="navigateAndClose('/help')">
-          <q-item-section>Help</q-item-section>
-        </q-item>
-        <q-item v-if="isAdmin" clickable v-ripple @click="navigateAndClose('/users')">
-          <q-item-section>Users</q-item-section>
-        </q-item>
-        <q-item v-if="isAdmin" clickable v-ripple @click="navigateAndClose('/feedback')">
-          <q-item-section>Feedback</q-item-section>
-        </q-item>
         <q-item
           v-if="!(usersStore.currentUser && usersStore.currentUser.email)"
           clickable
@@ -189,6 +143,38 @@
         <q-item v-else clickable v-ripple @click="signOut()">
           <q-item-section>Sign out</q-item-section>
         </q-item>
+        <q-item clickable v-ripple @click="navigateAndClose('/')">
+          <q-item-section>Intro</q-item-section>
+        </q-item>
+        <template v-if="usersStore.currentUser && usersStore.currentUser.email">
+          <q-item clickable v-ripple @click="navigateAndClose('/auto')">
+            <q-item-section>Auto</q-item-section>
+          </q-item>
+          <q-item clickable v-ripple @click="navigateAndClose('/mileage')">
+            <q-item-section>Mileage</q-item-section>
+          </q-item>
+          <q-item clickable v-ripple @click="navigateAndClose('/schedule')">
+            <q-item-section>Schedule</q-item-section>
+          </q-item>
+          <q-item clickable v-ripple @click="navigateAndClose('/service')">
+            <q-item-section>Service</q-item-section>
+          </q-item>
+          <q-item clickable v-ripple @click="navigateAndClose('/service-order')">
+            <q-item-section>Service Order</q-item-section>
+          </q-item>
+          <q-item clickable v-ripple @click="navigateAndClose('/service-log')">
+            <q-item-section>Service Log</q-item-section>
+          </q-item>
+          <q-item clickable v-ripple @click="navigateAndClose('/help')">
+            <q-item-section>Help</q-item-section>
+          </q-item>
+          <q-item v-if="isAdmin" clickable v-ripple @click="navigateAndClose('/users')">
+            <q-item-section>Users</q-item-section>
+          </q-item>
+          <q-item v-if="isAdmin" clickable v-ripple @click="navigateAndClose('/feedback')">
+            <q-item-section>Feedback</q-item-section>
+          </q-item>
+        </template>
       </q-list>
     </q-drawer>
 
@@ -310,11 +296,11 @@ async function navigateAndClose(path) {
 
 function buttonStyle(path) {
   if (route.path === path) {
-    return { backgroundColor: 'var(--q-secondary)' }
+    return { backgroundColor: 'var(--q-accent)' }
   }
 
   if (hoveredPath.value === path) {
-    return { backgroundColor: 'var(--q-accent)' }
+    return { backgroundColor: 'var(--q-warning)' }
   }
 
   return { backgroundColor: 'var(--q-secondary)' }
