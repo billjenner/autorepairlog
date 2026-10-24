@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 
 const SCHEDULE_SELECT =
   '*, auto:auto!inner(profile_id, year, make, model, color), ' +
-  'service(service_id, type, name, interval_miles, interval_months, interval_years)'
+  'service(service_id, name, interval_miles, interval_months, interval_years, last_date, last_miles)'
 
 export function templateAutoLabel(auto) {
   if (!auto) {
@@ -167,7 +167,7 @@ export const useScheduleStore = defineStore('Schedule', {
     async copyServices(sourceScheduleId, targetScheduleId) {
       const { data: source, error: selectError } = await supabase
         .from('service')
-        .select('type, name, description, notes, interval_miles, interval_months, interval_years')
+        .select('name, notes, interval_miles, interval_months, interval_years')
         .eq('schedule_id', sourceScheduleId)
         .eq('is_active', true)
 

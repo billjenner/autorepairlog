@@ -5,9 +5,6 @@ CREATE TABLE public.service_log (
         REFERENCES public.service_order(service_order_id)
         ON DELETE CASCADE,
 
-    type CHAR(1) NOT NULL
-        CHECK (type IN ('m', 's')),
-
     name TEXT NOT NULL,
     description TEXT,
     notes TEXT,
