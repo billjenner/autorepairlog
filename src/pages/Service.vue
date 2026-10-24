@@ -122,11 +122,16 @@
             </q-card>
 
             <div class="row justify-end q-gutter-sm">
-              <div
-                v-if="editingServiceId && !hasPositiveInterval"
-                class="text-caption text-negative self-center q-mr-auto"
-              >
-                Enter a value greater than 0 for at least one interval to update this service.
+              <div v-if="editingServiceId" class="row items-center q-gutter-sm q-mr-auto">
+                <q-btn
+                  flat
+                  color="negative"
+                  label="Delete service"
+                  @click="requestDeleteEditedService"
+                />
+                <div v-if="!hasPositiveInterval" class="text-caption text-negative self-center">
+                  Enter a value greater than 0 for at least one interval to update this service.
+                </div>
               </div>
               <q-btn flat label="Cancel" @click="resetForm" />
               <q-btn
@@ -165,13 +170,6 @@
                   @click="detailsService = props.row"
                 />
                 <q-btn flat dense color="primary" label="Edit" @click="editService(props.row)" />
-                <q-btn
-                  flat
-                  dense
-                  color="negative"
-                  label="Delete"
-                  @click="pendingDeleteService = props.row"
-                />
               </q-td>
             </template>
           </q-table>
@@ -375,6 +373,17 @@ function editService(service) {
   showForm.value = true
 }
 
+function requestDeleteEditedService() {
+  if (!editingServiceId.value) {
+    return
+  }
+
+  pendingDeleteService.value = {
+    service_id: editingServiceId.value,
+    name: form.name,
+  }
+}
+
 async function load() {
   if (!currentUserId.value) {
     serviceStore.services = []
@@ -436,6 +445,9 @@ async function deleteService() {
 
   if (await serviceStore.deleteService(service.service_id)) {
     pendingDeleteService.value = null
+    if (editingServiceId.value === service.service_id) {
+      resetForm()
+    }
     notifySuccess($q, 'Service deleted successfully.', { color: 'negative' })
   }
 }

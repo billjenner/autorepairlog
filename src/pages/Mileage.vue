@@ -100,6 +100,14 @@
             </q-card>
 
             <div class="row justify-end q-gutter-sm">
+              <q-btn
+                v-if="editingMileageId"
+                flat
+                color="negative"
+                label="DELETE MILEAGE"
+                class="q-mr-auto"
+                @click="requestDeleteEditedMileage"
+              />
               <q-btn flat label="Cancel" @click="resetForm" />
               <q-btn
                 type="submit"
@@ -147,13 +155,6 @@
               <q-td :props="props" class="text-right">
                 <template v-if="!props.row.fromAuto">
                   <q-btn flat dense color="primary" label="Edit" @click="editMileage(props.row)" />
-                  <q-btn
-                    flat
-                    dense
-                    color="negative"
-                    label="Delete"
-                    @click="pendingDeleteMileage = props.row"
-                  />
                 </template>
               </q-td>
             </template>
@@ -322,6 +323,18 @@ function editMileage(record) {
   showForm.value = true
 }
 
+function requestDeleteEditedMileage() {
+  if (!editingMileageId.value) {
+    return
+  }
+
+  pendingDeleteMileage.value = {
+    mileage_id: editingMileageId.value,
+    auto_id: form.auto_id,
+    miles: form.miles,
+  }
+}
+
 async function loadAll() {
   mileageStore.error = null
 
@@ -374,6 +387,9 @@ async function deleteMileage() {
   const deleted = await mileageStore.deleteMileage(record.mileage_id)
   if (deleted) {
     pendingDeleteMileage.value = null
+    if (editingMileageId.value === record.mileage_id) {
+      resetForm()
+    }
     notifySuccess($q, 'Mileage deleted successfully.', { color: 'negative' })
   }
 }

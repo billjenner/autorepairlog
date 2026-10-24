@@ -113,6 +113,14 @@
             </q-card>
 
             <div class="row justify-end q-gutter-sm">
+              <q-btn
+                v-if="editingScheduleId"
+                flat
+                color="negative"
+                label="Delete schedule"
+                class="q-mr-auto"
+                @click="requestDeleteEditedSchedule"
+              />
               <q-btn flat label="Cancel" @click="resetForm" />
               <q-btn
                 type="submit"
@@ -172,13 +180,6 @@
                   "
                 />
                 <q-btn flat dense color="primary" label="Edit" @click="editSchedule(props.row)" />
-                <q-btn
-                  flat
-                  dense
-                  color="negative"
-                  label="Delete"
-                  @click="pendingDeleteSchedule = props.row"
-                />
               </q-td>
             </template>
           </q-table>
@@ -348,6 +349,16 @@ function editSchedule(schedule) {
   showForm.value = true
 }
 
+function requestDeleteEditedSchedule() {
+  if (!editingScheduleId.value) {
+    return
+  }
+
+  pendingDeleteSchedule.value = {
+    schedule_id: editingScheduleId.value,
+  }
+}
+
 async function load() {
   if (!currentUserId.value) {
     scheduleStore.schedules = []
@@ -405,6 +416,9 @@ async function deleteSchedule() {
 
   if (await scheduleStore.deleteSchedule(schedule.schedule_id)) {
     pendingDeleteSchedule.value = null
+    if (editingScheduleId.value === schedule.schedule_id) {
+      resetForm()
+    }
     notifySuccess($q, 'Schedule deleted successfully.', { color: 'negative' })
   }
 }

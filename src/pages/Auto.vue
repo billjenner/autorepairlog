@@ -153,6 +153,14 @@
             </q-card>
 
             <div class="row justify-end q-gutter-sm">
+              <q-btn
+                v-if="editingAutoId"
+                flat
+                color="negative"
+                label="Delete Auto"
+                class="q-mr-auto"
+                @click="requestDeleteEditedAuto"
+              />
               <q-btn flat label="Cancel" @click="resetForm" />
               <q-btn
                 type="submit"
@@ -209,13 +217,6 @@
                   :to="{ path: '/mileage', query: { autoId: props.row.auto_id } }"
                 />
                 <q-btn flat dense color="primary" label="Edit" @click="editAuto(props.row)" />
-                <q-btn
-                  flat
-                  dense
-                  color="negative"
-                  label="Delete"
-                  @click="requestDelete(props.row)"
-                />
               </q-td>
             </template>
           </q-table>
@@ -362,8 +363,17 @@ async function editAuto(auto) {
   showForm.value = true
 }
 
-function requestDelete(auto) {
-  pendingDeleteAuto.value = auto
+function requestDeleteEditedAuto() {
+  if (!editingAutoId.value) {
+    return
+  }
+
+  pendingDeleteAuto.value = {
+    auto_id: editingAutoId.value,
+    year: form.year,
+    make: form.make,
+    model: form.model,
+  }
 }
 
 async function loadAuto() {
@@ -419,6 +429,9 @@ async function deleteAuto() {
   const deleted = await autoStore.deleteAuto(profileId.value, auto.auto_id)
   if (deleted) {
     pendingDeleteAuto.value = null
+    if (editingAutoId.value === auto.auto_id) {
+      resetForm()
+    }
     notifySuccess($q, 'Auto deleted successfully.', { color: 'negative' })
   }
 }

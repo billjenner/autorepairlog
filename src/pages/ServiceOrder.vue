@@ -95,8 +95,8 @@
                 <div class="col-12 col-sm-2">
                   <q-input v-model.trim="form.invoice_number" label="Invoice number" filled dense />
                 </div>
-                <div class="col-12 col-sm-2 offset-sm-4 flex items-center">
-                  <q-toggle v-model="form.is_complete" label="Work Complete" />
+                <div class="col-12 col-sm-4 offset-sm-2 flex items-center">
+                  <q-toggle v-model="form.is_complete" label="Work is Complete" />
                 </div>
               </div>
               <div
@@ -308,6 +308,14 @@
             </q-card>
 
             <div class="row justify-end q-gutter-sm">
+              <q-btn
+                v-if="editingOrderId"
+                flat
+                color="negative"
+                label="DELETE SERVICE ORDER"
+                class="q-mr-auto"
+                @click="requestDeleteEditedOrder"
+              />
               <q-btn flat label="Cancel" @click="resetForm" />
               <q-btn
                 type="submit"
@@ -345,13 +353,6 @@
                   @click="detailsOrder = props.row"
                 />
                 <q-btn flat dense color="primary" label="Edit" @click="editOrder(props.row)" />
-                <q-btn
-                  flat
-                  dense
-                  color="negative"
-                  label="Delete"
-                  @click="pendingDeleteOrder = props.row"
-                />
               </q-td>
             </template>
           </q-table>
@@ -780,6 +781,18 @@ function editOrder(order) {
   loadExistingLogs(order.service_order_id)
 }
 
+function requestDeleteEditedOrder() {
+  if (!editingOrderId.value) {
+    return
+  }
+
+  pendingDeleteOrder.value = {
+    service_order_id: editingOrderId.value,
+    invoice_number: form.invoice_number,
+    shop_name: form.shop_name,
+  }
+}
+
 async function loadExistingLogs(serviceOrderId) {
   const logs = await serviceLogStore.fetchLogsForOrder(serviceOrderId)
   if (editingOrderId.value === serviceOrderId) {
@@ -898,6 +911,9 @@ async function deleteServiceOrder() {
 
   if (await serviceOrderStore.deleteServiceOrder(order.service_order_id)) {
     pendingDeleteOrder.value = null
+    if (editingOrderId.value === order.service_order_id) {
+      resetForm()
+    }
     notifySuccess($q, 'Service order deleted successfully.', { color: 'negative' })
   }
 }

@@ -144,6 +144,14 @@
             </q-card>
 
             <div class="row justify-end q-gutter-sm">
+              <q-btn
+                v-if="editingLogId"
+                flat
+                color="negative"
+                label="DELETE SERVICE LOG"
+                class="q-mr-auto"
+                @click="requestDeleteEditedLog"
+              />
               <q-btn flat label="Cancel" @click="resetForm" />
               <q-btn
                 type="submit"
@@ -178,13 +186,6 @@
               <q-td :props="props" class="text-right">
                 <q-btn flat dense color="accent" label="Details" @click="detailsLog = props.row" />
                 <q-btn flat dense color="primary" label="Edit" @click="editLog(props.row)" />
-                <q-btn
-                  flat
-                  dense
-                  color="negative"
-                  label="Delete"
-                  @click="pendingDeleteLog = props.row"
-                />
               </q-td>
             </template>
           </q-table>
@@ -437,6 +438,17 @@ function editLog(log) {
   showForm.value = true
 }
 
+function requestDeleteEditedLog() {
+  if (!editingLogId.value) {
+    return
+  }
+
+  pendingDeleteLog.value = {
+    service_log_id: editingLogId.value,
+    name: form.name,
+  }
+}
+
 async function load() {
   if (!currentUserId.value) {
     serviceLogStore.serviceLogs = []
@@ -481,6 +493,9 @@ async function deleteServiceLog() {
 
   if (await serviceLogStore.deleteServiceLog(log.service_log_id)) {
     pendingDeleteLog.value = null
+    if (editingLogId.value === log.service_log_id) {
+      resetForm()
+    }
     notifySuccess($q, 'Service log deleted successfully.', { color: 'negative' })
   }
 }
