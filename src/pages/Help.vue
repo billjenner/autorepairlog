@@ -1,6 +1,6 @@
 <template>
-  <q-page class="docs-page">
-    <div class="docs-content">
+  <q-page class="help-page">
+    <div class="help-content">
       <q-card flat bordered class="q-mb-md">
         <q-expansion-item
           expand-icon="keyboard_arrow_down"
@@ -951,13 +951,13 @@ async function handleFeedbackSubmit() {
 </script>
 
 <style scoped>
-.docs-page {
+.help-page {
   display: flex;
   flex-direction: column;
   padding: 16px;
 }
 
-.docs-content {
+.help-content {
   flex: 1 0 auto;
 }
 

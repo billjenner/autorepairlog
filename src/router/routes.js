@@ -26,13 +26,13 @@ const routes = [
         },
       },
       {
-        path: 'docs',
-        component: () => import('@/pages/Docs.vue'),
+        path: 'help',
+        component: () => import('@/pages/Help.vue'),
         meta: {
           seo: {
-            title: 'Docs',
+            title: 'Help',
             description: 'Discover the story and idea behind Auto Repair Log.',
-            canonicalPath: '/docs',
+            canonicalPath: '/help',
           },
         },
       },
