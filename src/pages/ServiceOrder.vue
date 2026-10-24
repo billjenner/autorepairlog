@@ -522,7 +522,8 @@ const columns = [
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
 const storeError = computed(
-  () => serviceOrderStore.error || serviceStore.error || serviceLogStore.error,
+  () =>
+    serviceOrderStore.error || serviceStore.error || serviceLogStore.error || mileageStore.error,
 )
 const hasRequiredFields = computed(
   () => Boolean(selectedAutoId.value) && Boolean(form.shop_name?.trim()),
@@ -852,6 +853,36 @@ async function saveServiceOrder() {
   }
 
   const isEditing = Boolean(editingOrderId.value)
+  if (!isEditing && form.service_date) {
+    const highestPreviousMiles = await mileageStore.fetchHighestMilesBeforeDate(
+      selectedAutoId.value,
+      form.service_date,
+    )
+
+    if (mileageStore.error) {
+      $q.notify({
+        color: 'negative',
+        message: `Could not validate mileage: ${mileageStore.error}`,
+      })
+      return
+    }
+
+    const mileageAtService = Number(form.mileage_at_service)
+    if (
+      highestPreviousMiles !== null &&
+      (form.mileage_at_service === '' ||
+        form.mileage_at_service === null ||
+        !Number.isFinite(mileageAtService) ||
+        mileageAtService <= Number(highestPreviousMiles))
+    ) {
+      $q.notify({
+        color: 'negative',
+        message: `Mileage at service must be greater than ${Number(highestPreviousMiles).toLocaleString()} miles recorded before this service date.`,
+      })
+      return
+    }
+  }
+
   const saved = isEditing
     ? await serviceOrderStore.updateServiceOrder(editingOrderId.value, form)
     : await serviceOrderStore.createServiceOrder(form)

@@ -91,6 +91,37 @@ export const useMileageStore = defineStore('Mileage', {
       return data?.[0]?.miles ?? null
     },
 
+    async fetchHighestMilesBeforeDate(autoId, date) {
+      this.error = null
+
+      if (!supabase) {
+        this.error = 'Supabase client is not configured.'
+        return null
+      }
+
+      if (!autoId || !date) {
+        this.error = 'An auto and service date are required to validate mileage.'
+        return null
+      }
+
+      const { data, error } = await supabase
+        .from('mileage')
+        .select('miles')
+        .eq('auto_id', autoId)
+        .eq('is_active', true)
+        .lt('date', date)
+        .order('miles', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (error) {
+        this.error = error.message
+        return null
+      }
+
+      return data?.miles ?? null
+    },
+
     async createMileage(record = {}) {
       this.error = null
 
