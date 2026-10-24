@@ -56,19 +56,7 @@
                     hint="Change the auto using the selector above."
                   />
                 </div>
-                <div class="col-12 col-sm-4">
-                  <q-select
-                    v-model="form.type"
-                    :options="typeOptions"
-                    label="Type"
-                    emit-value
-                    map-options
-                    clearable
-                    filled
-                    dense
-                  />
-                </div>
-                <div class="col-12 col-sm-8">
+                <div class="col-12">
                   <q-input v-model.trim="form.name" label="Name" filled dense />
                 </div>
                 <div class="col-12 col-sm-4">
@@ -147,9 +135,6 @@
             dense
             no-data-label="No service records yet."
           >
-            <template #body-cell-type="props">
-              <q-td :props="props">{{ props.row.type ? props.row.type.toUpperCase() : '—' }}</q-td>
-            </template>
             <template #body-cell-actions="props">
               <q-td :props="props" class="text-right">
                 <q-btn
@@ -235,13 +220,7 @@ const detailsOpen = computed({
 })
 const form = reactive(createEmptyForm())
 
-const typeOptions = [
-  { label: 'Maintenance', value: 'm' },
-  { label: 'Service', value: 's' },
-]
-
 const columns = [
-  { name: 'type', label: 'Type', field: 'type', align: 'left', sortable: true },
   { name: 'name', label: 'Name', field: 'name', align: 'left', sortable: true },
   {
     name: 'interval_miles',
@@ -269,7 +248,7 @@ const columns = [
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
 const hasRequiredFields = computed(
-  () => Boolean(selectedScheduleId.value) && Boolean(form.type) && Boolean(form.name?.trim()),
+  () => Boolean(selectedScheduleId.value) && Boolean(form.name?.trim()),
 )
 const hasPositiveInterval = computed(() =>
   [form.interval_miles, form.interval_months, form.interval_years].some(
@@ -300,7 +279,6 @@ const confirmDeleteOpen = computed({
 function createEmptyForm() {
   return {
     schedule_id: null,
-    type: 'm',
     name: '',
     notes: '',
     interval_miles: 0,
@@ -339,7 +317,6 @@ function toggleForm() {
 function editService(service) {
   Object.assign(form, {
     schedule_id: service.schedule_id,
-    type: service.type,
     name: service.name || '',
     notes: service.notes || '',
     interval_miles: service.interval_miles ?? 0,

@@ -13,7 +13,6 @@ export const useServiceStore = defineStore('Service', {
     buildPayload(service = {}) {
       return {
         schedule_id: service.schedule_id || null,
-        type: service.type || null,
         name: service.name?.trim() || null,
         notes: service.notes?.trim() || null,
         interval_miles: this.toNonNegativeInteger(service.interval_miles),

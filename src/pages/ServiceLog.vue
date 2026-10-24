@@ -62,21 +62,10 @@
                 {{ editingLogId ? 'Edit service log' : 'Service log details' }}
               </div>
               <div class="row q-col-gutter-md">
-                <div class="col-12 col-sm-2">
-                  <q-select
-                    v-model="form.type"
-                    :options="typeOptions"
-                    label="Type"
-                    emit-value
-                    map-options
-                    filled
-                    dense
-                  />
-                </div>
-                <div class="col-12 col-sm-5">
+                <div class="col-12 col-sm-6">
                   <q-input v-model.trim="form.name" label="Name" filled dense />
                 </div>
-                <div class="col-12 col-sm-5">
+                <div class="col-12 col-sm-6">
                   <q-input
                     :model-value="selectedOrderLabel"
                     label="Service order"
@@ -166,9 +155,6 @@
             dense
             no-data-label="No service logs yet."
           >
-            <template #body-cell-type="props">
-              <q-td :props="props">{{ props.row.type ? props.row.type.toUpperCase() : '—' }}</q-td>
-            </template>
             <template #body-cell-total_cost="props">
               <q-td :props="props">{{ formatMoney(props.row.total_cost) }}</q-td>
             </template>
@@ -257,11 +243,6 @@ const detailsOpen = computed({
 })
 const form = reactive(createEmptyForm())
 
-const typeOptions = [
-  { label: 'Maintenance', value: 'm' },
-  { label: 'Service', value: 's' },
-]
-
 const formatMoney = (value) => `$${Number(value || 0).toFixed(2)}`
 
 const columns = [
@@ -281,7 +262,6 @@ const columns = [
     sortable: true,
     format: (value) => value ?? '—',
   },
-  { name: 'type', label: 'Type', field: 'type', align: 'left', sortable: true },
   { name: 'name', label: 'Name', field: 'name', align: 'left', sortable: true },
   {
     name: 'total_cost',
@@ -299,7 +279,6 @@ const hasRequiredFields = computed(
   () =>
     Boolean(selectedOrderId.value) &&
     selectedOrderId.value !== ALL_ORDERS &&
-    Boolean(form.type) &&
     Boolean(form.name?.trim()),
 )
 // Parts/labor changes refill the total, which the user can still overwrite.
@@ -368,7 +347,6 @@ const confirmDeleteOpen = computed({
 function createEmptyForm() {
   return {
     service_order_id: null,
-    type: 'm',
     name: '',
     notes: '',
     parts: 0,
@@ -403,7 +381,6 @@ function toggleForm() {
 function editLog(log) {
   Object.assign(form, {
     service_order_id: log.service_order_id,
-    type: log.type,
     name: log.name || '',
     notes: log.notes || '',
     parts: log.parts ?? 0,

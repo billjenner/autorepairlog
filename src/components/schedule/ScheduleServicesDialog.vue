@@ -26,10 +26,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const sortedServices = computed(() =>
-  [...props.services].sort(
-    (a, b) =>
-      (a.type || '').localeCompare(b.type || '') || (a.name || '').localeCompare(b.name || ''),
-  ),
+  [...props.services].sort((a, b) => (a.name || '').localeCompare(b.name || '')),
 )
 
 function serviceLabel(service) {
@@ -37,7 +34,6 @@ function serviceLabel(service) {
   if (service.interval_miles > 0) parts.push(`Miles-${service.interval_miles}`)
   if (service.interval_months > 0) parts.push(`Months-${service.interval_months}`)
   if (service.interval_years > 0) parts.push(`Years-${service.interval_years}`)
-  const prefix = service.type === 'm' ? 'M-' : service.type === 's' ? 'S-' : ''
-  return `${prefix}${service.name || ''}${parts.length ? ` (${parts.join(', ')})` : ''}`
+  return `${service.name || ''}${parts.length ? ` (${parts.join(', ')})` : ''}`
 }
 </script>

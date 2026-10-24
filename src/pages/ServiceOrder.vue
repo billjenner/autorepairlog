@@ -607,11 +607,6 @@ function findService(serviceId) {
   return servicesForAuto.value.find((item) => item.service_id === serviceId)
 }
 
-// function serviceType(entry) {
-//   const type = findService(entry.service_id)?.type
-//   return type ? type.toUpperCase() : ''
-// }
-
 function entryTotal(entry) {
   return Number(entry.total) || 0
 }
@@ -888,7 +883,6 @@ async function saveServiceOrder() {
     const service = findService(entry.service_id)
     const log = await serviceLogStore.createServiceLog({
       service_order_id: saved.service_order_id,
-      type: service.type,
       name: service.name,
       parts: entry.parts,
       labor: entry.labor,
