@@ -147,6 +147,6 @@ async function handleSubmit() {
   messageClass.value = 'text-positive'
   notifySuccess($q, 'Password changed successfully.')
   submitting.value = false
-  setTimeout(() => router.push('/login'), 2000)
+  setTimeout(() => router.push(store.currentUser ? '/auto' : '/login'), 2000)
 }
 </script>
