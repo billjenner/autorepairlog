@@ -18,6 +18,7 @@
               <th class="text-right">Miles</th>
               <th class="text-right">Months</th>
               <th class="text-right">Years</th>
+              <th class="text-center">Never</th>
               <th class="text-left">Last Service Mileage</th>
               <th class="text-left">Last Service Date</th>
             </tr>
@@ -28,6 +29,9 @@
               <td class="text-right">{{ row.interval_miles ?? '' }}</td>
               <td class="text-right">{{ row.interval_months ?? '' }}</td>
               <td class="text-right">{{ row.interval_years ?? '' }}</td>
+              <td class="text-center">
+                <q-checkbox v-model="row.never" dense />
+              </td>
               <td>
                 <q-input
                   v-model.number="row.last_miles"
@@ -35,6 +39,7 @@
                   min="0"
                   dense
                   outlined
+                  :disable="row.never"
                   :error="!hasValue(row)"
                   hide-bottom-space
                   style="min-width: 110px"
@@ -46,6 +51,7 @@
                   type="date"
                   dense
                   outlined
+                  :disable="row.never"
                   :error="!hasValue(row)"
                   hide-bottom-space
                   style="min-width: 150px"
@@ -89,6 +95,7 @@ watch(
       .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
       .map((service) => ({
         ...service,
+        never: false,
         last_miles: service.last_miles ?? null,
         last_date: service.last_date ? String(service.last_date).slice(0, 10) : null,
       }))
@@ -97,6 +104,7 @@ watch(
 )
 
 function hasValue(row) {
+  if (row.never) return true
   const miles = row.last_miles
   return (miles !== null && miles !== '' && !Number.isNaN(Number(miles))) || Boolean(row.last_date)
 }
@@ -108,8 +116,8 @@ function save() {
     'save',
     rows.value.map((row) => ({
       service_id: row.service_id,
-      last_miles: row.last_miles === '' ? null : (row.last_miles ?? null),
-      last_date: row.last_date || null,
+      last_miles: row.never || row.last_miles === '' ? null : (row.last_miles ?? null),
+      last_date: row.never ? null : row.last_date || null,
     })),
   )
 }
