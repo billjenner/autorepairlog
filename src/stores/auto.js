@@ -241,6 +241,56 @@ export const useAutoStore = defineStore('Auto', {
       }
     },
 
+    async removeAutoPhoto(profileId, autoId) {
+      this.error = null
+      this.loading = true
+
+      try {
+        if (!supabase) {
+          this.error = 'Supabase client is not configured.'
+          return null
+        }
+
+        if (!profileId || !autoId) {
+          this.error = 'A profile and auto are required to remove an auto photo.'
+          return null
+        }
+
+        const previousPhotoPath = this.auto.find((item) => item.auto_id === autoId)?.photo_url
+        if (!previousPhotoPath) {
+          this.error = 'The auto does not have a photo to remove.'
+          return null
+        }
+
+        const { data, error } = await supabase
+          .from('auto')
+          .update({ photo_url: null })
+          .eq('auto_id', autoId)
+          .eq('profile_id', profileId)
+          .select()
+          .single()
+
+        if (error) {
+          this.error = error.message
+          return null
+        }
+
+        this.auto = this.auto.map((item) => (item.auto_id === autoId ? data : item))
+
+        const { error: removeError } = await supabase.storage
+          .from(AUTO_PHOTO_BUCKET)
+          .remove([previousPhotoPath])
+
+        if (removeError) {
+          this.error = `Photo removed from the auto, but the stored file could not be deleted: ${removeError.message}`
+        }
+
+        return data
+      } finally {
+        this.loading = false
+      }
+    },
+
     async deleteAuto(profileId, autoId) {
       this.error = null
       this.loading = true

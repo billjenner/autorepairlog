@@ -128,7 +128,7 @@
                     step="1"
                   />
                 </div>
-                <div class="col-12">
+                <div class="col-12 row items-center no-wrap q-gutter-sm">
                   <q-file
                     v-model="photoFile"
                     label="Auto photo"
@@ -136,7 +136,21 @@
                     filled
                     dense
                     clearable
+                    class="col"
                   />
+                  <q-btn
+                    v-if="attachedPhotoPath"
+                    flat
+                    round
+                    dense
+                    color="negative"
+                    icon="delete"
+                    aria-label="Delete auto photo"
+                    :disable="autoStore.loading"
+                    @click="removeAutoPhoto"
+                  >
+                    <q-tooltip>Delete auto photo</q-tooltip>
+                  </q-btn>
                 </div>
                 <div v-if="photoPreviewUrl" class="col-12">
                   <q-img
@@ -268,6 +282,7 @@ const editingAutoId = ref(null)
 const pendingDeleteAuto = ref(null)
 const photoFile = ref(null)
 const photoPreviewUrl = ref(null)
+const attachedPhotoPath = ref(null)
 const autoPhotoUrls = ref({})
 let photoUrlRequestId = 0
 const form = reactive(createEmptyForm())
@@ -326,6 +341,7 @@ function resetForm() {
   editingAutoId.value = null
   photoFile.value = null
   photoPreviewUrl.value = null
+  attachedPhotoPath.value = null
   showForm.value = false
 }
 
@@ -359,8 +375,26 @@ async function editAuto(auto) {
   })
   editingAutoId.value = auto.auto_id
   photoFile.value = null
+  attachedPhotoPath.value = auto.photo_url || null
   photoPreviewUrl.value = auto.photo_url ? await autoStore.getAutoPhotoUrl(auto.photo_url) : null
   showForm.value = true
+}
+
+async function removeAutoPhoto() {
+  if (!profileId.value || !editingAutoId.value || !attachedPhotoPath.value) {
+    return
+  }
+
+  const updatedAuto = await autoStore.removeAutoPhoto(profileId.value, editingAutoId.value)
+  if (!updatedAuto) {
+    return
+  }
+
+  attachedPhotoPath.value = null
+  photoPreviewUrl.value = null
+  if (!autoStore.error) {
+    notifySuccess($q, 'Auto photo removed successfully.', { color: 'positive' })
+  }
 }
 
 function requestDeleteEditedAuto() {
