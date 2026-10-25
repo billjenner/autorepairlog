@@ -191,6 +191,55 @@ export const useScheduleStore = defineStore('Schedule', {
       return true
     },
 
+    async loadServices(scheduleId) {
+      this.error = null
+      if (!supabase) {
+        this.error = 'Supabase client is not configured.'
+        return []
+      }
+
+      const { data, error } = await supabase
+        .from('service')
+        .select(
+          'service_id, name, interval_miles, interval_months, interval_years, last_date, last_miles',
+        )
+        .eq('schedule_id', scheduleId)
+        .eq('is_active', true)
+
+      if (error) {
+        this.error = error.message
+        return []
+      }
+      return data || []
+    },
+
+    async updateServiceLastValues(updates = []) {
+      this.error = null
+      this.loading = true
+
+      try {
+        if (!supabase) {
+          this.error = 'Supabase client is not configured.'
+          return false
+        }
+
+        for (const { service_id, last_miles, last_date } of updates) {
+          const { error } = await supabase
+            .from('service')
+            .update({ last_miles, last_date })
+            .eq('service_id', service_id)
+
+          if (error) {
+            this.error = error.message
+            return false
+          }
+        }
+        return true
+      } finally {
+        this.loading = false
+      }
+    },
+
     async updateSchedule(scheduleId, schedule = {}) {
       this.error = null
       this.loading = true

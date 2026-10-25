@@ -185,6 +185,12 @@
           </q-table>
 
           <schedule-services-dialog v-model="servicesDialogOpen" :services="servicesForDialog" />
+          <schedule-last-service-dialog
+            v-model="lastServiceDialogOpen"
+            :services="newScheduleServices"
+            :loading="scheduleStore.loading"
+            @save="saveLastServiceValues"
+          />
           <schedule-details-dialog
             v-model="detailsDialogOpen"
             :schedule="detailsSchedule"
@@ -219,6 +225,7 @@ import { useRouter } from 'vue-router'
 import DOMPurify from 'dompurify'
 import NotesEditor from '@/components/NotesEditor.vue'
 import ScheduleServicesDialog from '@/components/schedule/ScheduleServicesDialog.vue'
+import ScheduleLastServiceDialog from '@/components/schedule/ScheduleLastServiceDialog.vue'
 import ScheduleDetailsDialog from '@/components/schedule/ScheduleDetailsDialog.vue'
 import { templateAutoLabel, useScheduleStore } from '@/stores/schedule'
 import { useUsersStore } from '@/stores/users'
@@ -278,6 +285,8 @@ const confirmDeleteOpen = computed({
 
 const servicesDialogOpen = ref(false)
 const detailsDialogOpen = ref(false)
+const lastServiceDialogOpen = ref(false)
+const newScheduleServices = ref([])
 const detailsSchedule = ref(null)
 
 function openDetails(schedule) {
@@ -404,8 +413,25 @@ async function saveSchedule() {
   notifySuccess($q, `Schedule ${isEditing ? 'updated' : 'saved'} successfully.`, {
     color: 'positive',
   })
+  const templateId = selectedTemplateScheduleId.value
   resetForm()
   await load()
+
+  if (!isEditing && templateId) {
+    const services = await scheduleStore.loadServices(saved.schedule_id)
+    if (services.length) {
+      newScheduleServices.value = services
+      lastServiceDialogOpen.value = true
+    }
+  }
+}
+
+async function saveLastServiceValues(updates) {
+  if (await scheduleStore.updateServiceLastValues(updates)) {
+    lastServiceDialogOpen.value = false
+    notifySuccess($q, 'Services updated successfully.', { color: 'positive' })
+    await load()
+  }
 }
 
 async function deleteSchedule() {
