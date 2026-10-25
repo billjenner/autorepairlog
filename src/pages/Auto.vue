@@ -133,10 +133,12 @@
                     v-model="photoFile"
                     label="Auto photo"
                     accept="image/*"
+                    max-file-size="10485760"
                     filled
                     dense
                     clearable
                     class="col"
+                    @rejected="onPhotoRejected"
                   />
                   <q-btn
                     v-if="attachedPhotoPath"
@@ -359,6 +361,13 @@ function autoLabel(auto) {
   }
 
   return [auto.year, auto.make, auto.model].filter(Boolean).join(' ') || 'Unnamed auto'
+}
+
+function onPhotoRejected() {
+  $q.notify({
+    color: 'negative',
+    message: 'Auto photo must be 10 MB or smaller.',
+  })
 }
 
 async function editAuto(auto) {

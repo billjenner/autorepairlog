@@ -33,10 +33,12 @@
           <div v-if="!hideTemplateTools" class="text-subtitle1 q-mt-md">Template schedules</div>
           <q-table
             v-if="!hideTemplateTools"
+            ref="templateTableRef"
             class="q-mt-sm"
             :rows="scheduleStore.templateSchedules"
             :columns="templateColumns"
-            :pagination="{ rowsPerPage: 10 }"
+            v-model:pagination="templatePagination"
+            :table-row-class-fn="templateRowClass"
             :rows-per-page-options="[10, 25, 50, 0]"
             row-key="schedule_id"
             flat
@@ -263,10 +265,52 @@ const columns = [
   { name: 'actions', label: '', field: 'schedule_id', align: 'right' },
 ]
 
-const templateColumns = [
+const templateColumns = computed(() => [
   { name: 'select', label: '', field: 'schedule_id', align: 'left' },
+  ...(isAdminUser.value
+    ? [
+        {
+          name: 'is_template',
+          label: 'Is Template',
+          field: (row) => Boolean(row.auto?.isTemplate),
+          format: (value) => String(value),
+          align: 'left',
+          sortable: true,
+        },
+        {
+          name: 'schedule_id',
+          label: 'Schedule ID',
+          field: 'schedule_id',
+          align: 'left',
+          sortable: true,
+        },
+        {
+          name: 'auto_id',
+          label: 'Auto ID',
+          field: 'auto_id',
+          align: 'left',
+          sortable: true,
+        },
+      ]
+    : []),
   ...columns.filter((col) => col.name !== 'actions'),
-]
+])
+const templatePagination = ref({ sortBy: 'is_template', descending: true, rowsPerPage: 10 })
+const templateTableRef = ref(null)
+
+// Marks the row after which the Is Template value changes, in the table's displayed order.
+function templateRowClass(row) {
+  if (!isAdminUser.value) {
+    return ''
+  }
+
+  const rows = templateTableRef.value?.computedRows
+  const index = rows ? rows.findIndex((item) => item.schedule_id === row.schedule_id) : -1
+  const next = index >= 0 ? rows[index + 1] : null
+  return next && Boolean(next.auto?.isTemplate) !== Boolean(row.auto?.isTemplate)
+    ? 'template-boundary'
+    : ''
+}
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
 const autoOptions = computed(() =>
@@ -482,3 +526,9 @@ async function deleteSchedule() {
 watch(currentUserId, load)
 onMounted(load)
 </script>
+
+<style scoped>
+:deep(.template-boundary td) {
+  border-bottom: 3px solid var(--q-primary);
+}
+</style>

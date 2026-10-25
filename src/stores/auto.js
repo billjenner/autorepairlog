@@ -2,6 +2,7 @@ import { defineStore, acceptHMRUpdate } from 'pinia'
 import { supabase } from '../lib/supabase'
 
 const AUTO_PHOTO_BUCKET = 'auto-photos'
+const AUTO_PHOTO_MAX_BYTES = 10 * 1024 * 1024
 
 export const useAutoStore = defineStore('Auto', {
   state: () => ({
@@ -186,6 +187,11 @@ export const useAutoStore = defineStore('Auto', {
 
         if (!file.type.startsWith('image/')) {
           this.error = 'Choose an image file to upload.'
+          return null
+        }
+
+        if (file.size > AUTO_PHOTO_MAX_BYTES) {
+          this.error = 'Auto photo must be 10 MB or smaller.'
           return null
         }
 
