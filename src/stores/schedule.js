@@ -213,6 +213,53 @@ export const useScheduleStore = defineStore('Schedule', {
       return data || []
     },
 
+    // Purchase date of the auto, falling back to its earliest dated mileage record.
+    async fetchAutoStartDate(autoId) {
+      if (!supabase || !autoId) {
+        return null
+      }
+
+      const { data: auto } = await supabase
+        .from('auto')
+        .select('purchase_date')
+        .eq('auto_id', autoId)
+        .single()
+
+      if (auto?.purchase_date) {
+        return auto.purchase_date
+      }
+
+      const { data: mileage } = await supabase
+        .from('mileage')
+        .select('date')
+        .eq('auto_id', autoId)
+        .eq('is_active', true)
+        .not('date', 'is', null)
+        .order('date', { ascending: true })
+        .limit(1)
+
+      return mileage?.[0]?.date ?? null
+    },
+
+    async deleteService(serviceId) {
+      this.error = null
+      if (!supabase) {
+        this.error = 'Supabase client is not configured.'
+        return false
+      }
+
+      const { error } = await supabase
+        .from('service')
+        .update({ is_active: false })
+        .eq('service_id', serviceId)
+
+      if (error) {
+        this.error = error.message
+        return false
+      }
+      return true
+    },
+
     async updateServiceLastValues(updates = []) {
       this.error = null
       this.loading = true

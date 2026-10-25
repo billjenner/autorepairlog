@@ -190,6 +190,7 @@
             :services="newScheduleServices"
             :loading="scheduleStore.loading"
             @save="saveLastServiceValues"
+            @delete="deleteNewService"
           />
           <schedule-details-dialog
             v-model="detailsDialogOpen"
@@ -287,6 +288,7 @@ const servicesDialogOpen = ref(false)
 const detailsDialogOpen = ref(false)
 const lastServiceDialogOpen = ref(false)
 const newScheduleServices = ref([])
+const newScheduleAutoId = ref(null)
 const detailsSchedule = ref(null)
 
 function openDetails(schedule) {
@@ -421,13 +423,41 @@ async function saveSchedule() {
     const services = await scheduleStore.loadServices(saved.schedule_id)
     if (services.length) {
       newScheduleServices.value = services
+      newScheduleAutoId.value = saved.auto_id
       lastServiceDialogOpen.value = true
     }
   }
 }
 
+async function deleteNewService(serviceId, removeRow) {
+  if (await scheduleStore.deleteService(serviceId)) {
+    removeRow()
+    await load()
+  }
+}
+
 async function saveLastServiceValues(updates) {
-  if (await scheduleStore.updateServiceLastValues(updates)) {
+  const hasValue = (value) => Number(value) > 0
+  let startDate = null
+  let startDateLoaded = false
+  const resolved = []
+
+  for (const { never, interval_miles, interval_months, interval_years, ...values } of updates) {
+    if (never) {
+      if (hasValue(interval_miles) || (!hasValue(interval_months) && !hasValue(interval_years))) {
+        values.last_miles = 0
+      } else {
+        if (!startDateLoaded) {
+          startDate = await scheduleStore.fetchAutoStartDate(newScheduleAutoId.value)
+          startDateLoaded = true
+        }
+        values.last_date = startDate
+      }
+    }
+    resolved.push(values)
+  }
+
+  if (await scheduleStore.updateServiceLastValues(resolved)) {
     lastServiceDialogOpen.value = false
     notifySuccess($q, 'Services updated successfully.', { color: 'positive' })
     await load()

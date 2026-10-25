@@ -19,8 +19,10 @@
               <th class="text-right">Months</th>
               <th class="text-right">Years</th>
               <th class="text-center">Never</th>
+              <th class="text-center">I don't know</th>
               <th class="text-left">Last Service Mileage</th>
               <th class="text-left">Last Service Date</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -30,7 +32,10 @@
               <td class="text-right">{{ row.interval_months ?? '' }}</td>
               <td class="text-right">{{ row.interval_years ?? '' }}</td>
               <td class="text-center">
-                <q-checkbox v-model="row.never" dense />
+                <q-checkbox v-model="row.never" dense @update:model-value="row.unknown = false" />
+              </td>
+              <td class="text-center">
+                <q-checkbox v-model="row.unknown" dense @update:model-value="row.never = false" />
               </td>
               <td>
                 <q-input
@@ -39,7 +44,7 @@
                   min="0"
                   dense
                   outlined
-                  :disable="row.never"
+                  :disable="row.never || row.unknown"
                   :error="!hasValue(row)"
                   hide-bottom-space
                   style="min-width: 110px"
@@ -51,10 +56,21 @@
                   type="date"
                   dense
                   outlined
-                  :disable="row.never"
+                  :disable="row.never || row.unknown"
                   :error="!hasValue(row)"
                   hide-bottom-space
                   style="min-width: 150px"
+                />
+              </td>
+              <td class="text-right">
+                <q-btn
+                  flat
+                  round
+                  dense
+                  color="negative"
+                  icon="delete"
+                  :disable="loading"
+                  @click="removeRow(row)"
                 />
               </td>
             </tr>
@@ -83,9 +99,15 @@ const props = defineProps({
   services: { type: Array, default: () => [] },
   loading: { type: Boolean, default: false },
 })
-const emit = defineEmits(['update:modelValue', 'save'])
+const emit = defineEmits(['update:modelValue', 'save', 'delete'])
 
 const rows = ref([])
+
+function removeRow(row) {
+  emit('delete', row.service_id, () => {
+    rows.value = rows.value.filter((item) => item.service_id !== row.service_id)
+  })
+}
 
 watch(
   () => [props.modelValue, props.services],
@@ -96,6 +118,7 @@ watch(
       .map((service) => ({
         ...service,
         never: false,
+        unknown: false,
         last_miles: service.last_miles ?? null,
         last_date: service.last_date ? String(service.last_date).slice(0, 10) : null,
       }))
@@ -104,7 +127,7 @@ watch(
 )
 
 function hasValue(row) {
-  if (row.never) return true
+  if (row.never || row.unknown) return true
   const miles = row.last_miles
   return (miles !== null && miles !== '' && !Number.isNaN(Number(miles))) || Boolean(row.last_date)
 }
@@ -116,8 +139,13 @@ function save() {
     'save',
     rows.value.map((row) => ({
       service_id: row.service_id,
-      last_miles: row.never || row.last_miles === '' ? null : (row.last_miles ?? null),
-      last_date: row.never ? null : row.last_date || null,
+      never: row.never,
+      interval_miles: row.interval_miles,
+      interval_months: row.interval_months,
+      interval_years: row.interval_years,
+      last_miles:
+        row.never || row.unknown || row.last_miles === '' ? null : (row.last_miles ?? null),
+      last_date: row.never || row.unknown ? null : row.last_date || null,
     })),
   )
 }
