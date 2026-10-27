@@ -281,7 +281,14 @@ const confirmDeleteOpen = computed({
 })
 
 function createEmptyForm() {
-  return { auto_id: null, miles: null, date: null }
+  const today = new Date()
+  const date = [
+    today.getFullYear(),
+    String(today.getMonth() + 1).padStart(2, '0'),
+    String(today.getDate()).padStart(2, '0'),
+  ].join('-')
+
+  return { auto_id: null, miles: null, date }
 }
 
 function autoLabel(auto) {
