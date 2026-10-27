@@ -181,6 +181,13 @@
                     router.push({ path: '/service', query: { schedule_id: props.row.schedule_id } })
                   "
                 />
+                <q-btn
+                  flat
+                  dense
+                  color="primary"
+                  label="Last service"
+                  @click="editLastService(props.row)"
+                />
                 <q-btn flat dense color="primary" label="Edit" @click="editSchedule(props.row)" />
               </q-td>
             </template>
@@ -224,7 +231,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import DOMPurify from 'dompurify'
 import NotesEditor from '@/components/NotesEditor.vue'
 import ScheduleServicesDialog from '@/components/schedule/ScheduleServicesDialog.vue'
@@ -236,6 +243,7 @@ import { useProfileStore } from '@/stores/profile'
 import { notifySuccess } from '../utils/notify'
 
 const $q = useQuasar()
+const route = useRoute()
 const router = useRouter()
 const scheduleStore = useScheduleStore()
 const usersStore = useUsersStore()
@@ -438,9 +446,31 @@ async function load() {
   ])
   isAdminUser.value = isAdmin
 
-  if (!form.auto_id && autoOptions.value.length === 1) {
+  const requestedAutoId = Number(route.query.autoId)
+  if (autoOptions.value.some((auto) => auto.value === requestedAutoId)) {
+    form.auto_id = requestedAutoId
+  } else if (!form.auto_id && autoOptions.value.length === 1) {
     form.auto_id = autoOptions.value[0].value
   }
+}
+
+async function editLastService(schedule) {
+  const services = await scheduleStore.loadServices(schedule.schedule_id)
+  if (scheduleStore.error) {
+    $q.notify({
+      type: 'negative',
+      message: `Unable to load services: ${scheduleStore.error}`,
+    })
+    return
+  }
+  if (!services.length) {
+    $q.notify({ type: 'warning', message: 'This schedule has no active services to update.' })
+    return
+  }
+
+  newScheduleServices.value = services
+  newScheduleAutoId.value = schedule.auto_id
+  lastServiceDialogOpen.value = true
 }
 
 async function saveSchedule() {

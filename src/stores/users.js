@@ -65,6 +65,7 @@ export const useUsersStore = defineStore('Users', {
     error: null,
     isOffline: false,
     offlineAttempts: 0,
+    loginChecksPending: false,
   }),
 
   actions: {
@@ -199,6 +200,7 @@ export const useUsersStore = defineStore('Users', {
           console.error('[loginUser] last_logged_in update failed:', lastLoginError.message)
         }
 
+        this.loginChecksPending = true
         return savedUser
       } catch (error) {
         this.error = isConnectionError(error) ? 'Unable to connect to Supabase.' : error?.message
@@ -430,6 +432,7 @@ export const useUsersStore = defineStore('Users', {
       }
 
       this.currentUser = null
+      this.loginChecksPending = false
       persistCurrentUser(null)
     },
   },

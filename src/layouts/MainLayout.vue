@@ -239,6 +239,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useUsersStore } from '@/stores/users'
 import { useProfileStore } from '@/stores/profile'
 import OfflineConnectionCard from '@/components/OfflineConnectionCard.vue'
+import { checkLoginBusinessRules } from '@/utils/rules'
 
 const $q = useQuasar()
 const route = useRoute()
@@ -376,6 +377,33 @@ watch(
       verifyLoggedInState()
     } else {
       profileStore.currentProfile = null
+    }
+  },
+)
+
+watch(
+  () => [route.path, usersStore.loginChecksPending],
+  async ([path, pending]) => {
+    if (path === '/login' || !pending) {
+      return
+    }
+
+    usersStore.loginChecksPending = false
+    const userId = usersStore.currentUser?.user_id
+    if (!userId) {
+      return
+    }
+
+    const profile = await profileStore.loadCurrentProfile(userId)
+    try {
+      await checkLoginBusinessRules($q, profile?.profile_id, profileStore.error, router)
+    } catch (error) {
+      console.error('[MainLayout] business rules check failed:', error)
+      $q.notify({
+        type: 'negative',
+        message: 'Unable to check your setup. Please try again later.',
+        timeout: 7000,
+      })
     }
   },
 )

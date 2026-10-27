@@ -94,7 +94,7 @@ async function handleSubmit() {
     message.value = `Logged in as ${store.currentUser?.email}`
     messageClass.value = 'text-positive'
     const redirectPath = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
-    router.push(redirectPath)
+    await router.push(redirectPath)
   } else {
     if (store.isOffline) {
       message.value = 'No data connection.'
