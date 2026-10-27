@@ -116,6 +116,33 @@ export async function checkLoginBusinessRules($q, profileId, profileError, route
     schedulesByAutoId.set(schedule.auto_id, autoSchedules)
   }
 
+  // Fall back to service_log history for services that have no last occurrence recorded.
+  const { data: logRows, error: logError } = await supabase
+    .from('service_log')
+    .select('service_id, service_date, service_miles, service_order!inner(auto_id, is_active)')
+    .in('service_order.auto_id', autoIds)
+    .eq('service_order.is_active', true)
+
+  if (logError) {
+    notifyCheckError($q, 'service log', logError)
+    return
+  }
+
+  const lastLogByAutoService = new Map()
+  for (const row of logRows || []) {
+    const key = `${row.service_order?.auto_id}:${row.service_id}`
+    const current = lastLogByAutoService.get(key) || { miles: null, date: null }
+    const miles = Number(row.service_miles)
+    if (Number.isFinite(miles) && (current.miles === null || miles > current.miles)) {
+      current.miles = miles
+    }
+    const time = row.service_date ? new Date(row.service_date).getTime() : NaN
+    if (Number.isFinite(time) && (current.date === null || time > current.date)) {
+      current.date = time
+    }
+    lastLogByAutoService.set(key, current)
+  }
+
   for (const auto of autos) {
     const autoSchedules = schedulesByAutoId.get(auto.auto_id) || []
     if (!autoSchedules.length) {
@@ -137,7 +164,30 @@ export async function checkLoginBusinessRules($q, profileId, profileError, route
           service.last_miles !== undefined &&
           service.last_miles !== ''
         const hasLastDate = Boolean(service.last_date)
-        if (service.is_active && !hasLastMiles && !hasLastDate) {
+        const logged = lastLogByAutoService.get(`${auto.auto_id}:${service.service_id}`)
+        if (service.is_active && logged) {
+          const fill = {}
+          if (!hasLastMiles && logged.miles !== null) {
+            fill.last_miles = logged.miles
+          }
+          if (!hasLastDate && logged.date !== null) {
+            fill.last_date = new Date(logged.date).toISOString().slice(0, 10)
+          }
+          if (Object.keys(fill).length) {
+            const { error: fillError } = await supabase
+              .from('service')
+              .update(fill)
+              .eq('service_id', service.service_id)
+            if (fillError) {
+              notifyCheckError($q, 'last occurrence update', fillError)
+            } else {
+              Object.assign(service, fill)
+              continue
+            }
+          }
+        }
+        const hasLoggedOccurrence = Boolean(logged)
+        if (service.is_active && !hasLastMiles && !hasLastDate && !hasLoggedOccurrence) {
           servicesMissingLastOccurrence.push(service.name || 'Unnamed service')
         }
       }
