@@ -25,6 +25,11 @@ export const useServiceLogStore = defineStore('ServiceLog', {
 
       return {
         service_order_id: log.service_order_id || null,
+        ...(log.service_id ? { service_id: log.service_id } : {}),
+        ...(log.service_date ? { service_date: log.service_date } : {}),
+        ...(log.service_miles !== undefined && log.service_miles !== null
+          ? { service_miles: Math.round(Number(log.service_miles)) || 0 }
+          : {}),
         name: log.name?.trim() || null,
         notes: log.notes?.trim() || null,
         parts: normalizedParts,

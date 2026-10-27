@@ -948,6 +948,9 @@ async function saveServiceOrder() {
     const service = findService(entry.service_id)
     const log = await serviceLogStore.createServiceLog({
       service_order_id: saved.service_order_id,
+      service_id: service.service_id,
+      service_date: saved.service_date || form.service_date,
+      service_miles: saved.mileage_at_service ?? form.mileage_at_service,
       name: service.name,
       parts: entry.parts,
       labor: entry.labor,

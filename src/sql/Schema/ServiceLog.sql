@@ -1,10 +1,15 @@
 CREATE TABLE public.service_log (
-    service_log_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    service_log_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
-    service_order_id INTEGER NOT NULL
+    service_id BIGINT NOT NULL
+        REFERENCES public.service(service_id),
+
+    service_order_id BIGINT NOT NULL
         REFERENCES public.service_order(service_order_id)
         ON DELETE CASCADE,
 
+    service_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    service_miles INTEGER NOT NULL,
     name TEXT NOT NULL,
     description TEXT,
     notes TEXT,
