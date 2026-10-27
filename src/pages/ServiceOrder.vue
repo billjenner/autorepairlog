@@ -121,29 +121,41 @@
                 </div>
                 <div class="col-12 col-sm-2">
                   <q-input
-                    :model-value="formatMoney(log.parts)"
+                    v-model="log.parts"
+                    type="number"
                     label="Parts"
-                    readonly
+                    prefix="$"
+                    min="0"
+                    step="0.01"
                     filled
                     dense
+                    @update:model-value="onExistingLogChange(log, true)"
                   />
                 </div>
                 <div class="col-12 col-sm-2">
                   <q-input
-                    :model-value="formatMoney(log.labor)"
+                    v-model="log.labor"
+                    type="number"
                     label="Labor"
-                    readonly
+                    prefix="$"
+                    min="0"
+                    step="0.01"
                     filled
                     dense
+                    @update:model-value="onExistingLogChange(log, true)"
                   />
                 </div>
                 <div class="col-12 col-sm-2">
                   <q-input
-                    :model-value="formatMoney(log.total_cost)"
+                    v-model="log.total_cost"
+                    type="number"
                     label="Total cost"
-                    readonly
+                    prefix="$"
+                    min="0"
+                    step="0.01"
                     filled
                     dense
+                    @update:model-value="onExistingLogChange(log, false)"
                   />
                 </div>
               </div>
@@ -797,8 +809,20 @@ function requestDeleteEditedOrder() {
 async function loadExistingLogs(serviceOrderId) {
   const logs = await serviceLogStore.fetchLogsForOrder(serviceOrderId)
   if (editingOrderId.value === serviceOrderId) {
+    dirtyLogIds.clear()
     existingLogs.value = logs
   }
+}
+
+const dirtyLogIds = new Set()
+
+function onExistingLogChange(log, recalc) {
+  if (recalc) {
+    const cents =
+      Math.round((Number(log.parts) || 0) * 100) + Math.round((Number(log.labor) || 0) * 100)
+    log.total_cost = cents / 100
+  }
+  dirtyLogIds.add(log.service_log_id)
 }
 
 async function removeExistingLog(log) {
@@ -907,6 +931,16 @@ async function saveServiceOrder() {
     }
     form.invoice_url = withInvoice.invoice_url || ''
     invoiceFile.value = null
+  }
+  for (const log of existingLogs.value.filter((item) => dirtyLogIds.has(item.service_log_id))) {
+    const updated = await serviceLogStore.updateServiceLog(log.service_log_id, {
+      ...log,
+      use_total_cost: true,
+    })
+    if (!updated) {
+      return
+    }
+    dirtyLogIds.delete(log.service_log_id)
   }
   // Each selected service is recorded as a service log entry on the saved order.
   const selectedEntries = serviceEntries.value.filter((entry) => findService(entry.service_id))
