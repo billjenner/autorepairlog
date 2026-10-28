@@ -4,12 +4,14 @@
     persistent
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <q-card style="min-width: 360px; max-width: 95vw">
+    <q-card style="width: 1100px; max-width: 95vw">
       <q-card-section class="text-h6">Enter last service details</q-card-section>
       <q-card-section class="q-pt-none">
         <div class="text-h5 text-bold text-center q-ma-xl">
           Enter either Last Miles or Last Date for every service
-          <span v-if="missingCount">({{ missingCount }} remaining)</span>. If never serviced, check
+          <span :style="{ visibility: missingCount ? 'visible' : 'hidden' }"
+            >({{ missingCount }} remaining)</span
+          >. If never serviced, check
           the "Never" box. If unsure about the last service, check the "I don't know" box - it will
           disable this service alert until updated.
         </div>
@@ -48,9 +50,18 @@
                   outlined
                   :disable="row.never || row.unknown"
                   :error="!hasValue(row)"
+                  no-error-icon
                   hide-bottom-space
                   style="min-width: 110px"
-                />
+                >
+                  <template #append>
+                    <q-icon
+                      name="error"
+                      color="negative"
+                      :style="{ visibility: hasValue(row) ? 'hidden' : 'visible' }"
+                    />
+                  </template>
+                </q-input>
               </td>
               <td>
                 <q-input
@@ -60,9 +71,18 @@
                   outlined
                   :disable="row.never || row.unknown"
                   :error="!hasValue(row)"
+                  no-error-icon
                   hide-bottom-space
                   style="min-width: 150px"
-                />
+                >
+                  <template #append>
+                    <q-icon
+                      name="error"
+                      color="negative"
+                      :style="{ visibility: hasValue(row) ? 'hidden' : 'visible' }"
+                    />
+                  </template>
+                </q-input>
               </td>
               <td class="text-right">
                 <q-btn
