@@ -105,7 +105,9 @@
                   />
                 </div>
                 <div class="col-12">
-                  <div class="text-caption text-grey-7 q-mb-xs">Notes</div>
+                  <q-toggle v-model="showNotes" dense label="Notes" />
+                </div>
+                <div v-if="showNotes" class="col-12">
                   <notes-editor v-model="form.notes" />
                 </div>
               </div>
@@ -153,7 +155,8 @@
                   flat
                   dense
                   color="accent"
-                  label="Details"
+                  label="Notes"
+                  :disable="!props.row.notes?.trim()"
                   @click="detailsService = props.row"
                 />
                 <q-btn flat dense color="primary" label="Edit" @click="editService(props.row)" />
@@ -164,10 +167,10 @@
           <q-dialog v-model="detailsOpen">
             <q-card style="min-width: 360px; max-width: 600px; width: 100%">
               <q-card-section class="text-h6">
-                {{ detailsService?.name || 'Service details' }}
+                {{ detailsService?.name || 'Service notes' }}
               </q-card-section>
               <q-card-section class="q-pt-none">
-                <div class="text-caption text-grey-7 q-mb-xs">Details</div>
+                <div class="text-caption text-grey-7 q-mb-xs">Notes</div>
                 <notes-viewer :notes="detailsService?.notes || ''" />
               </q-card-section>
               <q-card-actions align="right">
@@ -217,6 +220,7 @@ const serviceStore = useServiceStore()
 const usersStore = useUsersStore()
 const profileStore = useProfileStore()
 const showForm = ref(false)
+const showNotes = ref(false)
 const editingServiceId = ref(null)
 const selectedScheduleId = ref(null)
 const scheduleSelectRef = ref(null)
@@ -324,6 +328,7 @@ function createFormForSelection() {
 function resetForm() {
   Object.assign(form, createEmptyForm())
   editingServiceId.value = null
+  showNotes.value = false
   showForm.value = false
 }
 
@@ -351,6 +356,7 @@ function editService(service) {
   })
   selectedScheduleId.value = service.schedule_id
   editingServiceId.value = service.service_id
+  showNotes.value = Boolean(service.notes)
   showForm.value = true
 }
 
