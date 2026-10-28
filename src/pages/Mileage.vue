@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pa-md">
     <div class="row justify-center">
-      <div class="col-12 col-md-10 col-lg-8">
+      <div class="col-12">
         <q-select
           ref="autoSelectRef"
           v-model="selectedAutoId"

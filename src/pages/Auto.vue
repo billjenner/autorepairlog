@@ -1,7 +1,7 @@
 <template>
   <component :is="embedded ? 'div' : 'q-page'" :class="!embedded ? 'q-pa-md' : ''">
     <div :class="!embedded ? 'row justify-center' : ''">
-      <div :class="!embedded ? 'col-12 col-md-10 col-lg-8' : ''">
+      <div :class="!embedded ? 'col-12' : ''">
         <component
           :is="embedded ? 'div' : 'q-card'"
           :flat="!embedded"
