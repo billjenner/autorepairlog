@@ -210,6 +210,7 @@ import NotesEditor from '@/components/NotesEditor.vue'
 import NotesViewer from '@/components/NotesViewer.vue'
 import { useServiceStore } from '@/stores/service'
 import { templateAutoLabel } from '@/stores/schedule'
+import { predictFutureServices } from '@/utils/rules'
 import { useUsersStore } from '@/stores/users'
 import { useProfileStore } from '@/stores/profile'
 import { notifySuccess } from '../utils/notify'
@@ -259,8 +260,60 @@ const columns = [
     align: 'right',
     sortable: true,
   },
+  {
+    name: 'last_miles',
+    label: 'Last Service Miles',
+    field: 'last_miles',
+    format: (value) =>
+      value === null || value === undefined ? '—' : Number(value).toLocaleString(),
+    align: 'right',
+    sortable: true,
+  },
+  {
+    name: 'last_date',
+    label: 'Last Service Date',
+    field: (row) =>
+      row.last_date ? String(row.last_date).slice(0, 10) : predictionFor(row)?.estimated_last_date,
+    format: (value) => value || '—',
+    align: 'right',
+    sortable: true,
+  },
+  {
+    name: 'next_miles',
+    label: 'Next Service Miles',
+    field: (row) => predictionFor(row)?.next_miles ?? null,
+    format: (value) => (value === null ? '—' : Number(value).toLocaleString()),
+    align: 'right',
+    sortable: true,
+  },
+  {
+    name: 'next_date',
+    label: 'Next Service Date',
+    field: (row) => predictionFor(row)?.next_date ?? null,
+    format: (value) => value || '—',
+    align: 'right',
+    sortable: true,
+  },
   { name: 'actions', label: '', field: 'service_id', align: 'right' },
 ]
+
+const predictions = ref(new Map())
+
+function predictionFor(service) {
+  return predictions.value.get(service.service_id)
+}
+
+async function loadPredictions(profileId) {
+  try {
+    const autos = await predictFutureServices(profileId)
+    predictions.value = new Map(
+      autos.flatMap((auto) => auto.services.map((service) => [service.service_id, service])),
+    )
+  } catch (error) {
+    console.error('[service predictions] failed:', error.message)
+    predictions.value = new Map()
+  }
+}
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
 const hasRequiredFields = computed(
@@ -385,6 +438,7 @@ async function load() {
     profileId: profile?.profile_id,
   })
   await serviceStore.loadServices()
+  await loadPredictions(profile?.profile_id)
   applyRouteSchedule()
 }
 
@@ -422,6 +476,7 @@ async function saveService() {
     color: 'positive',
   })
   resetForm()
+  await loadPredictions(profileStore.currentProfile?.profile_id)
 }
 
 async function deleteService() {
