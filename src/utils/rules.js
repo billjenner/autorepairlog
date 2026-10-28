@@ -161,6 +161,11 @@ export async function predictFutureServices(profileId, today = Date.now()) {
         return {
           service_id: service.service_id,
           name: service.name,
+          interval_miles: toNumberOrNull(service.interval_miles),
+          interval_months: toNumberOrNull(service.interval_months),
+          interval_years: toNumberOrNull(service.interval_years),
+          last_miles: toNumberOrNull(service.last_miles),
+          last_date: service.last_date ? String(service.last_date).slice(0, 10) : null,
           estimated_last_date: estimatedLastDate,
           ...predictServiceOccurrence(
             { ...service, last_date: service.last_date || estimatedLastDate },

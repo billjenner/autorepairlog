@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pa-md">
     <div class="row justify-center">
-      <div class="col-12 col-md-10 col-lg-8">
+      <div class="col-12">
         <q-select
           v-model="form.auto_id"
           :options="autoOptions"
@@ -193,6 +193,12 @@
             </template>
           </q-table>
 
+          <schedule-timeline
+            class="q-mt-lg"
+            :profile-id="profileStore.currentProfile?.profile_id || null"
+            :refresh-key="scheduleStore.schedules"
+          />
+
           <schedule-services-dialog v-model="servicesDialogOpen" :services="servicesForDialog" />
           <schedule-last-service-dialog
             v-model="lastServiceDialogOpen"
@@ -237,6 +243,7 @@ import NotesEditor from '@/components/NotesEditor.vue'
 import ScheduleServicesDialog from '@/components/schedule/ScheduleServicesDialog.vue'
 import ScheduleLastServiceDialog from '@/components/schedule/ScheduleLastServiceDialog.vue'
 import ScheduleDetailsDialog from '@/components/schedule/ScheduleDetailsDialog.vue'
+import ScheduleTimeline from '@/components/schedule/ScheduleTimeline.vue'
 import { templateAutoLabel, useScheduleStore } from '@/stores/schedule'
 import { useUsersStore } from '@/stores/users'
 import { useProfileStore } from '@/stores/profile'
