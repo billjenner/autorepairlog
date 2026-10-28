@@ -1,12 +1,12 @@
 <template>
   <div>
-    <div class="text-subtitle1 q-mb-sm">Service history and upcoming services</div>
+    <div class="text-subtitle1 q-mb-sm q-ml-md">Service history and upcoming services</div>
 
     <q-banner v-if="error" class="bg-negative text-white q-mb-sm" rounded>{{ error }}</q-banner>
 
     <q-markup-table flat bordered dense>
       <thead>
-        <tr>
+        <tr class="bg-accent text-white">
           <th class="text-left cursor-pointer" @click="descending = !descending">
             Date
             <q-icon :name="descending ? 'arrow_downward' : 'arrow_upward'" size="16px" />
@@ -41,7 +41,7 @@
             <td class="text-right" :class="alertClass(row)">{{ alertText(row) }}</td>
           </tr>
           <tr class="timeline-divider">
-            <td colspan="8" class="text-caption text-grey-7 bg-grey-2">
+            <td colspan="8" class="text-subtitle1 bg-secondary text-center text-black">
               {{
                 descending ? 'Predicted future services above' : 'Predicted future services below'
               }}
@@ -214,6 +214,6 @@ watch(() => [props.profileId, props.refreshKey], load, { immediate: true })
 
 <style scoped>
 .timeline-divider td {
-  border-top: 2px solid var(--q-primary);
+  border-top: 2px solid var(--q-secondary);
 }
 </style>

@@ -165,6 +165,7 @@
             flat
             bordered
             dense
+            table-header-class="bg-accent text-white"
             no-data-label="No service logs yet."
           >
             <template #body-cell-total_cost="props">

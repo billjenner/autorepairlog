@@ -130,6 +130,7 @@
             flat
             bordered
             dense
+            table-header-class="bg-accent text-white"
             :no-data-label="
               selectedAutoId ? 'No mileage records yet.' : 'Select an auto to view its mileage.'
             "

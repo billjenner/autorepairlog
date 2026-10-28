@@ -147,6 +147,7 @@
             flat
             bordered
             dense
+            table-header-class="bg-accent text-white"
             no-data-label="No service records yet."
           >
             <template #body-cell-actions="props">

@@ -362,6 +362,7 @@
             flat
             bordered
             dense
+            table-header-class="bg-accent text-white"
             no-data-label="No service orders yet."
           >
             <template #body-cell-is_complete="props">

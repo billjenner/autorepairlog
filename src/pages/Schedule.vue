@@ -84,8 +84,7 @@
             </template>
           </q-table>
 
-          <div class="row items-center justify-between q-mt-md">
-            <div class="text-subtitle1">My schedules</div>
+          <div class="row items-center justify-between q-ml-md q-mt-md">
             <q-btn
               v-if="!hideTemplateTools"
               color="primary"
@@ -145,6 +144,7 @@
             flat
             bordered
             dense
+            table-header-class="bg-accent text-white"
             no-data-label="No schedule records yet."
           >
             <template #body-cell-auto="props">

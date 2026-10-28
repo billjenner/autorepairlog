@@ -234,6 +234,7 @@
             flat
             bordered
             dense
+            table-header-class="bg-accent text-white"
             no-data-label="No auto records yet."
           >
             <template #body-cell-photo="props">

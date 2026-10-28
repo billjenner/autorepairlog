@@ -17,7 +17,7 @@
         </div>
         <q-markup-table flat dense>
           <thead>
-            <tr>
+            <tr class="bg-accent text-white">
               <th class="text-left">Name</th>
               <th class="text-right">Miles</th>
               <th class="text-right">Months</th>
