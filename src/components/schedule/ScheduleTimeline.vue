@@ -17,14 +17,15 @@
           <th class="text-right">Interval years</th>
           <th class="text-right">Cost</th>
           <th class="text-right">Miles</th>
+          <th class="text-right">Alert</th>
         </tr>
       </thead>
       <tbody>
         <tr v-if="loading">
-          <td colspan="7" class="text-center text-grey-7">Loading...</td>
+          <td colspan="8" class="text-center text-grey-7">Loading...</td>
         </tr>
         <tr v-else-if="!logRows.length && !upcomingRows.length">
-          <td colspan="7" class="text-center text-grey-7">
+          <td colspan="8" class="text-center text-grey-7">
             No service history or predictions yet.
           </td>
         </tr>
@@ -37,9 +38,10 @@
             <td class="text-right">{{ formatNumber(row.interval_years) }}</td>
             <td class="text-right">{{ descending ? '—' : formatCost(row.cost) }}</td>
             <td class="text-right">{{ formatNumber(row.miles) }}</td>
+            <td class="text-right" :class="alertClass(row)">{{ alertText(row) }}</td>
           </tr>
           <tr class="timeline-divider">
-            <td colspan="7" class="text-caption text-grey-7 bg-grey-2">
+            <td colspan="8" class="text-caption text-grey-7 bg-grey-2">
               {{
                 descending ? 'Predicted future services above' : 'Predicted future services below'
               }}
@@ -53,6 +55,7 @@
             <td class="text-right">{{ formatNumber(row.interval_years) }}</td>
             <td class="text-right">{{ descending ? formatCost(row.cost) : '—' }}</td>
             <td class="text-right">{{ formatNumber(row.miles) }}</td>
+            <td class="text-right" :class="alertClass(row)">{{ alertText(row) }}</td>
           </tr>
         </template>
       </tbody>
@@ -99,6 +102,25 @@ function byDate(a, b) {
   if (!a.date) return 1
   if (!b.date) return -1
   return a.date.localeCompare(b.date)
+}
+
+// Days from today to the predicted date (negative when overdue); service log rows have no alert.
+function alertDays(row) {
+  if (row.key.startsWith('log-') || !row.date) return null
+  const now = new Date()
+  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
+  return Math.round((Date.parse(`${row.date}T00:00:00Z`) - today) / 86400000)
+}
+
+function alertText(row) {
+  const days = alertDays(row)
+  return days === null ? '' : `${days} day${Math.abs(days) === 1 ? '' : 's'}`
+}
+
+function alertClass(row) {
+  const days = alertDays(row)
+  if (days === null) return ''
+  return days < 0 ? 'text-negative text-bold' : days <= 30 ? 'text-warning text-bold' : ''
 }
 
 function formatNumber(value) {
