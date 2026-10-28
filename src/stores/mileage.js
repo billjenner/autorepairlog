@@ -91,6 +91,28 @@ export const useMileageStore = defineStore('Mileage', {
       return data?.[0]?.miles ?? null
     },
 
+    // Returns the latest active mileage record for an auto, or null.
+    async fetchLatestRecord(autoId) {
+      if (!supabase || !autoId) {
+        return null
+      }
+
+      const { data, error } = await supabase
+        .from('mileage')
+        .select('miles, date')
+        .eq('auto_id', autoId)
+        .eq('is_active', true)
+        .order('date', { ascending: false, nullsFirst: false })
+        .order('created_date', { ascending: false })
+        .limit(1)
+
+      if (error) {
+        return null
+      }
+
+      return data?.[0] ?? null
+    },
+
     async fetchHighestMilesBeforeDate(autoId, date) {
       this.error = null
 

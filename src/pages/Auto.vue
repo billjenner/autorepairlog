@@ -46,7 +46,7 @@
                 {{ editingAutoId ? 'Edit auto' : 'Auto details' }}
               </div>
               <div class="row q-col-gutter-md">
-                <div class="col-12 col-sm-3">
+                <div class="col-12 col-sm-2">
                   <q-input
                     v-model="form.year"
                     type="number"
@@ -72,7 +72,7 @@
                     :rules="[(value) => !!value || 'Make is required.']"
                   />
                 </div>
-                <div class="col-12 col-sm-5">
+                <div class="col-12 col-sm-4">
                   <q-input
                     v-model.trim="form.model"
                     label="Model"
@@ -81,10 +81,11 @@
                     :rules="[(value) => !!value || 'Model is required.']"
                   />
                 </div>
-                <div class="col-12 col-sm-4">
+
+                <div class="col-12 col-sm-2">
                   <q-input v-model.trim="form.color" label="Color" filled dense />
                 </div>
-                <div class="col-12 col-sm-8">
+                <div class="col-12 col-sm-3">
                   <q-input
                     v-model.trim="form.vin"
                     label="VIN"
@@ -96,16 +97,7 @@
                     ]"
                   />
                 </div>
-                <div class="col-12 col-sm-4">
-                  <q-input
-                    v-model="form.purchase_date"
-                    type="date"
-                    label="Purchase date"
-                    filled
-                    dense
-                  />
-                </div>
-                <div class="col-12 col-sm-4">
+                <div class="col-12 col-sm-3">
                   <q-input
                     v-model="form.purchase_amount"
                     type="number"
@@ -117,7 +109,17 @@
                     step="1"
                   />
                 </div>
-                <div class="col-12 col-sm-4">
+                <div class="col-12 col-sm-3">
+                  <q-input
+                    v-model="form.purchase_date"
+                    type="date"
+                    label="Purchase date"
+                    filled
+                    dense
+                  />
+                </div>
+
+                <div class="col-12 col-sm-3">
                   <q-input
                     v-model="form.purchase_mileage"
                     type="number"
@@ -128,6 +130,27 @@
                     step="1"
                   />
                 </div>
+                <div class="col-12 col-sm-3 offset-sm-6">
+                  <q-input
+                    v-model="form.latest_mileage_date"
+                    type="date"
+                    label="Latest mileage date"
+                    filled
+                    dense
+                  />
+                </div>
+                <div class="col-12 col-sm-3">
+                  <q-input
+                    v-model="form.latest_mileage"
+                    type="number"
+                    label="Latest mileage"
+                    filled
+                    dense
+                    min="0"
+                    step="1"
+                  />
+                </div>
+
                 <div class="col-12 row items-center no-wrap q-gutter-sm">
                   <q-file
                     v-model="photoFile"
@@ -264,6 +287,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAutoStore } from '@/stores/auto'
+import { useMileageStore } from '@/stores/mileage'
 import { useProfileStore } from '@/stores/profile'
 import { useUsersStore } from '@/stores/users'
 import { notifySuccess } from '../utils/notify'
@@ -277,6 +301,7 @@ defineProps({
 
 const $q = useQuasar()
 const autoStore = useAutoStore()
+const mileageStore = useMileageStore()
 const profileStore = useProfileStore()
 const usersStore = useUsersStore()
 const showForm = ref(false)
@@ -287,6 +312,7 @@ const photoPreviewUrl = ref(null)
 const attachedPhotoPath = ref(null)
 const autoPhotoUrls = ref({})
 let photoUrlRequestId = 0
+let loadedLatest = null
 const form = reactive(createEmptyForm())
 
 const columns = [
@@ -334,12 +360,24 @@ function createEmptyForm() {
     purchase_date: null,
     purchase_amount: null,
     purchase_mileage: null,
+    latest_mileage_date: todayString(),
+    latest_mileage: null,
     isTemplate: true,
   }
 }
 
+function todayString() {
+  const today = new Date()
+  return [
+    today.getFullYear(),
+    String(today.getMonth() + 1).padStart(2, '0'),
+    String(today.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 function resetForm() {
   Object.assign(form, createEmptyForm())
+  loadedLatest = null
   editingAutoId.value = null
   photoFile.value = null
   photoPreviewUrl.value = null
@@ -380,9 +418,19 @@ async function editAuto(auto) {
     purchase_date: auto.purchase_date || null,
     purchase_amount: auto.purchase_amount,
     purchase_mileage: auto.purchase_mileage,
+    latest_mileage_date: todayString(),
+    latest_mileage: null,
     isTemplate: auto.isTemplate,
   })
   editingAutoId.value = auto.auto_id
+  const latest = await mileageStore.fetchLatestRecord(auto.auto_id)
+  if (latest) {
+    form.latest_mileage = latest.miles
+    form.latest_mileage_date = latest.date || todayString()
+    loadedLatest = { miles: latest.miles, date: latest.date || todayString() }
+  } else {
+    loadedLatest = null
+  }
   photoFile.value = null
   attachedPhotoPath.value = auto.photo_url || null
   photoPreviewUrl.value = auto.photo_url ? await autoStore.getAutoPhotoUrl(auto.photo_url) : null
@@ -453,6 +501,23 @@ async function saveAuto() {
   if (photoFile.value) {
     savedAuto = await autoStore.uploadAutoPhoto(profileId.value, savedAuto.auto_id, photoFile.value)
     if (!savedAuto) {
+      return
+    }
+  }
+
+  const hasLatestMileage = form.latest_mileage !== null && form.latest_mileage !== ''
+  const unchangedLatest =
+    loadedLatest &&
+    Number(form.latest_mileage) === Number(loadedLatest.miles) &&
+    form.latest_mileage_date === loadedLatest.date
+  if (hasLatestMileage && form.latest_mileage_date && !unchangedLatest) {
+    const mileage = await mileageStore.createMileage({
+      auto_id: savedAuto.auto_id,
+      miles: form.latest_mileage,
+      date: form.latest_mileage_date,
+    })
+    if (!mileage) {
+      $q.notify({ color: 'negative', message: mileageStore.error || 'Unable to save mileage.' })
       return
     }
   }
