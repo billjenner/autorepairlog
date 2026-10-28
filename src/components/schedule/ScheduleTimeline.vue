@@ -30,7 +30,14 @@
           </td>
         </tr>
         <template v-else>
-          <tr v-for="row in firstRows" :key="row.key" :class="{ 'text-italic': descending }">
+          <tr
+            v-for="row in firstRows"
+            :key="row.key"
+            :class="{
+              'text-italic': descending,
+              'timeline-estimated-row': row.key.startsWith('service-'),
+            }"
+          >
             <td class="text-left">{{ row.date || '—' }}</td>
             <td class="text-left">{{ row.name }}</td>
             <td class="text-right">{{ formatNumber(row.interval_miles) }}</td>
@@ -41,13 +48,20 @@
             <td class="text-right" :class="alertClass(row)">{{ alertText(row) }}</td>
           </tr>
           <tr class="timeline-divider">
-            <td colspan="8" class="text-subtitle1 bg-secondary text-center text-black">
+            <td colspan="8" class="bg-secondary text-center text-white">
               {{
                 descending ? 'Predicted future services above' : 'Predicted future services below'
               }}
             </td>
           </tr>
-          <tr v-for="row in secondRows" :key="row.key" :class="{ 'text-italic': !descending }">
+          <tr
+            v-for="row in secondRows"
+            :key="row.key"
+            :class="{
+              'text-italic': !descending,
+              'timeline-estimated-row': row.key.startsWith('service-'),
+            }"
+          >
             <td class="text-left">{{ row.date || '—' }}</td>
             <td class="text-left">{{ row.name }}</td>
             <td class="text-right">{{ formatNumber(row.interval_miles) }}</td>
@@ -213,7 +227,13 @@ watch(() => [props.profileId, props.refreshKey], load, { immediate: true })
 </script>
 
 <style scoped>
+.timeline-estimated-row > td {
+  background-color: #fdfbf2;
+}
+
 .timeline-divider td {
-  border-top: 2px solid var(--q-secondary);
+  border-top: 2px solid #e0e8eb;
+  padding: 1px 1px;
+  line-height: 1;
 }
 </style>
