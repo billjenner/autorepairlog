@@ -84,7 +84,7 @@
         <q-btn
           label="Save updates"
           color="primary"
-          :disable="missingCount > 0"
+          :disable="!canSave"
           :loading="loading"
           @click="save"
         />
@@ -104,6 +104,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'save', 'delete'])
 
 const rows = ref([])
+const initialMissingCount = ref(0)
 
 function removeRow(row) {
   emit('delete', row.service_id, () => {
@@ -124,6 +125,7 @@ watch(
         last_miles: service.last_miles ?? null,
         last_date: service.last_date ? String(service.last_date).slice(0, 10) : null,
       }))
+    initialMissingCount.value = rows.value.filter((row) => !hasValue(row)).length
   },
   { immediate: true },
 )
@@ -135,6 +137,13 @@ function hasValue(row) {
 }
 
 const missingCount = computed(() => rows.value.filter((row) => !hasValue(row)).length)
+
+// Enabled only once the user has reduced the count of missing entries from what it was on load
+const canSave = computed(
+  () =>
+    missingCount.value === 0 ||
+    (initialMissingCount.value > 0 && missingCount.value < initialMissingCount.value),
+)
 
 function save() {
   emit(
