@@ -1,5 +1,5 @@
 <template>
-  <q-page class="q-pa-lg">
+  <q-page>
     <div class="row justify-center">
       <div class="col-12">
         <div class="row q-col-gutter-md q-mb-md">
@@ -340,9 +340,7 @@ const visibleLogs = computed(() => {
     !term ||
     Object.values(item).some(
       (value) =>
-        value !== null &&
-        typeof value !== 'object' &&
-        String(value).toLowerCase().includes(term),
+        value !== null && typeof value !== 'object' && String(value).toLowerCase().includes(term),
     )
 
   if (selectedOrderId.value !== ALL_ORDERS) {

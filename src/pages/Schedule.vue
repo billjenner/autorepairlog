@@ -1,5 +1,5 @@
 <template>
-  <q-page class="q-pa-lg">
+  <q-page>
     <div class="row justify-center">
       <div class="col-12">
         <q-select
