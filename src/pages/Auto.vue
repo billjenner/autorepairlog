@@ -10,6 +10,19 @@
         >
           <div class="row items-center justify-between q-mx-md q-mb-md">
             <div class="text-h5">Autos</div>
+            <q-input
+              v-if="canSearchAutos"
+              v-model="searchText"
+              dense
+              outlined
+              clearable
+              debounce="200"
+              placeholder="Search autos"
+              class="col-grow q-mx-md"
+              style="max-width: 400px"
+            >
+              <template #prepend><q-icon name="search" /></template>
+            </q-input>
             <q-btn
               color="primary"
               :label="showForm ? 'Cancel' : 'Add Auto'"
@@ -338,7 +351,22 @@ const columns = [
 ]
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
-const activeAutos = computed(() => autoStore.auto.filter((auto) => auto.is_active))
+const searchText = ref('')
+const canSearchAutos = computed(() => Number(profileStore.currentProfile?.admin_level) > 0)
+const activeAutos = computed(() => {
+  const active = autoStore.auto.filter((auto) => auto.is_active)
+  const term = canSearchAutos.value ? searchText.value?.trim().toLowerCase() : ''
+  if (!term) {
+    return active
+  }
+
+  return active.filter((auto) =>
+    Object.values(auto).some(
+      (value) =>
+        value !== null && typeof value !== 'object' && String(value).toLowerCase().includes(term),
+    ),
+  )
+})
 const profileId = computed(() => profileStore.currentProfile?.profile_id || null)
 const canUseAutoTemplates = computed(() => Number(profileStore.currentProfile?.admin_level) >= 5)
 const confirmDeleteOpen = computed({

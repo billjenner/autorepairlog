@@ -20,6 +20,18 @@
         <q-card flat bordered class="q-pa-md">
           <div class="row items-center justify-between q-mx-md q-mb-md">
             <div class="text-h5">Services</div>
+            <q-input
+              v-model="searchText"
+              dense
+              outlined
+              clearable
+              debounce="200"
+              placeholder="Search services"
+              class="col-grow q-mx-md"
+              style="max-width: 400px"
+            >
+              <template #prepend><q-icon name="search" /></template>
+            </q-input>
             <q-btn
               color="primary"
               :label="showForm ? 'Cancel' : 'Add Service'"
@@ -262,11 +274,25 @@ const scheduleOptions = computed(() =>
   })),
 )
 const selectedScheduleLabel = computed(() => scheduleLabel(selectedScheduleId.value))
-const visibleServices = computed(() =>
-  selectedScheduleId.value
-    ? serviceStore.services.filter((item) => item.schedule_id === selectedScheduleId.value)
-    : [],
-)
+const searchText = ref('')
+const visibleServices = computed(() => {
+  if (!selectedScheduleId.value) {
+    return []
+  }
+
+  const term = searchText.value.trim().toLowerCase()
+  return serviceStore.services.filter(
+    (item) =>
+      item.schedule_id === selectedScheduleId.value &&
+      (!term ||
+        Object.values(item).some(
+          (value) =>
+            value !== null &&
+            typeof value !== 'object' &&
+            String(value).toLowerCase().includes(term),
+        )),
+  )
+})
 const confirmDeleteOpen = computed({
   get: () => Boolean(pendingDeleteService.value),
   set: (open) => {

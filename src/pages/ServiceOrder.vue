@@ -20,6 +20,18 @@
         <q-card flat bordered class="q-pa-md">
           <div class="row items-center justify-between q-mx-md q-mb-md">
             <div class="text-h5">Service Orders</div>
+            <q-input
+              v-model="searchText"
+              dense
+              outlined
+              clearable
+              debounce="200"
+              placeholder="Search service orders"
+              class="col-grow q-mx-md"
+              style="max-width: 400px"
+            >
+              <template #prepend><q-icon name="search" /></template>
+            </q-input>
             <q-btn
               color="primary"
               :label="showForm ? 'Cancel' : 'Add Service Order'"
@@ -565,11 +577,25 @@ const hasAtLeastOneService = computed(
     existingLogs.value.length > 0 ||
     serviceEntries.value.some((entry) => findService(entry.service_id)),
 )
-const visibleOrders = computed(() =>
-  selectedAutoId.value
-    ? serviceOrderStore.serviceOrders.filter((item) => item.auto_id === selectedAutoId.value)
-    : [],
-)
+const searchText = ref('')
+const visibleOrders = computed(() => {
+  if (!selectedAutoId.value) {
+    return []
+  }
+
+  const term = searchText.value.trim().toLowerCase()
+  return serviceOrderStore.serviceOrders.filter(
+    (item) =>
+      item.auto_id === selectedAutoId.value &&
+      (!term ||
+        Object.values(item).some(
+          (value) =>
+            value !== null &&
+            typeof value !== 'object' &&
+            String(value).toLowerCase().includes(term),
+        )),
+  )
+})
 const detailsInvoiceUrl = ref('')
 const currentInvoiceUrl = ref('')
 const confirmDeleteOpen = computed({

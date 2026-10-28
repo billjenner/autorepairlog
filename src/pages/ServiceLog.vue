@@ -36,6 +36,18 @@
         <q-card flat bordered class="q-pa-md">
           <div class="row items-center justify-between q-mx-md q-mb-md">
             <div class="text-h5">Service Log</div>
+            <q-input
+              v-model="searchText"
+              dense
+              outlined
+              clearable
+              debounce="200"
+              placeholder="Search service log"
+              class="col-grow q-mx-md"
+              style="max-width: 400px"
+            >
+              <template #prepend><q-icon name="search" /></template>
+            </q-input>
             <q-btn
               color="primary"
               :label="showForm ? 'Cancel' : 'Add Service Log'"
@@ -321,10 +333,21 @@ const selectedOrderLabel = computed(
           .join(' — '),
       )[0] || '—',
 )
+const searchText = ref('')
 const visibleLogs = computed(() => {
+  const term = searchText.value.trim().toLowerCase()
+  const matchesSearch = (item) =>
+    !term ||
+    Object.values(item).some(
+      (value) =>
+        value !== null &&
+        typeof value !== 'object' &&
+        String(value).toLowerCase().includes(term),
+    )
+
   if (selectedOrderId.value !== ALL_ORDERS) {
     return serviceLogStore.serviceLogs.filter(
-      (item) => item.service_order_id === selectedOrderId.value,
+      (item) => item.service_order_id === selectedOrderId.value && matchesSearch(item),
     )
   }
 
@@ -333,7 +356,9 @@ const visibleLogs = computed(() => {
       .filter((order) => !selectedAutoId.value || order.auto_id === selectedAutoId.value)
       .map((order) => order.service_order_id),
   )
-  return serviceLogStore.serviceLogs.filter((item) => orderIds.has(item.service_order_id))
+  return serviceLogStore.serviceLogs.filter(
+    (item) => orderIds.has(item.service_order_id) && matchesSearch(item),
+  )
 })
 const confirmDeleteOpen = computed({
   get: () => Boolean(pendingDeleteLog.value),
