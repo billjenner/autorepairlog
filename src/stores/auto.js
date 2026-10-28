@@ -36,7 +36,7 @@ export const useAutoStore = defineStore('Auto', {
         vin: auto.vin?.trim() || null,
         purchase_date: auto.purchase_date || null,
         purchase_amount: this.toNullableNonNegativeInteger(auto.purchase_amount),
-        last_recorded_mileage: this.toNullableNonNegativeInteger(auto.last_recorded_mileage),
+        purchase_mileage: this.toNullableNonNegativeInteger(auto.purchase_mileage),
       }
     },
 

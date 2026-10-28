@@ -259,11 +259,11 @@ const visibleMileage = computed(() => {
   const auto = autoStore.auto.find((item) => item.auto_id === selectedAutoId.value)
 
   // Read-only row built from the auto's own purchase date and last recorded mileage.
-  if (auto && (auto.purchase_date || auto.last_recorded_mileage !== null)) {
+  if (auto && (auto.purchase_date || auto.purchase_mileage !== null)) {
     rows.push({
       mileage_id: `auto-${auto.auto_id}`,
       auto_id: auto.auto_id,
-      miles: auto.last_recorded_mileage,
+      miles: auto.purchase_mileage,
       date: auto.purchase_date,
       fromAuto: true,
     })

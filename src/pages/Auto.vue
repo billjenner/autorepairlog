@@ -119,9 +119,9 @@
                 </div>
                 <div class="col-12 col-sm-4">
                   <q-input
-                    v-model="form.last_recorded_mileage"
+                    v-model="form.purchase_mileage"
                     type="number"
-                    label="Last recorded mileage"
+                    label="Purchase mileage"
                     filled
                     dense
                     min="0"
@@ -302,9 +302,9 @@ const columns = [
     sortable: true,
   },
   {
-    name: 'last_recorded_mileage',
-    label: 'Mileage',
-    field: 'last_recorded_mileage',
+    name: 'purchase_mileage',
+    label: 'Purchase Mileage',
+    field: 'purchase_mileage',
     align: 'right',
     sortable: true,
   },
@@ -333,7 +333,7 @@ function createEmptyForm() {
     vin: '',
     purchase_date: null,
     purchase_amount: null,
-    last_recorded_mileage: null,
+    purchase_mileage: null,
     isTemplate: true,
   }
 }
@@ -379,7 +379,7 @@ async function editAuto(auto) {
     vin: auto.vin || '',
     purchase_date: auto.purchase_date || null,
     purchase_amount: auto.purchase_amount,
-    last_recorded_mileage: auto.last_recorded_mileage,
+    purchase_mileage: auto.purchase_mileage,
     isTemplate: auto.isTemplate,
   })
   editingAutoId.value = auto.auto_id

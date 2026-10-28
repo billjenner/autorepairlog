@@ -20,6 +20,10 @@ create table if not exists public.auto (
         on delete cascade
 );
 
+ALTER TABLE public.auto
+RENAME COLUMN last_recorded_mileage TO purchase_mileage;
+
+
 -- ============================================================
 -- ROW LEVEL SECURITY
 -- ============================================================
