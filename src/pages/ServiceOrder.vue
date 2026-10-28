@@ -978,6 +978,7 @@ async function saveServiceOrder() {
       service_date: saved.service_date || form.service_date,
       service_miles: saved.mileage_at_service ?? form.mileage_at_service,
       name: service.name,
+      notes: saved.notes ?? form.notes,
       parts: entry.parts,
       labor: entry.labor,
       total_cost: entryTotal(entry),
