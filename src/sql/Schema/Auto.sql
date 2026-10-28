@@ -9,7 +9,7 @@ create table if not exists public.auto (
     vin text,
     purchase_date date,
     purchase_amount integer,
-    last_recorded_mileage integer,
+    purchase_mileage integer,
     photo_url text,
     is_active boolean not null default true,
     created_date timestamptz not null default now(),
@@ -19,10 +19,6 @@ create table if not exists public.auto (
         references public.profile (profile_id)
         on delete cascade
 );
-
-ALTER TABLE public.auto
-RENAME COLUMN last_recorded_mileage TO purchase_mileage;
-
 
 -- ============================================================
 -- ROW LEVEL SECURITY
