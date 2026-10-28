@@ -1,7 +1,7 @@
 CREATE TABLE public.service_order (
-    service_order_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    service_order_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
-    auto_id INTEGER NOT NULL
+    auto_id BIGINT NOT NULL
         REFERENCES public.auto(auto_id)
         ON DELETE CASCADE,
 
