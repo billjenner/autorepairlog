@@ -1,5 +1,5 @@
 <template>
-  <component :is="embedded ? 'div' : 'q-page'" :class="!embedded ? 'q-pa-md' : ''">
+  <component :is="embedded ? 'div' : 'q-page'" :class="!embedded ? 'q-pa-lg' : ''">
     <div :class="!embedded ? 'row justify-center' : ''">
       <div :class="!embedded ? 'col-12' : ''">
         <component

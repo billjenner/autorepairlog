@@ -1,5 +1,5 @@
 <template>
-  <q-page class="q-pa-md">
+  <q-page class="q-pa-lg">
     <div class="row justify-center">
       <div class="col-12">
         <div class="row q-col-gutter-md q-mb-md">
@@ -33,8 +33,8 @@
             />
           </div>
         </div>
-        <q-card flat bordered class="q-pa-md">
-          <div class="row items-center justify-between q-mx-md q-mb-md">
+        <q-card flat bordered>
+          <div class="row items-center justify-between q-mx-md q-my-md">
             <div class="text-h5">Service Log</div>
             <q-input
               v-model="searchText"
