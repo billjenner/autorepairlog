@@ -53,6 +53,22 @@
               </div>
             </q-card>
 
+            <q-card flat bordered class="q-pa-md bg-grey-1">
+              <div class="text-subtitle1 q-mb-sm">Preferences</div>
+              <div class="column">
+                <q-toggle
+                  v-model="profile.allow_in_app_notifications"
+                  label="Allow in-app notifications"
+                  :disable="!usersStore.currentUser"
+                />
+                <q-toggle
+                  v-model="profile.allow_sms_notifications"
+                  label="Allow SMS notifications"
+                  :disable="!usersStore.currentUser"
+                />
+              </div>
+            </q-card>
+
             <div class="row justify-end q-gutter-sm">
               <q-btn
                 flat
@@ -98,6 +114,8 @@ const loading = ref(false)
 const profile = reactive({
   fname: '',
   lname: '',
+  allow_in_app_notifications: true,
+  allow_sms_notifications: true,
 })
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
@@ -105,11 +123,15 @@ const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
 function resetProfile() {
   profile.fname = ''
   profile.lname = ''
+  profile.allow_in_app_notifications = true
+  profile.allow_sms_notifications = true
 }
 
 function setProfile(data) {
   profile.fname = data?.fname ?? usersStore.currentUser?.user_metadata?.fname ?? ''
   profile.lname = data?.lname ?? usersStore.currentUser?.user_metadata?.lname ?? ''
+  profile.allow_in_app_notifications = data?.allow_in_app_notifications ?? true
+  profile.allow_sms_notifications = data?.allow_sms_notifications ?? true
 }
 
 async function loadProfile() {

@@ -22,6 +22,12 @@ create table public.profile (
         on delete cascade
 );
 
+ALTER TABLE public.profile
+ADD COLUMN allow_in_app_notifications BOOLEAN NOT NULL DEFAULT TRUE;
+
+ALTER TABLE public.profile
+ADD COLUMN allow_sms_notifications BOOLEAN NOT NULL DEFAULT TRUE;
+
 -- ============================================================
 -- Add to table
 -- ============================================================

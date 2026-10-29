@@ -18,6 +18,12 @@ export const useProfileStore = defineStore('Profile', {
         lname: profile.lname?.trim() || '',
       }
 
+      for (const field of ['allow_in_app_notifications', 'allow_sms_notifications']) {
+        if (typeof profile[field] === 'boolean') {
+          payload[field] = profile[field]
+        }
+      }
+
       // Only send email when provided so profile edits don't overwrite it with ''.
       const email = profile.email?.trim().toLowerCase()
       if (email) {
