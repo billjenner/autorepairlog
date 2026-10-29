@@ -22,14 +22,6 @@
             <div class="col row items-center">
               <div class="text-h5">Services</div>
             </div>
-            <div class="col-auto q-mr-sm">
-              <q-btn
-                color="primary"
-                :label="showForm ? 'Cancel' : 'Add Service'"
-                :disable="!usersStore.currentUser"
-                @click="toggleForm"
-              />
-            </div>
             <q-input
               v-model="searchText"
               dense
@@ -37,11 +29,19 @@
               clearable
               debounce="200"
               placeholder="Search services"
-              class="col-12 col-md-4"
+              class="col-12 col-md-4 service-list-search"
               style="width: 100%; max-width: 400px"
             >
               <template #prepend><q-icon name="search" /></template>
             </q-input>
+            <div class="col-auto service-list-action">
+              <q-btn
+                color="primary"
+                :label="showForm ? 'Cancel' : 'Add Service'"
+                :disable="!usersStore.currentUser"
+                @click="toggleForm"
+              />
+            </div>
           </div>
 
           <q-banner v-if="serviceStore.error" class="bg-negative text-white q-mb-md" rounded>

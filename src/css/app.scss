@@ -1,1 +1,19 @@
 // app global css
+
+.service-list-search {
+  order: 3;
+}
+
+.service-list-action {
+  order: 2;
+}
+
+@media (min-width: 600px) {
+  .service-list-search {
+    order: 2;
+  }
+
+  .service-list-action {
+    order: 3;
+  }
+}
