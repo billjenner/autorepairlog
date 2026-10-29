@@ -7,13 +7,10 @@
     <q-card style="width: 1100px; max-width: 95vw">
       <q-card-section class="text-h6">Enter last service details</q-card-section>
       <q-card-section class="q-pt-none">
-        <div class="text-h5 text-bold text-center q-ma-xl">
-          Enter either Last Miles or Last Date for every service
-          <span :style="{ visibility: missingCount ? 'visible' : 'hidden' }"
-            >({{ missingCount }} remaining)</span
-          >. If never serviced, check
-          the "Never" box. If unsure about the last service, check the "I don't know" box - it will
-          disable this service alert until updated.
+        <div v-if="missingCount" class="text-h5 text-bold text-center q-ma-xl">
+          Enter either Last Miles or Last Date for every service ({{ missingCount }} remaining). If
+          never serviced, check the "Never" box. If unsure about the last service, check the "I
+          don't know" box - it will disable this service alert until updated.
         </div>
         <q-markup-table flat dense>
           <thead>
@@ -100,7 +97,7 @@
         </q-markup-table>
       </q-card-section>
       <q-card-actions align="right">
-        <q-btn flat label="Skip for now" color="primary" :disable="loading" v-close-popup />
+        <q-btn flat label="Skip for now" :disable="loading" v-close-popup />
         <q-btn
           label="Save updates"
           color="primary"
