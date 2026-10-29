@@ -375,7 +375,7 @@
                   dense
                   color="accent"
                   label="Details"
-                  @click="detailsOrder = props.row"
+                  @click="openDetails(props.row)"
                 />
                 <q-btn flat dense color="primary" label="Edit" @click="editOrder(props.row)" />
               </q-td>
@@ -384,19 +384,55 @@
 
           <q-dialog v-model="detailsOpen">
             <q-card style="min-width: 360px; max-width: 600px; width: 100%">
-              <q-card-section class="text-h6">
-                {{ detailsOrder?.invoice_number || 'Service order details' }}
-              </q-card-section>
-              <q-card-section class="q-pt-none">
-                <div>Shop: {{ detailsOrder?.shop_name || '—' }}</div>
-                <div>Mechanic: {{ detailsOrder?.mechanic_name || '—' }}</div>
-                <div>Total: {{ formatMoney(detailsOrder?.total_cost) }}</div>
-                <div v-if="detailsInvoiceUrl">
-                  Invoice:
+              <q-card-section>
+                <div class="text-h6">{{ detailsOrder?.shop_name || 'Service order details' }}</div>
+                <div class="text-body2">
+                  <span v-if="detailsOrder?.invoice_number">
+                    Invoice #: {{ detailsOrder.invoice_number }}
+                  </span>
+                  <span v-if="detailsOrder?.mechanic_name">
+                    {{ detailsOrder?.invoice_number ? ' · ' : '' }}Mechanic:
+                    {{ detailsOrder.mechanic_name }}
+                  </span>
+                </div>
+                <div v-if="detailsInvoiceUrl" class="text-body2">
                   <a :href="detailsInvoiceUrl" target="_blank" rel="noopener noreferrer"
                     >View invoice</a
                   >
                 </div>
+              </q-card-section>
+              <q-card-section class="q-pt-none">
+                <q-markup-table flat dense>
+                  <thead>
+                    <tr>
+                      <th class="text-left">Service</th>
+                      <th class="text-right">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-if="detailsLogsLoading">
+                      <td colspan="2" class="text-center text-grey-7">Loading services...</td>
+                    </tr>
+                    <tr v-else-if="detailsLogsError">
+                      <td colspan="2" class="text-negative">{{ detailsLogsError }}</td>
+                    </tr>
+                    <tr v-for="(log, index) in detailsLogs" :key="log.service_log_id || index">
+                      <td>{{ log.name || 'Service' }}</td>
+                      <td class="text-right">{{ formatMoney(log.total_cost) }}</td>
+                    </tr>
+                    <tr v-if="!detailsLogsLoading && !detailsLogsError && !detailsLogs.length">
+                      <td colspan="2" class="text-center text-grey-7">
+                        No services recorded.
+                      </td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th class="text-left">SO total</th>
+                      <th class="text-right">{{ formatMoney(detailsOrder?.total_cost) }}</th>
+                    </tr>
+                  </tfoot>
+                </q-markup-table>
               </q-card-section>
               <q-card-section class="q-pt-none">
                 <div class="text-caption text-grey-7 q-mb-xs">Notes</div>
@@ -504,17 +540,45 @@ const existingLogs = ref([])
 const autoSelectRef = ref(null)
 const pendingDeleteOrder = ref(null)
 const detailsOrder = ref(null)
+const detailsLogs = ref([])
+const detailsLogsLoading = ref(false)
+const detailsLogsError = ref('')
+let detailsRequest = 0
 const detailsOpen = computed({
   get: () => Boolean(detailsOrder.value),
   set: (open) => {
     if (!open) {
+      detailsRequest += 1
       detailsOrder.value = null
+      detailsLogs.value = []
+      detailsLogsLoading.value = false
+      detailsLogsError.value = ''
     }
   },
 })
 const form = reactive(createEmptyForm())
 
 const formatMoney = (value) => `$${Number(value || 0).toFixed(2)}`
+
+async function openDetails(order) {
+  detailsOrder.value = order
+  detailsLogs.value = []
+  detailsLogsError.value = ''
+  detailsLogsLoading.value = true
+  const request = ++detailsRequest
+
+  try {
+    const logs = await serviceLogStore.fetchLogsForOrder(order.service_order_id)
+    if (request === detailsRequest) {
+      detailsLogs.value = logs
+      detailsLogsError.value = serviceLogStore.error || ''
+    }
+  } finally {
+    if (request === detailsRequest) {
+      detailsLogsLoading.value = false
+    }
+  }
+}
 
 const columns = [
   { name: 'service_date', label: 'Date', field: 'service_date', align: 'left', sortable: true },
