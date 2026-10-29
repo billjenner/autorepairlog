@@ -34,8 +34,18 @@
           </div>
         </div>
         <q-card flat bordered>
-          <div class="row items-center justify-between q-mx-md q-my-md">
-            <div class="text-h5">Service Log</div>
+          <div class="row items-center justify-between q-mx-md q-my-md q-col-gutter-sm">
+            <div class="col row items-center">
+              <div class="text-h5">Service Log</div>
+            </div>
+            <div class="col-auto q-mr-sm">
+              <q-btn
+                color="primary"
+                :label="showForm ? 'Cancel' : 'Add Service Log'"
+                :disable="!usersStore.currentUser"
+                @click="toggleForm"
+              />
+            </div>
             <q-input
               v-model="searchText"
               dense
@@ -43,17 +53,11 @@
               clearable
               debounce="200"
               placeholder="Search service log"
-              class="col-grow q-mx-md"
-              style="max-width: 400px"
+              class="col-12 col-md-4"
+              style="width: 100%; max-width: 400px"
             >
               <template #prepend><q-icon name="search" /></template>
             </q-input>
-            <q-btn
-              color="primary"
-              :label="showForm ? 'Cancel' : 'Add Service Log'"
-              :disable="!usersStore.currentUser"
-              @click="toggleForm"
-            />
           </div>
 
           <q-banner v-if="serviceLogStore.error" class="bg-negative text-white q-mb-md" rounded>
