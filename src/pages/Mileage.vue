@@ -18,7 +18,7 @@
         />
 
         <q-card flat bordered>
-          <div class="row items-center justify-between q-mx-md q-mb-md">
+          <div class="row items-center justify-between q-mx-md q-mt-md q-mb-md">
             <div class="text-h5">Mileage</div>
             <q-btn
               color="primary"

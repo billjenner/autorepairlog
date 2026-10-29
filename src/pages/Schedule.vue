@@ -14,7 +14,7 @@
           class="q-mb-md"
         />
         <q-card flat bordered>
-          <div class="row items-center justify-between q-mx-md q-mb-md">
+          <div class="row items-center justify-between q-mx-md q-mt-md q-mb-md">
             <div class="text-h5">Schedules</div>
           </div>
 
@@ -39,7 +39,7 @@
             :columns="templateColumns"
             v-model:pagination="templatePagination"
             :table-row-class-fn="templateRowClass"
-            :rows-per-page-options="[10, 25, 50, 0]"
+            :rows-per-page-options="[0]"
             row-key="schedule_id"
             flat
             bordered
@@ -61,22 +61,32 @@
             </template>
             <template #body-cell-auto="props">
               <q-td :props="props">
-                <a href="#" @click.prevent="openDetails(props.row)">
-                  {{ autoDescription(props.row) }}
-                </a>
+                {{ autoDescription(props.row) }}
               </q-td>
             </template>
             <template #body-cell-count="props">
               <q-td :props="props">
-                <a v-if="props.value > 0" href="#" @click.prevent="openServices(props.row)">
-                  {{ props.value }}
-                </a>
+                <q-btn
+                  v-if="props.value > 0"
+                  flat
+                  dense
+                  color="primary"
+                  :label="String(props.value)"
+                  @click="openServices(props.row)"
+                />
                 <span v-else>{{ props.value }}</span>
               </q-td>
             </template>
             <template #body-cell-notes="props">
               <q-td :props="props">
-                <div v-if="props.row.notes" v-html="sanitizeNotes(props.row.notes)" />
+                <q-btn
+                  v-if="props.row.notes"
+                  flat
+                  dense
+                  color="primary"
+                  label="View notes"
+                  @click="openNotes(props.row.notes)"
+                />
               </q-td>
             </template>
             <template #body-cell-created_date="props">
@@ -138,8 +148,9 @@
             :rows="scheduleStore.schedules"
             :columns="columns"
             :loading="scheduleStore.loading"
-            :pagination="{ rowsPerPage: 25 }"
-            :rows-per-page-options="[10, 25, 50, 0]"
+            :pagination="{ rowsPerPage: 0 }"
+            :rows-per-page-options="[0]"
+            hide-pagination
             row-key="schedule_id"
             flat
             bordered
@@ -149,22 +160,32 @@
           >
             <template #body-cell-auto="props">
               <q-td :props="props">
-                <a href="#" @click.prevent="openDetails(props.row)">
-                  {{ autoDescription(props.row) }}
-                </a>
+                {{ autoDescription(props.row) }}
               </q-td>
             </template>
             <template #body-cell-count="props">
               <q-td :props="props">
-                <a v-if="props.value > 0" href="#" @click.prevent="openServices(props.row)">
-                  {{ props.value }}
-                </a>
+                <q-btn
+                  v-if="props.value > 0"
+                  flat
+                  dense
+                  color="primary"
+                  :label="String(props.value)"
+                  @click="openServices(props.row)"
+                />
                 <span v-else>{{ props.value }}</span>
               </q-td>
             </template>
             <template #body-cell-notes="props">
               <q-td :props="props">
-                <div v-if="props.row.notes" v-html="sanitizeNotes(props.row.notes)" />
+                <q-btn
+                  v-if="props.row.notes"
+                  flat
+                  dense
+                  color="primary"
+                  label="View notes"
+                  @click="openNotes(props.row.notes)"
+                />
               </q-td>
             </template>
             <template #body-cell-created_date="props">
@@ -175,17 +196,8 @@
                 <q-btn
                   flat
                   dense
-                  color="primary"
-                  label="Services"
-                  @click="
-                    router.push({ path: '/service', query: { schedule_id: props.row.schedule_id } })
-                  "
-                />
-                <q-btn
-                  flat
-                  dense
-                  color="primary"
-                  label="Last service"
+                  color="accent"
+                  label="Last service Dates"
                   @click="editLastService(props.row)"
                 />
                 <q-btn flat dense color="primary" label="Edit" @click="editSchedule(props.row)" />
@@ -207,12 +219,17 @@
             @save="saveLastServiceValues"
             @delete="deleteNewService"
           />
-          <schedule-details-dialog
-            v-model="detailsDialogOpen"
-            :schedule="detailsSchedule"
-            :auto-label="detailsSchedule ? autoDescription(detailsSchedule) : ''"
-          />
-
+          <q-dialog v-model="notesDialogOpen">
+            <q-card style="min-width: 320px; max-width: 600px; width: 100%">
+              <q-card-section class="text-h6">Schedule notes</q-card-section>
+              <q-card-section class="q-pt-none">
+                <div v-html="DOMPurify.sanitize(selectedNotes)" />
+              </q-card-section>
+              <q-card-actions align="right">
+                <q-btn flat label="Close" color="primary" v-close-popup />
+              </q-card-actions>
+            </q-card>
+          </q-dialog>
           <q-dialog v-model="confirmDeleteOpen">
             <q-card style="min-width: 320px">
               <q-card-section class="text-h6">Delete schedule?</q-card-section>
@@ -237,12 +254,11 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import DOMPurify from 'dompurify'
 import NotesEditor from '@/components/NotesEditor.vue'
 import ScheduleServicesDialog from '@/components/schedule/ScheduleServicesDialog.vue'
 import ScheduleLastServiceDialog from '@/components/schedule/ScheduleLastServiceDialog.vue'
-import ScheduleDetailsDialog from '@/components/schedule/ScheduleDetailsDialog.vue'
 import ScheduleTimeline from '@/components/schedule/ScheduleTimeline.vue'
 import { templateAutoLabel, useScheduleStore } from '@/stores/schedule'
 import { useUsersStore } from '@/stores/users'
@@ -251,7 +267,6 @@ import { notifySuccess } from '../utils/notify'
 
 const $q = useQuasar()
 const route = useRoute()
-const router = useRouter()
 const scheduleStore = useScheduleStore()
 const usersStore = useUsersStore()
 const profileStore = useProfileStore()
@@ -310,7 +325,7 @@ const templateColumns = computed(() => [
     : []),
   ...columns.filter((col) => col.name !== 'actions'),
 ])
-const templatePagination = ref({ sortBy: 'is_template', descending: true, rowsPerPage: 10 })
+const templatePagination = ref({ sortBy: 'is_template', descending: true, rowsPerPage: 0 })
 const templateTableRef = ref(null)
 
 // Marks the row after which the Is Template value changes, in the table's displayed order.
@@ -344,21 +359,21 @@ const confirmDeleteOpen = computed({
 })
 
 const servicesDialogOpen = ref(false)
-const detailsDialogOpen = ref(false)
 const lastServiceDialogOpen = ref(false)
+const notesDialogOpen = ref(false)
+const selectedNotes = ref('')
 const newScheduleServices = ref([])
 const newScheduleAutoId = ref(null)
-const detailsSchedule = ref(null)
-
-function openDetails(schedule) {
-  detailsSchedule.value = schedule
-  detailsDialogOpen.value = true
-}
 const servicesForDialog = ref([])
 
 function openServices(schedule) {
   servicesForDialog.value = schedule.service || []
   servicesDialogOpen.value = true
+}
+
+function openNotes(notes) {
+  selectedNotes.value = notes
+  notesDialogOpen.value = true
 }
 
 function autoDescription(schedule) {
@@ -367,30 +382,6 @@ function autoDescription(schedule) {
   }
   const auto = scheduleStore.templateAutos.find((item) => item.auto_id === schedule.auto_id)
   return auto ? templateAutoLabel(auto) : '—'
-}
-
-function sanitizeNotes(notes, maxChars = 10) {
-  const container = document.createElement('div')
-  container.innerHTML = DOMPurify.sanitize(notes)
-
-  let remaining = maxChars
-  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT)
-  const textNodes = []
-  while (walker.nextNode()) textNodes.push(walker.currentNode)
-
-  for (const node of textNodes) {
-    const text = node.textContent
-    if (remaining <= 0) {
-      node.remove()
-    } else if (text.length > remaining) {
-      node.textContent = text.slice(0, remaining) + '…'
-      remaining = 0
-    } else {
-      remaining -= text.length
-    }
-  }
-
-  return container.innerHTML
 }
 
 function formatDate(value) {
