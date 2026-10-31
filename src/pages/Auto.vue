@@ -606,6 +606,18 @@ async function deleteAuto() {
 
 watch(currentUserId, loadAuto)
 watch(
+  activeAutos,
+  (autos) => {
+    const selectedAuto = autos.find((auto) => auto.auto_id === selectedAutoId.value)
+    if (selectedAuto) {
+      selectedAutos.value = [selectedAuto]
+    } else {
+      selectedAutos.value = autos.length ? [autos[0]] : []
+    }
+  },
+  { immediate: true },
+)
+watch(
   () => autoStore.auto.map((auto) => `${auto.auto_id}:${auto.photo_url || ''}`).join('|'),
   async () => {
     const requestId = ++photoUrlRequestId
