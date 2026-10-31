@@ -1,7 +1,9 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { supabase } from '../lib/supabase'
 
-const LOG_SELECT = '*, service_order:service_order_id(service_date, mileage_at_service)'
+const LOG_SELECT =
+  '*, service_order:service_order_id(service_order_id, auto_id, shop_name, mechanic_name, ' +
+  'invoice_number, service_date, mileage_at_service, is_complete, invoice_url, notes)'
 
 export const useServiceLogStore = defineStore('ServiceLog', {
   state: () => ({

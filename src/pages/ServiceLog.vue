@@ -183,25 +183,7 @@
             </template>
           </q-table>
 
-          <q-dialog v-model="detailsOpen">
-            <q-card style="min-width: 360px; max-width: 600px; width: 100%">
-              <q-card-section class="text-h6">
-                {{ detailsLog?.name || 'Service log details' }}
-              </q-card-section>
-              <q-card-section class="q-pt-none">
-                <div>Parts: {{ formatMoney(detailsLog?.parts) }}</div>
-                <div>Labor: {{ formatMoney(detailsLog?.labor) }}</div>
-                <div>Total: {{ formatMoney(detailsLog?.total_cost) }}</div>
-              </q-card-section>
-              <q-card-section class="q-pt-none">
-                <div class="text-caption text-grey-7 q-mb-xs">Notes</div>
-                <notes-viewer :notes="detailsLog?.notes || ''" />
-              </q-card-section>
-              <q-card-actions align="right">
-                <q-btn flat label="Close" color="primary" v-close-popup />
-              </q-card-actions>
-            </q-card>
-          </q-dialog>
+          <ServiceLogDetailsDialog v-model:log="detailsLog" />
 
           <q-dialog v-model="confirmDeleteOpen">
             <q-card style="min-width: 320px">
@@ -230,7 +212,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import NotesEditor from '@/components/NotesEditor.vue'
-import NotesViewer from '@/components/NotesViewer.vue'
+import ServiceLogDetailsDialog from '@/components/ServiceLogDetailsDialog.vue'
 import { useServiceLogStore } from '@/stores/serviceLog'
 import { templateAutoLabel } from '@/stores/schedule'
 import { useUsersStore } from '@/stores/users'
@@ -250,14 +232,6 @@ const selectedAutoId = ref(null)
 const orderSelectRef = ref(null)
 const pendingDeleteLog = ref(null)
 const detailsLog = ref(null)
-const detailsOpen = computed({
-  get: () => Boolean(detailsLog.value),
-  set: (open) => {
-    if (!open) {
-      detailsLog.value = null
-    }
-  },
-})
 const form = reactive(createEmptyForm())
 
 const formatMoney = (value) => `$${Number(value || 0).toFixed(2)}`

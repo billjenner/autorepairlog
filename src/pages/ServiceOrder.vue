@@ -533,6 +533,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
+import { useRoute } from 'vue-router'
 import NotesEditor from '@/components/NotesEditor.vue'
 import NotesViewer from '@/components/NotesViewer.vue'
 import ServiceOrderLogsDialog from '@/components/ServiceOrderLogsDialog.vue'
@@ -546,6 +547,7 @@ import { useProfileStore } from '@/stores/profile'
 import { notifySuccess } from '../utils/notify'
 
 const $q = useQuasar()
+const route = useRoute()
 const serviceOrderStore = useServiceOrderStore()
 const serviceStore = useServiceStore()
 const serviceLogStore = useServiceLogStore()
@@ -1002,6 +1004,13 @@ async function load() {
     }),
     serviceStore.loadServices(),
   ])
+  const requestedAutoId = Number(route.query.autoId)
+  if (serviceOrderStore.autoOptions.some((auto) => auto.auto_id === requestedAutoId)) {
+    selectedAutoId.value = requestedAutoId
+  }
+  if (route.query.search) {
+    searchText.value = String(route.query.search)
+  }
   await refreshServiceLogCounts()
 }
 
