@@ -369,40 +369,45 @@
             table-header-class="bg-accent text-white"
             no-data-label="No service orders yet."
           >
-            <template #body-cell-is_complete="props">
-              <q-td :props="props">{{ props.row.is_complete ? 'Yes' : 'No' }}</q-td>
-            </template>
-            <template #body-cell-actions="props">
-              <q-td :props="props" class="text-right">
+            <template #body-cell-service_logs="props">
+              <q-td :props="props" class="text-center">
                 <q-btn
                   flat
                   dense
-                  color="accent"
-                  label="Details"
-                  @click="openDetails(props.row)"
+                  color="primary"
+                  :label="`{${serviceLogCounts[props.row.service_order_id] ?? 0}}`"
+                  @click="serviceLogsOrderId = props.row.service_order_id"
                 />
+              </q-td>
+            </template>
+            <template #body-cell-actions="props">
+              <q-td :props="props" class="text-right">
+                <q-btn flat dense color="accent" label="Details" @click="openDetails(props.row)" />
                 <q-btn flat dense color="primary" label="Edit" @click="editOrder(props.row)" />
               </q-td>
             </template>
           </q-table>
 
+          <ServiceOrderLogsDialog v-model:service-order-id="serviceLogsOrderId" />
+
           <q-dialog v-model="detailsOpen">
             <q-card style="min-width: 360px; max-width: 600px; width: 100%">
               <q-card-section>
-                <div class="text-h6">{{ detailsOrder?.shop_name || 'Service order details' }}</div>
+                <div class="text-h6">
+                  {{
+                    [detailsOrder?.shop_name, detailsOrder?.mechanic_name]
+                      .filter(Boolean)
+                      .join(' - ') || 'Service order details'
+                  }}
+                </div>
                 <div class="text-body2">
                   <span v-if="detailsOrder?.invoice_number">
                     Invoice #: {{ detailsOrder.invoice_number }}
                   </span>
-                  <span v-if="detailsOrder?.mechanic_name">
-                    {{ detailsOrder?.invoice_number ? ' · ' : '' }}Mechanic:
-                    {{ detailsOrder.mechanic_name }}
-                  </span>
                 </div>
-                <div v-if="detailsInvoiceUrl" class="text-body2">
-                  <a :href="detailsInvoiceUrl" target="_blank" rel="noopener noreferrer"
-                    >View invoice</a
-                  >
+                <div class="text-body2">Service date: {{ detailsOrder?.service_date || '—' }}</div>
+                <div class="text-body2">
+                  Mileage: {{ formatMileage(detailsOrder?.mileage_at_service) }}
                 </div>
               </q-card-section>
               <q-card-section class="q-pt-none">
@@ -425,9 +430,7 @@
                       <td class="text-right">{{ formatMoney(log.total_cost) }}</td>
                     </tr>
                     <tr v-if="!detailsLogsLoading && !detailsLogsError && !detailsLogs.length">
-                      <td colspan="2" class="text-center text-grey-7">
-                        No services recorded.
-                      </td>
+                      <td colspan="2" class="text-center text-grey-7">No services recorded.</td>
                     </tr>
                   </tbody>
                   <tfoot>
@@ -439,8 +442,24 @@
                 </q-markup-table>
               </q-card-section>
               <q-card-section class="q-pt-none">
+                <div class="text-body2 q-mb-md">
+                  Is complete: {{ detailsOrder?.is_complete ? 'Yes' : 'No' }}
+                </div>
                 <div class="text-caption text-grey-7 q-mb-xs">Notes</div>
                 <notes-viewer :notes="detailsOrder?.notes || ''" />
+              </q-card-section>
+              <q-card-section class="q-pt-none">
+                <div class="text-body2">
+                  Attachment: {{ detailsOrder?.invoice_url ? 'Available' : 'None' }}
+                </div>
+                <a
+                  v-if="detailsInvoiceUrl"
+                  :href="detailsInvoiceUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View attachment
+                </a>
               </q-card-section>
               <q-card-actions align="right">
                 <q-btn flat label="Close" color="primary" v-close-popup />
@@ -516,6 +535,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import NotesEditor from '@/components/NotesEditor.vue'
 import NotesViewer from '@/components/NotesViewer.vue'
+import ServiceOrderLogsDialog from '@/components/ServiceOrderLogsDialog.vue'
 import { useServiceOrderStore } from '@/stores/serviceOrder'
 import { useServiceStore } from '@/stores/service'
 import { useServiceLogStore } from '@/stores/serviceLog'
@@ -547,6 +567,8 @@ const detailsOrder = ref(null)
 const detailsLogs = ref([])
 const detailsLogsLoading = ref(false)
 const detailsLogsError = ref('')
+const serviceLogsOrderId = ref(null)
+const serviceLogCounts = ref({})
 let detailsRequest = 0
 const detailsOpen = computed({
   get: () => Boolean(detailsOrder.value),
@@ -563,6 +585,18 @@ const detailsOpen = computed({
 const form = reactive(createEmptyForm())
 
 const formatMoney = (value) => `$${Number(value || 0).toFixed(2)}`
+const formatMileage = (value) =>
+  value === null || value === undefined || value === '' ? '—' : Number(value).toLocaleString()
+let serviceLogCountsRequest = 0
+
+async function refreshServiceLogCounts() {
+  const request = ++serviceLogCountsRequest
+  const orderIds = serviceOrderStore.serviceOrders.map((order) => order.service_order_id)
+  const counts = await serviceLogStore.fetchLogCountsForOrders(orderIds)
+  if (request === serviceLogCountsRequest && counts) {
+    serviceLogCounts.value = counts
+  }
+}
 
 async function openDetails(order) {
   detailsOrder.value = order
@@ -609,7 +643,13 @@ const columns = [
     sortable: true,
     format: (value) => formatMoney(value),
   },
-  { name: 'is_complete', label: 'Complete', field: 'is_complete', align: 'right', sortable: true },
+  {
+    name: 'service_logs',
+    label: 'Services',
+    field: (row) => serviceLogCounts.value[row.service_order_id] ?? 0,
+    align: 'center',
+    sortable: true,
+  },
   { name: 'actions', label: '', field: 'service_order_id', align: 'right' },
 ]
 
@@ -925,6 +965,7 @@ async function removeExistingLog(log) {
     existingLogs.value = existingLogs.value.filter(
       (item) => item.service_log_id !== log.service_log_id,
     )
+    await refreshServiceLogCounts()
     return true
   }
   return false
@@ -943,6 +984,7 @@ async function load() {
     serviceOrderStore.autoOptions = []
     serviceStore.services = []
     serviceStore.scheduleOptions = []
+    serviceLogCounts.value = {}
     return
   }
 
@@ -960,6 +1002,7 @@ async function load() {
     }),
     serviceStore.loadServices(),
   ])
+  await refreshServiceLogCounts()
 }
 
 async function saveServiceOrder() {
@@ -1066,6 +1109,7 @@ async function saveServiceOrder() {
   notifySuccess($q, `Service order ${isEditing ? 'updated' : 'saved'} successfully.`, {
     color: 'positive',
   })
+  await refreshServiceLogCounts()
   resetForm()
 }
 
@@ -1080,6 +1124,7 @@ async function deleteServiceOrder() {
     if (editingOrderId.value === order.service_order_id) {
       resetForm()
     }
+    await refreshServiceLogCounts()
     notifySuccess($q, 'Service order deleted successfully.', { color: 'negative' })
   }
 }

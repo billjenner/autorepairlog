@@ -131,6 +131,47 @@ export const useServiceLogStore = defineStore('ServiceLog', {
       return data || []
     },
 
+    async fetchLogCountsForOrders(serviceOrderIds) {
+      this.error = null
+
+      if (!supabase) {
+        this.error = 'Supabase client is not configured.'
+        return null
+      }
+
+      const orderIds = [...new Set(serviceOrderIds || [])]
+      const counts = Object.fromEntries(orderIds.map((id) => [id, 0]))
+      if (!orderIds.length) {
+        return counts
+      }
+
+      const pageSize = 1000
+      let offset = 0
+
+      while (true) {
+        const { data, error } = await supabase
+          .from('service_log')
+          .select('service_order_id')
+          .in('service_order_id', orderIds)
+          .range(offset, offset + pageSize - 1)
+
+        if (error) {
+          this.error = error.message
+          return null
+        }
+
+        for (const log of data || []) {
+          counts[log.service_order_id] += 1
+        }
+
+        if (!data || data.length < pageSize) {
+          return counts
+        }
+
+        offset += pageSize
+      }
+    },
+
     async createServiceLog(log = {}) {
       this.error = null
       this.loading = true
