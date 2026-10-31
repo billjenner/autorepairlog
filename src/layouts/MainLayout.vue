@@ -139,9 +139,6 @@
           <q-item clickable v-ripple @click="navigateAndClose('/auto')">
             <q-item-section>Auto</q-item-section>
           </q-item>
-          <q-item clickable v-ripple @click="navigateAndClose('/mileage')">
-            <q-item-section>Mileage</q-item-section>
-          </q-item>
           <q-item clickable v-ripple @click="navigateAndClose('/schedule')">
             <q-item-section>Schedule</q-item-section>
           </q-item>
