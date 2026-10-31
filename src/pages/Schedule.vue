@@ -8,6 +8,7 @@
           label="Auto template"
           emit-value
           map-options
+          bg-color="warning"
           clearable
           filled
           dense

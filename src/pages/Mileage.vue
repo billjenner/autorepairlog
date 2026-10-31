@@ -9,6 +9,7 @@
           label="Auto"
           emit-value
           map-options
+          bg-color="warning"
           clearable
           filled
           dense

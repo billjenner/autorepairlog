@@ -10,6 +10,7 @@
               label="Auto"
               emit-value
               map-options
+              bg-color="warning"
               clearable
               filled
               dense
@@ -23,6 +24,7 @@
               label="Service order"
               emit-value
               map-options
+              bg-color="warning"
               filled
               dense
               lazy-rules
