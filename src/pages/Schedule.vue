@@ -81,7 +81,7 @@
                     flat
                     dense
                     color="primary"
-                    :label="String(props.value)"
+                    :label="`{${props.value}}`"
                     @click="openServices(props.row)"
                   />
                   <span v-else>{{ props.value }}</span>
@@ -183,7 +183,7 @@
                     flat
                     dense
                     color="primary"
-                    :label="String(props.value)"
+                    :label="`{${props.value}}`"
                     @click="openServices(props.row)"
                   />
                   <span v-else>{{ props.value }}</span>
