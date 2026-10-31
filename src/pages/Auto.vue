@@ -269,13 +269,7 @@
             </template>
             <template #body-cell-actions="props">
               <q-td :props="props" class="text-right">
-                <q-btn
-                  flat
-                  dense
-                  color="accent"
-                  label="Details"
-                  @click="openDetails(props.row)"
-                />
+                <q-btn flat dense color="accent" label="Details" @click="openDetails(props.row)" />
                 <q-btn flat dense color="primary" label="Edit" @click="editAuto(props.row)" />
               </q-td>
             </template>
@@ -290,68 +284,12 @@
             :auto-options="autoOptions"
           />
 
-          <q-dialog v-model="detailsOpen">
-            <q-card style="min-width: 360px; max-width: 600px; width: 100%">
-              <q-card-section>
-                <div class="text-h6">{{ autoDetailsTitle(detailsAuto) }}</div>
-              </q-card-section>
-              <q-card-section class="q-pt-none">
-                <q-img
-                  v-if="detailsAuto && autoPhotoUrls[detailsAuto.auto_id]"
-                  :src="autoPhotoUrls[detailsAuto.auto_id]"
-                  :alt="`${autoDetailsTitle(detailsAuto)} photo`"
-                  fit="contain"
-                  style="max-height: 240px"
-                  class="q-mb-md"
-                />
-                <q-markup-table flat dense>
-                  <tbody>
-                    <tr>
-                      <td class="text-weight-medium">VIN</td>
-                      <td>{{ detailsAuto?.vin || '—' }}</td>
-                    </tr>
-                    <tr>
-                      <td class="text-weight-medium">Purchase date</td>
-                      <td>{{ detailsAuto?.purchase_date || '—' }}</td>
-                    </tr>
-                    <tr>
-                      <td class="text-weight-medium">Purchase amount</td>
-                      <td>{{ formatPurchaseAmount(detailsAuto?.purchase_amount) }}</td>
-                    </tr>
-                    <tr>
-                      <td class="text-weight-medium">Purchase mileage</td>
-                      <td>{{ formatMileage(detailsAuto?.purchase_mileage) }}</td>
-                    </tr>
-                    <tr>
-                      <td class="text-weight-medium">Latest Mileage Date</td>
-                      <td>{{ detailsMileageLoading ? 'Loading...' : detailsMileage?.date || '—' }}</td>
-                    </tr>
-                    <tr>
-                      <td class="text-weight-medium">Latest Mileage</td>
-                      <td>
-                        {{
-                          detailsMileageLoading ? 'Loading...' : formatMileage(detailsMileage?.miles)
-                        }}
-                      </td>
-                    </tr>
-                    <template v-if="canViewAutoMetadata">
-                      <tr>
-                        <td class="text-weight-medium">Template</td>
-                        <td>{{ detailsAuto?.isTemplate ? 'Yes' : 'No' }}</td>
-                      </tr>
-                      <tr>
-                        <td class="text-weight-medium">Created</td>
-                        <td>{{ detailsAuto?.created_date || '—' }}</td>
-                      </tr>
-                    </template>
-                  </tbody>
-                </q-markup-table>
-              </q-card-section>
-              <q-card-actions align="right">
-                <q-btn flat label="Close" color="primary" v-close-popup />
-              </q-card-actions>
-            </q-card>
-          </q-dialog>
+          <AutoDetailsDialog
+            v-model="detailsOpen"
+            :auto="detailsAuto"
+            :photo-url="detailsAuto ? autoPhotoUrls[detailsAuto.auto_id] : ''"
+            :can-view-metadata="canViewAutoMetadata"
+          />
 
           <q-dialog v-model="confirmDeleteOpen">
             <q-card style="min-width: 320px">
@@ -379,6 +317,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
+import AutoDetailsDialog from '@/components/AutoDetailsDialog.vue'
 import MileageContent from '@/components/MileageContent.vue'
 import { useAutoStore } from '@/stores/auto'
 import { useMileageStore } from '@/stores/mileage'
@@ -405,9 +344,6 @@ const showMileageForm = ref(false)
 const pendingDeleteAuto = ref(null)
 const detailsAuto = ref(null)
 const detailsOpen = ref(false)
-const detailsMileage = ref(null)
-const detailsMileageLoading = ref(false)
-let detailsRequestId = 0
 const photoFile = ref(null)
 const photoPreviewUrl = ref(null)
 const attachedPhotoPath = ref(null)
@@ -521,53 +457,9 @@ function autoLabel(auto) {
   return [auto.year, auto.make, auto.model].filter(Boolean).join(' ') || 'Unnamed auto'
 }
 
-function autoDetailsTitle(auto) {
-  if (!auto) {
-    return 'Auto details'
-  }
-
-  const identity = [auto.year, auto.make, auto.model].filter(Boolean).join(' ')
-  return [identity || 'Unnamed auto', auto.color].filter(Boolean).join(' · ')
-}
-
-function formatPurchaseAmount(amount) {
-  if (amount === null || amount === undefined || amount === '') {
-    return '—'
-  }
-
-  return `$${Number(amount).toLocaleString()}`
-}
-
-function formatMileage(miles) {
-  return miles === null || miles === undefined || miles === ''
-    ? '—'
-    : Number(miles).toLocaleString()
-}
-
-async function openDetails(auto) {
-  const requestId = ++detailsRequestId
+function openDetails(auto) {
   detailsAuto.value = auto
-  detailsMileage.value = null
-  detailsMileageLoading.value = true
   detailsOpen.value = true
-
-  try {
-    const latestMileage = await mileageStore.fetchLatestRecord(auto.auto_id)
-    if (requestId === detailsRequestId) {
-      detailsMileage.value = latestMileage
-    }
-  } catch (error) {
-    if (requestId === detailsRequestId) {
-      $q.notify({
-        color: 'negative',
-        message: error instanceof Error ? error.message : 'Unable to load latest mileage.',
-      })
-    }
-  } finally {
-    if (requestId === detailsRequestId) {
-      detailsMileageLoading.value = false
-    }
-  }
 }
 
 function onPhotoRejected() {
