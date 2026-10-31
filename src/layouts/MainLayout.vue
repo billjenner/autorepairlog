@@ -37,17 +37,6 @@
           <q-btn
             v-if="usersStore.currentUser && usersStore.currentUser.email"
             flat
-            label="Mileage"
-            to="/mileage"
-            class="q-mx-sm"
-            style="min-width: 135px"
-            :style="buttonStyle('/mileage')"
-            @mouseover="hoveredPath = '/mileage'"
-            @mouseleave="hoveredPath = null"
-          />
-          <q-btn
-            v-if="usersStore.currentUser && usersStore.currentUser.email"
-            flat
             label="Schedule"
             to="/schedule"
             class="q-mx-sm"
