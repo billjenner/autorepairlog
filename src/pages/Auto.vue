@@ -241,15 +241,24 @@
           >
             <template #body-cell-photo="props">
               <q-td :props="props">
-                <q-img
+                <q-btn
                   v-if="autoPhotoUrls[props.row.auto_id]"
-                  :src="autoPhotoUrls[props.row.auto_id]"
-                  :alt="`${autoLabel(props.row)} photo`"
-                  width="48px"
-                  height="48px"
-                  fit="cover"
-                  class="rounded-borders"
-                />
+                  flat
+                  dense
+                  no-caps
+                  padding="0"
+                  :aria-label="`${autoLabel(props.row)} details`"
+                  @click="openDetails(props.row)"
+                >
+                  <q-img
+                    :src="autoPhotoUrls[props.row.auto_id]"
+                    :alt="`${autoLabel(props.row)} photo`"
+                    width="48px"
+                    height="48px"
+                    fit="cover"
+                    class="rounded-borders"
+                  />
+                </q-btn>
               </q-td>
             </template>
             <template #body-cell-year="props">
