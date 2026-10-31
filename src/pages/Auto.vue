@@ -228,6 +228,8 @@
             :rows="activeAutos"
             :columns="columns"
             :loading="autoStore.loading"
+            v-model:selected="selectedAutos"
+            selection="single"
             :pagination="{ rowsPerPage: 25 }"
             :rows-per-page-options="[10, 25, 50, 0]"
             row-key="auto_id"
@@ -274,6 +276,15 @@
             </template>
           </q-table>
 
+          <MileageContent
+            v-if="selectedActiveAuto"
+            :key="selectedActiveAuto.auto_id"
+            class="q-mt-md"
+            v-model:selected-auto-id="selectedAutoId"
+            v-model:show-form="showMileageForm"
+            :auto-options="autoOptions"
+          />
+
           <q-dialog v-model="confirmDeleteOpen">
             <q-card style="min-width: 320px">
               <q-card-section class="text-h6">Delete auto?</q-card-section>
@@ -300,6 +311,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
+import MileageContent from '@/components/MileageContent.vue'
 import { useAutoStore } from '@/stores/auto'
 import { useMileageStore } from '@/stores/mileage'
 import { useProfileStore } from '@/stores/profile'
@@ -320,6 +332,8 @@ const profileStore = useProfileStore()
 const usersStore = useUsersStore()
 const showForm = ref(false)
 const editingAutoId = ref(null)
+const selectedAutos = ref([])
+const showMileageForm = ref(false)
 const pendingDeleteAuto = ref(null)
 const photoFile = ref(null)
 const photoPreviewUrl = ref(null)
@@ -368,6 +382,22 @@ const activeAutos = computed(() => {
     ),
   )
 })
+const selectedAutoId = computed({
+  get: () => selectedAutos.value[0]?.auto_id ?? null,
+  set: (autoId) => {
+    const auto = activeAutos.value.find((item) => item.auto_id === autoId)
+    selectedAutos.value = auto ? [auto] : []
+  },
+})
+const selectedActiveAuto = computed(
+  () => activeAutos.value.find((auto) => auto.auto_id === selectedAutoId.value) || null,
+)
+const autoOptions = computed(() =>
+  activeAutos.value.map((auto) => ({
+    label: autoLabel(auto),
+    value: auto.auto_id,
+  })),
+)
 const profileId = computed(() => profileStore.currentProfile?.profile_id || null)
 const canUseAutoTemplates = computed(() => Number(profileStore.currentProfile?.admin_level) >= 5)
 const confirmDeleteOpen = computed({
@@ -438,6 +468,7 @@ function onPhotoRejected() {
 }
 
 async function editAuto(auto) {
+  selectedAutos.value = [auto]
   Object.assign(form, {
     year: auto.year,
     make: auto.make || '',
