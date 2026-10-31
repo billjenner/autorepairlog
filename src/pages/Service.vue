@@ -170,20 +170,7 @@
             </template>
           </q-table>
 
-          <q-dialog v-model="detailsOpen">
-            <q-card style="min-width: 360px; max-width: 600px; width: 100%">
-              <q-card-section class="text-h6">
-                {{ detailsService?.name || 'Service notes' }}
-              </q-card-section>
-              <q-card-section class="q-pt-none">
-                <div class="text-caption text-grey-7 q-mb-xs">Notes</div>
-                <notes-viewer :notes="detailsService?.notes || ''" />
-              </q-card-section>
-              <q-card-actions align="right">
-                <q-btn flat label="Close" color="primary" v-close-popup />
-              </q-card-actions>
-            </q-card>
-          </q-dialog>
+          <service-details-dialog v-model="detailsOpen" :service="detailsService" />
 
           <q-dialog v-model="confirmDeleteOpen">
             <q-card style="min-width: 320px">
@@ -213,7 +200,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRoute } from 'vue-router'
 import NotesEditor from '@/components/NotesEditor.vue'
-import NotesViewer from '@/components/NotesViewer.vue'
+import ServiceDetailsDialog from '@/components/ServiceDetailsDialog.vue'
 import { useServiceStore } from '@/stores/service'
 import { templateAutoLabel } from '@/stores/schedule'
 import { predictFutureServices } from '@/utils/rules'
