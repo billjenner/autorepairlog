@@ -239,48 +239,56 @@
             table-header-class="bg-accent text-white"
             no-data-label="No auto records yet."
           >
-            <template #body-cell-photo="props">
-              <q-td :props="props">
-                <q-btn
-                  v-if="autoPhotoUrls[props.row.auto_id]"
-                  flat
-                  dense
-                  no-caps
-                  padding="0"
-                  :aria-label="`${autoLabel(props.row)} details`"
-                  @click="openDetails(props.row)"
-                >
-                  <q-img
-                    :src="autoPhotoUrls[props.row.auto_id]"
-                    :alt="`${autoLabel(props.row)} photo`"
-                    width="48px"
-                    height="48px"
-                    fit="cover"
-                    class="rounded-borders"
-                  />
-                </q-btn>
-              </q-td>
-            </template>
-            <template #body-cell-year="props">
-              <q-td :props="props">
-                {{ props.row.year || '—' }}
-              </q-td>
-            </template>
-            <template #body-cell-make="props">
-              <q-td :props="props">
-                {{ props.row.make || '—' }}
-              </q-td>
-            </template>
-            <template #body-cell-model="props">
-              <q-td :props="props">
-                {{ props.row.model || '—' }}
-              </q-td>
-            </template>
-            <template #body-cell-actions="props">
-              <q-td :props="props" class="text-right">
-                <q-btn flat dense color="accent" label="Details" @click="openDetails(props.row)" />
-                <q-btn flat dense color="primary" label="Edit" @click="editAuto(props.row)" />
-              </q-td>
+            <template #body="props">
+              <q-tr :props="props" class="cursor-pointer" @click="props.selected = !props.selected">
+                <q-td auto-width>
+                  <q-checkbox v-model="props.selected" dense @click.stop />
+                </q-td>
+                <q-td v-for="col in props.cols" :key="col.name" :props="props">
+                  <template v-if="col.name === 'photo'">
+                    <q-btn
+                      v-if="autoPhotoUrls[props.row.auto_id]"
+                      flat
+                      dense
+                      no-caps
+                      padding="0"
+                      :aria-label="`${autoLabel(props.row)} details`"
+                      @click.stop="openDetails(props.row)"
+                    >
+                      <q-img
+                        :src="autoPhotoUrls[props.row.auto_id]"
+                        :alt="`${autoLabel(props.row)} photo`"
+                        width="48px"
+                        height="48px"
+                        fit="cover"
+                        class="rounded-borders"
+                      />
+                    </q-btn>
+                  </template>
+                  <template v-else-if="col.name === 'actions'">
+                    <q-btn
+                      flat
+                      dense
+                      color="accent"
+                      label="Details"
+                      @click.stop="openDetails(props.row)"
+                    />
+                    <q-btn
+                      flat
+                      dense
+                      color="primary"
+                      label="Edit"
+                      @click.stop="editAuto(props.row)"
+                    />
+                  </template>
+                  <template v-else>{{ col.value || '—' }}</template>
+                </q-td>
+              </q-tr>
+              <q-tr :props="props">
+                <q-td :colspan="props.cols.length + 1">
+                  <AutoServiceDueBadges :profile-id="profileId" :auto-id="props.row.auto_id" />
+                </q-td>
+              </q-tr>
             </template>
           </q-table>
 
@@ -327,6 +335,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import AutoDetailsDialog from '@/components/AutoDetailsDialog.vue'
+import AutoServiceDueBadges from '@/components/AutoServiceDueBadges.vue'
 import MileageContent from '@/components/MileageContent.vue'
 import { useAutoStore } from '@/stores/auto'
 import { useMileageStore } from '@/stores/mileage'
