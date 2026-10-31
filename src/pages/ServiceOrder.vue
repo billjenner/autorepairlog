@@ -391,82 +391,13 @@
 
           <ServiceOrderLogsDialog v-model:service-order-id="serviceLogsOrderId" />
 
-          <q-dialog v-model="detailsOpen">
-            <q-card style="min-width: 360px; max-width: 600px; width: 100%">
-              <q-card-section>
-                <div class="text-h6">
-                  {{
-                    [detailsOrder?.shop_name, detailsOrder?.mechanic_name]
-                      .filter(Boolean)
-                      .join(' - ') || 'Service order details'
-                  }}
-                </div>
-                <div class="text-body2">
-                  <span v-if="detailsOrder?.invoice_number">
-                    Invoice #: {{ detailsOrder.invoice_number }}
-                  </span>
-                </div>
-                <div class="text-body2">Service date: {{ detailsOrder?.service_date || '—' }}</div>
-                <div class="text-body2">
-                  Mileage: {{ formatMileage(detailsOrder?.mileage_at_service) }}
-                </div>
-              </q-card-section>
-              <q-card-section class="q-pt-none">
-                <q-markup-table flat dense>
-                  <thead>
-                    <tr>
-                      <th class="text-left">Service</th>
-                      <th class="text-right">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-if="detailsLogsLoading">
-                      <td colspan="2" class="text-center text-grey-7">Loading services...</td>
-                    </tr>
-                    <tr v-else-if="detailsLogsError">
-                      <td colspan="2" class="text-negative">{{ detailsLogsError }}</td>
-                    </tr>
-                    <tr v-for="(log, index) in detailsLogs" :key="log.service_log_id || index">
-                      <td>{{ log.name || 'Service' }}</td>
-                      <td class="text-right">{{ formatMoney(log.total_cost) }}</td>
-                    </tr>
-                    <tr v-if="!detailsLogsLoading && !detailsLogsError && !detailsLogs.length">
-                      <td colspan="2" class="text-center text-grey-7">No services recorded.</td>
-                    </tr>
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <th class="text-left">SO total</th>
-                      <th class="text-right">{{ formatMoney(detailsOrder?.total_cost) }}</th>
-                    </tr>
-                  </tfoot>
-                </q-markup-table>
-              </q-card-section>
-              <q-card-section class="q-pt-none">
-                <div class="text-body2 q-mb-md">
-                  Is complete: {{ detailsOrder?.is_complete ? 'Yes' : 'No' }}
-                </div>
-                <div class="text-caption text-grey-7 q-mb-xs">Notes</div>
-                <notes-viewer :notes="detailsOrder?.notes || ''" />
-              </q-card-section>
-              <q-card-section class="q-pt-none">
-                <div class="text-body2">
-                  Attachment: {{ detailsOrder?.invoice_url ? 'Available' : 'None' }}
-                </div>
-                <a
-                  v-if="detailsInvoiceUrl"
-                  :href="detailsInvoiceUrl"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View attachment
-                </a>
-              </q-card-section>
-              <q-card-actions align="right">
-                <q-btn flat label="Close" color="primary" v-close-popup />
-              </q-card-actions>
-            </q-card>
-          </q-dialog>
+          <ServiceOrderDetailsDialog
+            v-model="detailsOpen"
+            :order="detailsOrder"
+            :logs="detailsLogs"
+            :loading="detailsLogsLoading"
+            :error="detailsLogsError"
+          />
 
           <q-dialog v-model="confirmDeleteOpen">
             <q-card style="min-width: 320px">
@@ -536,7 +467,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRoute } from 'vue-router'
 import NotesEditor from '@/components/NotesEditor.vue'
-import NotesViewer from '@/components/NotesViewer.vue'
+import ServiceOrderDetailsDialog from '@/components/ServiceOrderDetailsDialog.vue'
 import ServiceOrderLogsDialog from '@/components/ServiceOrderLogsDialog.vue'
 import { useServiceOrderStore } from '@/stores/serviceOrder'
 import { useServiceStore } from '@/stores/service'
@@ -588,8 +519,6 @@ const detailsOpen = computed({
 const form = reactive(createEmptyForm())
 
 const formatMoney = (value) => `$${Number(value || 0).toFixed(2)}`
-const formatMileage = (value) =>
-  value === null || value === undefined || value === '' ? '—' : Number(value).toLocaleString()
 let serviceLogCountsRequest = 0
 
 async function refreshServiceLogCounts() {
@@ -708,7 +637,6 @@ const visibleOrders = computed(() => {
         )),
   )
 })
-const detailsInvoiceUrl = ref('')
 const currentInvoiceUrl = ref('')
 const confirmDeleteOpen = computed({
   get: () => Boolean(pendingDeleteOrder.value),
@@ -1165,19 +1093,6 @@ watch(
     const url = path ? await serviceOrderStore.getInvoiceUrl(path) : ''
     if (requestId === invoiceUrlRequestId) {
       currentInvoiceUrl.value = url || ''
-    }
-  },
-)
-watch(
-  () => detailsOrder.value?.invoice_url,
-  async (path) => {
-    detailsInvoiceUrl.value = ''
-    if (!path) {
-      return
-    }
-    const url = await serviceOrderStore.getInvoiceUrl(path)
-    if (detailsOrder.value?.invoice_url === path) {
-      detailsInvoiceUrl.value = url || ''
     }
   },
 )
