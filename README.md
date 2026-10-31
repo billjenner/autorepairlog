@@ -4,7 +4,7 @@
 
 ![Auto Repair Log](public/AutoRepairLog_Screen.jpg)
 
-> **Track your Auto records, manage maintenance and repair schedules, and stay ahead with a clear view of upcoming service needs.**
+> **Track your Auto records, manage maintenance and repair schedules all in one organized dashboard. Stay ahead with a clear view of upcoming service needs.**
 
 Auto Repair Log aims to simplify vehicle ownership by making maintenance history accessible and future service needs predictable.
 

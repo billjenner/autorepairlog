@@ -10,7 +10,7 @@ import routes from './routes'
 const defaultSeo = {
   title: 'Auto Repair Log',
   description:
-    'Track your Auto records, manage maintenance and repair schedules, and stay ahead with a clear view of upcoming service needs.',
+    'Track your Auto records, manage maintenance and repair schedules all in one organized dashboard. Stay ahead with a clear view of upcoming service needs.",',
   image: '/icons/icon-512x512.png',
   type: 'website',
   robots: 'index,follow',

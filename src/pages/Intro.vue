@@ -22,8 +22,7 @@
         line-height: 1.6;
       "
     >
-      <strong>Auto Repair Log</strong> - Track your Auto records, manage maintenance and repair
-      schedules, and stay ahead with a clear view of upcoming service needs.
+      <strong>Auto Repair Log</strong> - Track your Auto records, manage maintenance and repair schedules all in one organized dashboard. Stay ahead with a clear view of upcoming service needs.
     </h5>
 
     <div class="q-pa-md text-center" style="max-width: 720px; width: 100%">
