@@ -22,7 +22,7 @@
             transition-hide="jump-up"
           >
             <template #header>
-              <q-item-section class="text-center">
+              <q-item-section>
                 <div class="text-h5">Schedules</div>
               </q-item-section>
             </template>
@@ -217,12 +217,6 @@
               </template>
             </q-table>
 
-            <schedule-timeline
-              class="q-mt-lg"
-              :profile-id="profileStore.currentProfile?.profile_id || null"
-              :refresh-key="scheduleStore.schedules"
-            />
-
             <schedule-services-dialog v-model="servicesDialogOpen" :services="servicesForDialog" />
             <schedule-last-service-dialog
               v-model="lastServiceDialogOpen"
@@ -264,6 +258,11 @@
             </q-dialog>
           </q-expansion-item>
         </q-card>
+        <schedule-timeline
+          class="q-mt-lg"
+          :profile-id="profileStore.currentProfile?.profile_id || null"
+          :refresh-key="scheduleStore.schedules"
+        />
       </div>
     </div>
   </q-page>
@@ -296,6 +295,7 @@ const hasSelectedTemplate = computed(() => Boolean(selectedTemplateScheduleId.va
 const selectTemplateMessage = 'You must select a template schedule to start with.'
 const isAdminUser = ref(false)
 const scheduleExpandedOverride = ref(null)
+const scheduleDataLoaded = ref(false)
 const form = reactive({ auto_id: null, notes: '' })
 // Level 0 users who already have a non-template schedule can't add or use templates.
 const hideTemplateTools = computed(() => !isAdminUser.value && scheduleStore.schedules.length > 0)
@@ -305,7 +305,9 @@ const hasActiveAutoListed = computed(() =>
   ),
 )
 const scheduleExpanded = computed({
-  get: () => scheduleExpandedOverride.value ?? !hasActiveAutoListed.value,
+  get: () =>
+    scheduleExpandedOverride.value ??
+    (scheduleDataLoaded.value ? !hasActiveAutoListed.value : false),
   set: (expanded) => {
     scheduleExpandedOverride.value = expanded
   },
@@ -451,11 +453,14 @@ function requestDeleteEditedSchedule() {
 }
 
 async function load() {
+  scheduleDataLoaded.value = false
+
   if (!currentUserId.value) {
     scheduleStore.schedules = []
     scheduleStore.templateSchedules = []
     scheduleStore.templateAutos = []
     isAdminUser.value = false
+    scheduleDataLoaded.value = true
     return
   }
 
@@ -473,6 +478,7 @@ async function load() {
     scheduleStore.loadTemplateSchedules({ isAdmin }),
   ])
   isAdminUser.value = isAdmin
+  scheduleDataLoaded.value = true
 
   const requestedAutoId = Number(route.query.autoId)
   if (autoOptions.value.some((auto) => auto.value === requestedAutoId)) {
