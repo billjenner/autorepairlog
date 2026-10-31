@@ -226,17 +226,7 @@
               @save="saveLastServiceValues"
               @delete="deleteNewService"
             />
-            <q-dialog v-model="notesDialogOpen">
-              <q-card style="min-width: 320px; max-width: 600px; width: 100%">
-                <q-card-section class="text-h6">Schedule notes</q-card-section>
-                <q-card-section class="q-pt-none">
-                  <div v-html="DOMPurify.sanitize(selectedNotes)" />
-                </q-card-section>
-                <q-card-actions align="right">
-                  <q-btn flat label="Close" color="primary" v-close-popup />
-                </q-card-actions>
-              </q-card>
-            </q-dialog>
+            <schedule-notes-dialog v-model="notesDialogOpen" :notes="selectedNotes" />
             <q-dialog v-model="confirmDeleteOpen">
               <q-card style="min-width: 320px">
                 <q-card-section class="text-h6">Delete schedule?</q-card-section>
@@ -273,10 +263,10 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRoute } from 'vue-router'
-import DOMPurify from 'dompurify'
 import NotesEditor from '@/components/NotesEditor.vue'
 import ScheduleServicesDialog from '@/components/schedule/ScheduleServicesDialog.vue'
 import ScheduleLastServiceDialog from '@/components/schedule/ScheduleLastServiceDialog.vue'
+import ScheduleNotesDialog from '@/components/schedule/ScheduleNotesDialog.vue'
 import ScheduleTimeline from '@/components/schedule/ScheduleTimeline.vue'
 import { templateAutoLabel, useScheduleStore } from '@/stores/schedule'
 import { useUsersStore } from '@/stores/users'
