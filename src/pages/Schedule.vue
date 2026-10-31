@@ -14,237 +14,255 @@
           class="q-mb-md"
         />
         <q-card flat bordered>
-          <div class="row items-center justify-between q-mx-md q-mt-md q-mb-md">
-            <div class="text-h5">Schedules</div>
-          </div>
-
-          <q-banner v-if="scheduleStore.error" class="bg-negative text-white q-mb-md" rounded>
-            {{ scheduleStore.error }}
-          </q-banner>
-
-          <q-banner
-            v-else-if="!usersStore.currentUser"
-            class="bg-warning text-dark q-mb-md"
-            rounded
+          <q-expansion-item
+            v-model="scheduleExpanded"
+            expand-icon="keyboard_arrow_down"
+            expanded-icon="keyboard_arrow_up"
+            transition-show="jump-down"
+            transition-hide="jump-up"
           >
-            Sign in to manage schedules.
-          </q-banner>
+            <template #header>
+              <q-item-section class="text-center">
+                <div class="text-h5">Schedules</div>
+              </q-item-section>
+            </template>
 
-          <div v-if="!hideTemplateTools" class="text-subtitle1 q-mt-md">Template schedules</div>
-          <q-table
-            v-if="!hideTemplateTools"
-            ref="templateTableRef"
-            class="q-mt-sm"
-            :rows="scheduleStore.templateSchedules"
-            :columns="templateColumns"
-            v-model:pagination="templatePagination"
-            :table-row-class-fn="templateRowClass"
-            :rows-per-page-options="[0]"
-            row-key="schedule_id"
-            flat
-            bordered
-            dense
-            no-data-label="No template schedules."
-          >
-            <template #body-cell-select="props">
-              <q-td :props="props" auto-width>
-                <q-btn
-                  dense
-                  :flat="selectedTemplateScheduleId !== props.row.schedule_id"
-                  color="accent"
-                  :label="
-                    selectedTemplateScheduleId === props.row.schedule_id ? 'Selected' : 'Select'
-                  "
-                  @click="selectedTemplateScheduleId = props.row.schedule_id"
-                />
-              </q-td>
-            </template>
-            <template #body-cell-auto="props">
-              <q-td :props="props">
-                {{ autoDescription(props.row) }}
-              </q-td>
-            </template>
-            <template #body-cell-count="props">
-              <q-td :props="props">
-                <q-btn
-                  v-if="props.value > 0"
-                  flat
-                  dense
-                  color="primary"
-                  :label="String(props.value)"
-                  @click="openServices(props.row)"
-                />
-                <span v-else>{{ props.value }}</span>
-              </q-td>
-            </template>
-            <template #body-cell-notes="props">
-              <q-td :props="props">
-                <q-btn
-                  v-if="props.row.notes"
-                  flat
-                  dense
-                  color="primary"
-                  label="View notes"
-                  @click="openNotes(props.row.notes)"
-                />
-              </q-td>
-            </template>
-            <template #body-cell-created_date="props">
-              <q-td :props="props">{{ formatDate(props.row.created_date) }}</q-td>
-            </template>
-          </q-table>
+            <q-banner v-if="scheduleStore.error" class="bg-negative text-white q-mb-md" rounded>
+              {{ scheduleStore.error }}
+            </q-banner>
 
-          <div class="row items-center justify-between q-ml-md q-mt-md">
-            <q-btn
-              v-if="!hideTemplateTools"
-              color="primary"
-              :label="showForm ? 'Cancel' : 'Add Schedule'"
-              :disable="!usersStore.currentUser || (!showForm && !hasSelectedTemplate)"
-              @click="toggleForm"
+            <q-banner
+              v-else-if="!usersStore.currentUser"
+              class="bg-warning text-dark q-mb-md"
+              rounded
             >
-              <q-tooltip v-if="!hasSelectedTemplate && !showForm">{{
-                selectTemplateMessage
-              }}</q-tooltip>
-            </q-btn>
-          </div>
+              Sign in to manage schedules.
+            </q-banner>
 
-          <div v-if="!hideTemplateTools && !hasSelectedTemplate" class="text-caption text-negative">
-            {{ selectTemplateMessage }}
-          </div>
-          <q-form v-if="showForm" @submit.prevent="saveSchedule" class="q-mt-md q-gutter-md">
-            <q-card flat bordered class="q-pa-md bg-grey-1">
-              <div class="text-subtitle1 q-mb-sm">
-                {{ editingScheduleId ? 'Edit schedule' : 'Schedule details' }}
-              </div>
+            <div v-if="!hideTemplateTools" class="text-subtitle1 q-mt-md">Template schedules</div>
+            <q-table
+              v-if="!hideTemplateTools"
+              ref="templateTableRef"
+              class="q-mt-sm"
+              :rows="scheduleStore.templateSchedules"
+              :columns="templateColumns"
+              v-model:pagination="templatePagination"
+              :table-row-class-fn="templateRowClass"
+              :rows-per-page-options="[0]"
+              row-key="schedule_id"
+              flat
+              bordered
+              dense
+              no-data-label="No template schedules."
+            >
+              <template #body-cell-select="props">
+                <q-td :props="props" auto-width>
+                  <q-btn
+                    dense
+                    :flat="selectedTemplateScheduleId !== props.row.schedule_id"
+                    color="accent"
+                    :label="
+                      selectedTemplateScheduleId === props.row.schedule_id ? 'Selected' : 'Select'
+                    "
+                    @click="selectedTemplateScheduleId = props.row.schedule_id"
+                  />
+                </q-td>
+              </template>
+              <template #body-cell-auto="props">
+                <q-td :props="props">
+                  {{ autoDescription(props.row) }}
+                </q-td>
+              </template>
+              <template #body-cell-count="props">
+                <q-td :props="props">
+                  <q-btn
+                    v-if="props.value > 0"
+                    flat
+                    dense
+                    color="primary"
+                    :label="String(props.value)"
+                    @click="openServices(props.row)"
+                  />
+                  <span v-else>{{ props.value }}</span>
+                </q-td>
+              </template>
+              <template #body-cell-notes="props">
+                <q-td :props="props">
+                  <q-btn
+                    v-if="props.row.notes"
+                    flat
+                    dense
+                    color="primary"
+                    label="View notes"
+                    @click="openNotes(props.row.notes)"
+                  />
+                </q-td>
+              </template>
+              <template #body-cell-created_date="props">
+                <q-td :props="props">{{ formatDate(props.row.created_date) }}</q-td>
+              </template>
+            </q-table>
 
-              <div class="q-mt-md">
-                <div class="text-caption text-grey-7 q-mb-xs">Notes</div>
-                <notes-editor v-model="form.notes" />
-              </div>
-            </q-card>
-
-            <div class="row justify-end q-gutter-sm">
+            <div class="row items-center justify-between q-ml-md q-mt-md">
               <q-btn
-                v-if="editingScheduleId"
-                flat
-                color="negative"
-                label="Delete schedule"
-                class="q-mr-auto"
-                @click="requestDeleteEditedSchedule"
-              />
-              <q-btn flat label="Cancel" @click="resetForm" />
-              <q-btn
-                type="submit"
+                v-if="!hideTemplateTools"
                 color="primary"
-                :label="editingScheduleId ? 'Update schedule' : 'Save schedule'"
-                :loading="scheduleStore.loading"
-                :disable="!editingScheduleId && !hasSelectedTemplate"
-              />
+                :label="showForm ? 'Cancel' : 'Add Schedule'"
+                :disable="!usersStore.currentUser || (!showForm && !hasSelectedTemplate)"
+                @click="toggleForm"
+              >
+                <q-tooltip v-if="!hasSelectedTemplate && !showForm">{{
+                  selectTemplateMessage
+                }}</q-tooltip>
+              </q-btn>
             </div>
-          </q-form>
 
-          <q-table
-            class="q-mt-sm"
-            :rows="scheduleStore.schedules"
-            :columns="columns"
-            :loading="scheduleStore.loading"
-            :pagination="{ rowsPerPage: 0 }"
-            :rows-per-page-options="[0]"
-            hide-pagination
-            row-key="schedule_id"
-            flat
-            bordered
-            dense
-            table-header-class="bg-accent text-white"
-            no-data-label="No schedule records yet."
-          >
-            <template #body-cell-auto="props">
-              <q-td :props="props">
-                {{ autoDescription(props.row) }}
-              </q-td>
-            </template>
-            <template #body-cell-count="props">
-              <q-td :props="props">
-                <q-btn
-                  v-if="props.value > 0"
-                  flat
-                  dense
-                  color="primary"
-                  :label="String(props.value)"
-                  @click="openServices(props.row)"
-                />
-                <span v-else>{{ props.value }}</span>
-              </q-td>
-            </template>
-            <template #body-cell-notes="props">
-              <q-td :props="props">
-                <q-btn
-                  v-if="props.row.notes"
-                  flat
-                  dense
-                  color="primary"
-                  label="View notes"
-                  @click="openNotes(props.row.notes)"
-                />
-              </q-td>
-            </template>
-            <template #body-cell-created_date="props">
-              <q-td :props="props">{{ formatDate(props.row.created_date) }}</q-td>
-            </template>
-            <template #body-cell-actions="props">
-              <q-td :props="props" class="text-right">
-                <q-btn
-                  flat
-                  dense
-                  color="accent"
-                  label="Last service Dates"
-                  @click="editLastService(props.row)"
-                />
-                <q-btn flat dense color="primary" label="Edit" @click="editSchedule(props.row)" />
-              </q-td>
-            </template>
-          </q-table>
+            <div
+              v-if="!hideTemplateTools && !hasSelectedTemplate"
+              class="text-caption text-negative"
+            >
+              {{ selectTemplateMessage }}
+            </div>
+            <q-form v-if="showForm" @submit.prevent="saveSchedule" class="q-mt-md q-gutter-md">
+              <q-card flat bordered class="q-pa-md bg-grey-1">
+                <div class="text-subtitle1 q-mb-sm">
+                  {{ editingScheduleId ? 'Edit schedule' : 'Schedule details' }}
+                </div>
 
-          <schedule-timeline
-            class="q-mt-lg"
-            :profile-id="profileStore.currentProfile?.profile_id || null"
-            :refresh-key="scheduleStore.schedules"
-          />
+                <div class="q-mt-md">
+                  <div class="text-caption text-grey-7 q-mb-xs">Notes</div>
+                  <notes-editor v-model="form.notes" />
+                </div>
+              </q-card>
 
-          <schedule-services-dialog v-model="servicesDialogOpen" :services="servicesForDialog" />
-          <schedule-last-service-dialog
-            v-model="lastServiceDialogOpen"
-            :services="newScheduleServices"
-            :loading="scheduleStore.loading"
-            @save="saveLastServiceValues"
-            @delete="deleteNewService"
-          />
-          <q-dialog v-model="notesDialogOpen">
-            <q-card style="min-width: 320px; max-width: 600px; width: 100%">
-              <q-card-section class="text-h6">Schedule notes</q-card-section>
-              <q-card-section class="q-pt-none">
-                <div v-html="DOMPurify.sanitize(selectedNotes)" />
-              </q-card-section>
-              <q-card-actions align="right">
-                <q-btn flat label="Close" color="primary" v-close-popup />
-              </q-card-actions>
-            </q-card>
-          </q-dialog>
-          <q-dialog v-model="confirmDeleteOpen">
-            <q-card style="min-width: 320px">
-              <q-card-section class="text-h6">Delete schedule?</q-card-section>
-              <q-card-section>This removes the schedule from your list.</q-card-section>
-              <q-card-actions align="right">
-                <q-btn flat label="Cancel" color="primary" @click="pendingDeleteSchedule = null" />
+              <div class="row justify-end q-gutter-sm">
                 <q-btn
-                  label="Delete"
+                  v-if="editingScheduleId"
+                  flat
                   color="negative"
-                  :loading="scheduleStore.loading"
-                  @click="deleteSchedule"
+                  label="Delete schedule"
+                  class="q-mr-auto"
+                  @click="requestDeleteEditedSchedule"
                 />
-              </q-card-actions>
-            </q-card>
-          </q-dialog>
+                <q-btn flat label="Cancel" @click="resetForm" />
+                <q-btn
+                  type="submit"
+                  color="primary"
+                  :label="editingScheduleId ? 'Update schedule' : 'Save schedule'"
+                  :loading="scheduleStore.loading"
+                  :disable="!editingScheduleId && !hasSelectedTemplate"
+                />
+              </div>
+            </q-form>
+
+            <q-table
+              class="q-mt-sm"
+              :rows="scheduleStore.schedules"
+              :columns="columns"
+              :loading="scheduleStore.loading"
+              :pagination="{ rowsPerPage: 0 }"
+              :rows-per-page-options="[0]"
+              hide-pagination
+              row-key="schedule_id"
+              flat
+              bordered
+              dense
+              table-header-class="bg-accent text-white"
+              no-data-label="No schedule records yet."
+            >
+              <template #body-cell-auto="props">
+                <q-td :props="props">
+                  {{ autoDescription(props.row) }}
+                </q-td>
+              </template>
+              <template #body-cell-count="props">
+                <q-td :props="props">
+                  <q-btn
+                    v-if="props.value > 0"
+                    flat
+                    dense
+                    color="primary"
+                    :label="String(props.value)"
+                    @click="openServices(props.row)"
+                  />
+                  <span v-else>{{ props.value }}</span>
+                </q-td>
+              </template>
+              <template #body-cell-notes="props">
+                <q-td :props="props">
+                  <q-btn
+                    v-if="props.row.notes"
+                    flat
+                    dense
+                    color="primary"
+                    label="View notes"
+                    @click="openNotes(props.row.notes)"
+                  />
+                </q-td>
+              </template>
+              <template #body-cell-created_date="props">
+                <q-td :props="props">{{ formatDate(props.row.created_date) }}</q-td>
+              </template>
+              <template #body-cell-actions="props">
+                <q-td :props="props" class="text-right">
+                  <q-btn
+                    flat
+                    dense
+                    color="accent"
+                    label="Last service Dates"
+                    @click="editLastService(props.row)"
+                  />
+                  <q-btn flat dense color="primary" label="Edit" @click="editSchedule(props.row)" />
+                </q-td>
+              </template>
+            </q-table>
+
+            <schedule-timeline
+              class="q-mt-lg"
+              :profile-id="profileStore.currentProfile?.profile_id || null"
+              :refresh-key="scheduleStore.schedules"
+            />
+
+            <schedule-services-dialog v-model="servicesDialogOpen" :services="servicesForDialog" />
+            <schedule-last-service-dialog
+              v-model="lastServiceDialogOpen"
+              :services="newScheduleServices"
+              :loading="scheduleStore.loading"
+              @save="saveLastServiceValues"
+              @delete="deleteNewService"
+            />
+            <q-dialog v-model="notesDialogOpen">
+              <q-card style="min-width: 320px; max-width: 600px; width: 100%">
+                <q-card-section class="text-h6">Schedule notes</q-card-section>
+                <q-card-section class="q-pt-none">
+                  <div v-html="DOMPurify.sanitize(selectedNotes)" />
+                </q-card-section>
+                <q-card-actions align="right">
+                  <q-btn flat label="Close" color="primary" v-close-popup />
+                </q-card-actions>
+              </q-card>
+            </q-dialog>
+            <q-dialog v-model="confirmDeleteOpen">
+              <q-card style="min-width: 320px">
+                <q-card-section class="text-h6">Delete schedule?</q-card-section>
+                <q-card-section>This removes the schedule from your list.</q-card-section>
+                <q-card-actions align="right">
+                  <q-btn
+                    flat
+                    label="Cancel"
+                    color="primary"
+                    @click="pendingDeleteSchedule = null"
+                  />
+                  <q-btn
+                    label="Delete"
+                    color="negative"
+                    :loading="scheduleStore.loading"
+                    @click="deleteSchedule"
+                  />
+                </q-card-actions>
+              </q-card>
+            </q-dialog>
+          </q-expansion-item>
         </q-card>
       </div>
     </div>
@@ -277,9 +295,21 @@ const selectedTemplateScheduleId = ref(null)
 const hasSelectedTemplate = computed(() => Boolean(selectedTemplateScheduleId.value))
 const selectTemplateMessage = 'You must select a template schedule to start with.'
 const isAdminUser = ref(false)
+const scheduleExpandedOverride = ref(null)
 const form = reactive({ auto_id: null, notes: '' })
 // Level 0 users who already have a non-template schedule can't add or use templates.
 const hideTemplateTools = computed(() => !isAdminUser.value && scheduleStore.schedules.length > 0)
+const hasActiveAutoListed = computed(() =>
+  [...scheduleStore.schedules, ...scheduleStore.templateSchedules].some(
+    (schedule) => schedule.auto?.is_active,
+  ),
+)
+const scheduleExpanded = computed({
+  get: () => scheduleExpandedOverride.value ?? !hasActiveAutoListed.value,
+  set: (expanded) => {
+    scheduleExpandedOverride.value = expanded
+  },
+})
 
 const columns = [
   { name: 'auto', label: 'Auto', field: 'auto_id', align: 'left' },

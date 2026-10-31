@@ -1,7 +1,5 @@
 <template>
   <div>
-    <div class="text-h5 text-black q-mb-sm q-ml-md">Service history and upcoming services</div>
-
     <q-banner v-if="error" class="bg-negative text-white q-mb-sm" rounded>{{ error }}</q-banner>
 
     <q-markup-table flat bordered dense>

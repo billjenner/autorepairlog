@@ -2,7 +2,7 @@ import { defineStore, acceptHMRUpdate } from 'pinia'
 import { supabase } from '../lib/supabase'
 
 const SCHEDULE_SELECT =
-  '*, auto:auto!inner(profile_id, isTemplate, year, make, model, color), ' +
+  '*, auto:auto!inner(profile_id, isTemplate, is_active, year, make, model, color), ' +
   'service(service_id, name, interval_miles, interval_months, interval_years, last_date, last_miles)'
 
 export function templateAutoLabel(auto) {
