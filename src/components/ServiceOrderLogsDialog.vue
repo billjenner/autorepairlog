@@ -17,7 +17,7 @@
                 {{ log.name || 'Service' }}
               </q-item-label>
               <q-item-label caption>
-                Date: {{ log.service_date || '—' }} · Mileage:
+                Date: {{ formatDate(log.service_date) }} · Mileage:
                 {{ formatMileage(log.service_miles) }}
               </q-item-label>
               <q-item-label caption>
@@ -57,6 +57,7 @@ const error = ref('')
 let requestId = 0
 
 const formatMoney = (value) => `$${Number(value || 0).toFixed(2)}`
+const formatDate = (value) => (value ? String(value).slice(0, 10) : '—')
 const formatMileage = (value) =>
   value === null || value === undefined || value === '' ? '—' : Number(value).toLocaleString()
 
