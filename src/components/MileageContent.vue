@@ -218,10 +218,10 @@ const columns = [
   { name: 'actions', label: '', field: 'mileage_id', align: 'right' },
 ]
 
-// Keeps the read-only auto record first regardless of the active sort.
+// Keeps the read-only purchase record after the dated mileage history.
 function sortRows(rows, sortBy, descending) {
-  const pinned = rows.filter((row) => row.fromAuto)
-  const rest = rows.filter((row) => !row.fromAuto)
+  const purchaseRecords = rows.filter((row) => row.fromAuto)
+  const mileageRecords = rows.filter((row) => !row.fromAuto)
   const column = columns.find((col) => col.name === sortBy)
 
   if (column) {
@@ -229,7 +229,7 @@ function sortRows(rows, sortBy, descending) {
       typeof column.field === 'function' ? column.field(row) : row[column.field]
     const direction = descending ? -1 : 1
 
-    rest.sort((a, b) => {
+    mileageRecords.sort((a, b) => {
       const left = getValue(a)
       const right = getValue(b)
 
@@ -241,7 +241,7 @@ function sortRows(rows, sortBy, descending) {
     })
   }
 
-  return [...pinned, ...rest]
+  return [...mileageRecords, ...purchaseRecords]
 }
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
