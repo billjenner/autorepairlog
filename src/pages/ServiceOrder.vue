@@ -190,7 +190,6 @@
                     option-value="service_id"
                     emit-value
                     map-options
-                    bg-color="warning"
                     use-input
                     :filter-options="false"
                     clearable
