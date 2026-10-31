@@ -125,8 +125,9 @@
       <template #body-cell-date="props">
         <q-td :props="props">
           {{ props.row.date || '—' }}
-          <q-badge v-if="props.row.fromAuto" color="grey-7" class="q-ml-sm">
-            Auto record
+          <q-badge v-if="props.row.fromAuto" color="grey-7" class="q-ml-sm"> Auto record </q-badge>
+          <q-badge v-if="props.row.isLatest" color="warning" class="q-ml-sm">
+            Latest miles
           </q-badge>
         </q-td>
       </template>
@@ -254,10 +255,26 @@ const visibleMileage = computed(() => {
 
   const rows = mileageStore.mileage.filter((item) => item.auto_id === selectedAutoId.value)
   const auto = autoStore.auto.find((item) => item.auto_id === selectedAutoId.value)
+  const latestMileage = rows.reduce((latest, row) => {
+    if (
+      !latest ||
+      (row.date && !latest.date) ||
+      row.date > latest.date ||
+      (row.date === latest.date && (row.created_date || '') > (latest.created_date || ''))
+    ) {
+      return row
+    }
+
+    return latest
+  }, null)
+  const mileageRows = rows.map((row) => ({
+    ...row,
+    isLatest: row.mileage_id === latestMileage?.mileage_id,
+  }))
 
   // Read-only row built from the auto's own purchase date and last recorded mileage.
   if (auto && (auto.purchase_date || auto.purchase_mileage !== null)) {
-    rows.push({
+    mileageRows.push({
       mileage_id: `auto-${auto.auto_id}`,
       auto_id: auto.auto_id,
       miles: auto.purchase_mileage,
@@ -266,7 +283,7 @@ const visibleMileage = computed(() => {
     })
   }
 
-  return rows
+  return mileageRows
 })
 const confirmDeleteOpen = computed({
   get: () => Boolean(pendingDeleteMileage.value),
