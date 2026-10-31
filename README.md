@@ -14,6 +14,7 @@ By combining historical records with mileage-based and calendar-based estimates,
 - Plan maintenance ahead of time.
 - Reduce missed service intervals.
 - Monitor repair and maintenance expenses.
+- Keep documentation for warre\anty and resell purposes.
 
 ## ✨ Features
 
