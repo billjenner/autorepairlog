@@ -252,25 +252,23 @@
                 />
               </q-td>
             </template>
-            <template #body-cell-auto="props">
+            <template #body-cell-year="props">
               <q-td :props="props">
-                {{ autoLabel(props.row) }}
+                {{ props.row.year || '—' }}
               </q-td>
             </template>
-            <template #body-cell-purchase_date="props">
+            <template #body-cell-make="props">
               <q-td :props="props">
-                {{ props.row.purchase_date || '—' }}
+                {{ props.row.make || '—' }}
+              </q-td>
+            </template>
+            <template #body-cell-model="props">
+              <q-td :props="props">
+                {{ props.row.model || '—' }}
               </q-td>
             </template>
             <template #body-cell-actions="props">
               <q-td :props="props" class="text-right">
-                <q-btn
-                  flat
-                  dense
-                  color="accent"
-                  label="Record Milage"
-                  :to="{ path: '/mileage', query: { autoId: props.row.auto_id } }"
-                />
                 <q-btn flat dense color="primary" label="Edit" @click="editAuto(props.row)" />
               </q-td>
             </template>
@@ -345,23 +343,10 @@ const form = reactive(createEmptyForm())
 
 const columns = [
   { name: 'photo', label: 'Photo', field: 'photo_url', align: 'left' },
-  { name: 'auto', label: 'Auto', field: 'model', align: 'left', sortable: true },
+  { name: 'year', label: 'Year', field: 'year', align: 'left', sortable: true },
+  { name: 'make', label: 'Make', field: 'make', align: 'left', sortable: true },
+  { name: 'model', label: 'Model', field: 'model', align: 'left', sortable: true },
   { name: 'color', label: 'Color', field: 'color', align: 'left', sortable: true },
-  { name: 'vin', label: 'VIN', field: 'vin', align: 'left' },
-  {
-    name: 'purchase_date',
-    label: 'Purchased',
-    field: 'purchase_date',
-    align: 'left',
-    sortable: true,
-  },
-  {
-    name: 'purchase_mileage',
-    label: 'Purchase Mileage',
-    field: 'purchase_mileage',
-    align: 'right',
-    sortable: true,
-  },
   { name: 'actions', label: '', field: 'auto_id', align: 'right' },
 ]
 
