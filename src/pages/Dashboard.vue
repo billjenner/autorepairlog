@@ -16,10 +16,25 @@
         />
 
         <div class="row justify-between items-center q-my-md" style="max-width: 60%; margin-inline: auto">
-          <q-btn flat color="accent" label="Alerts" no-caps class="bg-white" />
+          <q-btn
+            flat
+            color="accent"
+            label="Alerts"
+            no-caps
+            class="bg-white"
+            @click="activeSection = 'alerts'"
+          />
           <q-btn flat color="accent" label="Costs" no-caps class="bg-white" />
           <q-btn flat color="accent" label="Exports" no-caps class="bg-white" />
         </div>
+
+        <AlertsCharts
+          v-if="activeSection === 'alerts' && selectedSchedule"
+          class="q-pa-md"
+          :profile-id="selectedSchedule.auto?.profile_id"
+          :auto-id="selectedSchedule.auto_id"
+          :schedule-id="selectedSchedule.schedule_id"
+        />
       </div>
     </div>
   </q-page>
@@ -27,6 +42,7 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
+import AlertsCharts from '@/components/AlertsCharts.vue'
 import { useServiceStore } from '@/stores/service'
 import { templateAutoLabel } from '@/stores/schedule'
 import { useUsersStore } from '@/stores/users'
@@ -36,6 +52,10 @@ const serviceStore = useServiceStore()
 const usersStore = useUsersStore()
 const profileStore = useProfileStore()
 const selectedScheduleId = ref(null)
+const activeSection = ref(null)
+const selectedSchedule = computed(() =>
+  serviceStore.scheduleOptions.find((s) => s.schedule_id === selectedScheduleId.value),
+)
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
 const scheduleOptions = computed(() =>
