@@ -24,9 +24,22 @@
             class="bg-white text-h6"
             @click="activeSection = 'alerts'"
           />
-          <q-btn flat color="accent" label="Costs" no-caps class="bg-white text-h6" />
+          <q-btn
+            flat
+            color="accent"
+            label="Costs"
+            no-caps
+            class="bg-white text-h6"
+            @click="activeSection = 'costs'"
+          />
           <q-btn flat color="accent" label="Exports" no-caps class="bg-white text-h6" />
         </div>
+
+        <CostsSummary
+          v-if="activeSection === 'costs' && selectedSchedule"
+          class="q-pa-md"
+          :auto-id="selectedSchedule.auto_id"
+        />
 
         <AlertsCharts
           v-if="activeSection === 'alerts' && selectedSchedule"
@@ -43,6 +56,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import AlertsCharts from '@/components/AlertsCharts.vue'
+import CostsSummary from '@/components/CostsSummary.vue'
 import { useServiceStore } from '@/stores/service'
 import { templateAutoLabel } from '@/stores/schedule'
 import { useUsersStore } from '@/stores/users'
