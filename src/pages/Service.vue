@@ -73,8 +73,30 @@
                     hint="Change the auto using the selector above."
                   />
                 </div>
-                <div class="col-12">
+                <div class="col-12 col-sm-4">
                   <q-input v-model.trim="form.name" label="Name" filled dense />
+                </div>
+                <div class="col-12 col-sm-4">
+                  <q-input
+                    v-model="form.last_date"
+                    type="date"
+                    label="Last service date"
+                    clearable
+                    filled
+                    dense
+                  />
+                </div>
+                <div class="col-12 col-sm-4">
+                  <q-input
+                    v-model="form.last_miles"
+                    type="number"
+                    label="Last service miles"
+                    min="0"
+                    step="1"
+                    clearable
+                    filled
+                    dense
+                  />
                 </div>
                 <div class="col-12 col-sm-4">
                   <q-input
@@ -360,6 +382,8 @@ function createEmptyForm() {
     interval_miles: 0,
     interval_months: 0,
     interval_years: 0,
+    last_date: null,
+    last_miles: null,
   }
 }
 
@@ -399,6 +423,8 @@ function editService(service) {
     interval_miles: service.interval_miles ?? 0,
     interval_months: service.interval_months ?? 0,
     interval_years: service.interval_years ?? 0,
+    last_date: service.last_date ? String(service.last_date).slice(0, 10) : null,
+    last_miles: service.last_miles ?? null,
   })
   selectedScheduleId.value = service.schedule_id
   editingServiceId.value = service.service_id

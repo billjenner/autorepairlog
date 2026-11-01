@@ -18,6 +18,11 @@ export const useServiceStore = defineStore('Service', {
         interval_miles: this.toNonNegativeInteger(service.interval_miles),
         interval_months: this.toNonNegativeInteger(service.interval_months),
         interval_years: this.toNonNegativeInteger(service.interval_years),
+        last_date: service.last_date || null,
+        last_miles:
+          service.last_miles === null || service.last_miles === undefined || service.last_miles === ''
+            ? null
+            : this.toNonNegativeInteger(service.last_miles),
       }
     },
 
