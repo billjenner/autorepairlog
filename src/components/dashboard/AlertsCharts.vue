@@ -87,7 +87,7 @@ function buildChart(service, milesPerDay) {
     remainingDays,
     title: `${service.name} (${percent}%)`,
     data: {
-      labels: ['Used', 'Remaining'],
+      labels: ['Interval Used', 'Remaining'],
       datasets: [
         {
           data: [Math.min(used, 1) * 100, Math.max(0, 1 - used) * 100],
