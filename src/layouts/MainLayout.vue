@@ -146,7 +146,7 @@
         <q-item clickable v-ripple @click="navigateAndClose('/')">
           <q-item-section>Intro</q-item-section>
         </q-item>
-        <template v-if="usersStore.currentUser && usersStore.currentUser.email">
+        <template v-if="isLoggedIn">
           <q-item
             v-if="navVisible['/dashboard']"
             clickable
@@ -275,6 +275,7 @@ import {
   EMPTY_AVAILABILITY,
   deriveNavVisibility,
   readCachedNavAvailability,
+  writeCachedLoginStatus,
   writeCachedNavAvailability,
 } from '@/utils/navAvailability'
 
@@ -296,6 +297,8 @@ let navUserId = null
 
 const isLoggedIn = computed(() => Boolean(usersStore.currentUser && usersStore.currentUser.email))
 const navVisible = computed(() => deriveNavVisibility(navAvailability.value, isLoggedIn.value))
+
+watch(isLoggedIn, (loggedIn) => writeCachedLoginStatus(loggedIn), { immediate: true })
 
 const appVersion = import.meta.env.APP_VERSION
 const appCommit = import.meta.env.APP_COMMIT

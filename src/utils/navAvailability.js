@@ -9,23 +9,57 @@ export const EMPTY_AVAILABILITY = Object.freeze({
 })
 
 // Visibility rules:
+//  - not logged in: hide auto and every other navigation option below
 //  - no active auto: hide schedule, service, service order, service log, dashboard
 //  - active auto: show auto and schedule
 //  - active auto and schedule: also show service, service order, service log
 //  - dashboard: only when the dashboard schedule check found something
-export function deriveNavVisibility(availability, loggedIn = true) {
+// This is the single place these rules live; toolbar and drawer both consume it.
+export function deriveNavVisibility(availability, loggedIn = false) {
   const { hasAuto, hasSchedule, hasDashboard } = { ...EMPTY_AVAILABILITY, ...availability }
-  const auto = loggedIn
-  const schedule = loggedIn && hasAuto
+  if (!loggedIn) {
+    return {
+      '/auto': false,
+      '/schedule': false,
+      '/service': false,
+      '/service-order': false,
+      '/service-log': false,
+      '/dashboard': false,
+    }
+  }
+
+  const schedule = hasAuto
   const service = schedule && hasSchedule
 
   return {
-    '/auto': auto,
+    '/auto': true,
     '/schedule': schedule,
     '/service': service,
     '/service-order': service,
     '/service-log': service,
-    '/dashboard': loggedIn && hasAuto && hasDashboard,
+    '/dashboard': hasAuto && hasDashboard,
+  }
+}
+
+function loginStatusKey() {
+  return new Request('/__cache/nav-availability/login-status')
+}
+
+export async function writeCachedLoginStatus(loggedIn) {
+  if (typeof caches === 'undefined') {
+    return
+  }
+
+  try {
+    const cache = await caches.open(CACHE_NAME)
+    await cache.put(
+      loginStatusKey(),
+      new Response(JSON.stringify({ loggedIn: Boolean(loggedIn) }), {
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
+  } catch {
+    // Caching is best-effort.
   }
 }
 
