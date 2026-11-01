@@ -84,13 +84,14 @@ const usersStore = useUsersStore()
 const profileStore = useProfileStore()
 const selectedScheduleId = ref(null)
 const activeSection = ref('alerts')
+const dashboardSchedules = ref([])
 const selectedSchedule = computed(() =>
-  serviceStore.scheduleOptions.find((s) => s.schedule_id === selectedScheduleId.value),
+  dashboardSchedules.value.find((s) => s.schedule_id === selectedScheduleId.value),
 )
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
 const scheduleOptions = computed(() =>
-  serviceStore.scheduleOptions.map((schedule) => ({
+  dashboardSchedules.value.map((schedule) => ({
     label: templateAutoLabel(schedule.auto),
     value: schedule.schedule_id,
   })),
@@ -98,14 +99,15 @@ const scheduleOptions = computed(() =>
 
 async function load() {
   if (!currentUserId.value) {
-    serviceStore.scheduleOptions = []
+    dashboardSchedules.value = []
     return
   }
   const profile = await profileStore.loadCurrentProfile(currentUserId.value)
-  await serviceStore.loadScheduleOptions({
-    isAdmin: Number(profile?.admin_level) > 0,
-    profileId: profile?.profile_id,
-  })
+  dashboardSchedules.value =
+    (await serviceStore.loadDashboardScheduleOptions({
+      isAdmin: Number(profile?.admin_level) > 0,
+      profileId: profile?.profile_id,
+    })) || []
 }
 
 watch(

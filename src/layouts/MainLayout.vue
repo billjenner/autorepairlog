@@ -24,7 +24,7 @@
 
         <template v-if="!$q.screen.lt.md">
           <q-btn
-            v-if="usersStore.currentUser && usersStore.currentUser.email"
+            v-if="dashboardEnabled"
             flat
             label="Dashboard"
             to="/dashboard"
@@ -147,7 +147,12 @@
           <q-item-section>Intro</q-item-section>
         </q-item>
         <template v-if="usersStore.currentUser && usersStore.currentUser.email">
-          <q-item clickable v-ripple @click="navigateAndClose('/dashboard')">
+          <q-item
+            v-if="dashboardEnabled"
+            clickable
+            v-ripple
+            @click="navigateAndClose('/dashboard')"
+          >
             <q-item-section>Dashboard</q-item-section>
           </q-item>
           <q-item clickable v-ripple @click="navigateAndClose('/auto')">
@@ -238,6 +243,7 @@ import { useQuasar } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
 import { useUsersStore } from '@/stores/users'
 import { useProfileStore } from '@/stores/profile'
+import { useServiceStore } from '@/stores/service'
 import OfflineConnectionCard from '@/components/OfflineConnectionCard.vue'
 import { checkLoginBusinessRules } from '@/utils/rules'
 
@@ -246,12 +252,15 @@ const route = useRoute()
 const hoveredPath = ref(null)
 const usersStore = useUsersStore()
 const profileStore = useProfileStore()
+const serviceStore = useServiceStore()
 const router = useRouter()
 const leftDrawerOpen = ref(false)
 const deferredInstallPrompt = ref(null)
 const showInstallDialog = ref(false)
 const showSignOutDialog = ref(false)
 const showOfflineDialog = ref(false)
+const dashboardEnabled = ref(false)
+let dashboardCheckId = 0
 
 const appVersion = import.meta.env.APP_VERSION
 const appCommit = import.meta.env.APP_COMMIT
@@ -305,6 +314,44 @@ function buttonStyle(path) {
   }
 
   return { backgroundColor: 'var(--q-secondary)' }
+}
+
+async function refreshDashboardAvailability() {
+  const checkId = ++dashboardCheckId
+  const userId = usersStore.currentUser?.user_id
+
+  if (!userId) {
+    dashboardEnabled.value = false
+    return
+  }
+
+  const profile =
+    profileStore.currentProfile?.user_id === userId
+      ? profileStore.currentProfile
+      : await profileStore.loadCurrentProfile(userId)
+
+  if (checkId !== dashboardCheckId || usersStore.currentUser?.user_id !== userId) {
+    return
+  }
+
+  const schedules = await serviceStore.loadDashboardScheduleOptions({
+    isAdmin: Number(profile?.admin_level) > 0,
+    profileId: profile?.profile_id,
+  })
+
+  if (checkId !== dashboardCheckId || usersStore.currentUser?.user_id !== userId) {
+    return
+  }
+
+  dashboardEnabled.value = Boolean(schedules?.length)
+  if (schedules === null) {
+    console.error('[MainLayout] dashboard availability check failed:', serviceStore.error)
+    $q.notify({
+      type: 'negative',
+      message: 'Unable to check Dashboard availability.',
+      timeout: 7000,
+    })
+  }
 }
 
 function dismissInstallDialog() {
@@ -369,6 +416,16 @@ onMounted(() => {
     verifyLoggedInState()
   }
 })
+
+watch(
+  () => [
+    usersStore.currentUser?.user_id,
+    profileStore.currentProfile?.profile_id,
+    profileStore.currentProfile?.admin_level,
+  ],
+  refreshDashboardAvailability,
+  { immediate: true },
+)
 
 watch(
   () => usersStore.currentUser?.user_id,

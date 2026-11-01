@@ -66,6 +66,41 @@ export const useServiceStore = defineStore('Service', {
       return this.scheduleOptions
     },
 
+    async loadDashboardScheduleOptions({ isAdmin = false, profileId = null } = {}) {
+      this.error = null
+
+      if (!supabase) {
+        this.error = 'Supabase client is not configured.'
+        return null
+      }
+
+      if (!isAdmin && !profileId) {
+        return []
+      }
+
+      let query = supabase
+        .from('schedule')
+        .select(
+          'schedule_id, auto_id, auto:auto_id!inner(profile_id, year, make, model, color, is_active), service!inner(service_id, is_active)',
+        )
+        .eq('is_active', true)
+        .eq('auto.is_active', true)
+        .eq('service.is_active', true)
+
+      if (!isAdmin) {
+        query = query.eq('auto.profile_id', profileId)
+      }
+
+      const { data, error } = await query
+
+      if (error) {
+        this.error = error.message
+        return null
+      }
+
+      return data || []
+    },
+
     async loadServices() {
       this.error = null
       this.loading = true

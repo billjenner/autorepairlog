@@ -115,16 +115,39 @@ export default defineRouter(async (/* { store, ssrContext } */) => {
         const profileStore = useProfileStore()
         const userId = store.currentUser?.user_id
 
-        if (userId && !profileStore.currentProfile) {
+        if (userId && profileStore.currentProfile?.user_id !== userId) {
           await profileStore.loadCurrentProfile(userId)
         }
 
-        if (!profileStore.currentProfile) {
+        if (
+          !profileStore.currentProfile ||
+          profileStore.currentProfile.user_id !== userId
+        ) {
           if (profileStore.isOffline) {
             return { path: '/login', query: { redirect: to.fullPath } }
           }
 
           return { path: '/profile', query: { redirect: to.fullPath } }
+        }
+      }
+
+      if (to.path === '/dashboard') {
+        const { useProfileStore } = await import('@/stores/profile')
+        const { useServiceStore } = await import('@/stores/service')
+        const profileStore = useProfileStore()
+        const serviceStore = useServiceStore()
+        const profile = profileStore.currentProfile
+        const schedules = await serviceStore.loadDashboardScheduleOptions({
+          isAdmin: Number(profile?.admin_level) > 0,
+          profileId: profile?.profile_id,
+        })
+
+        if (schedules === null) {
+          console.error('[Router] dashboard availability check failed:', serviceStore.error)
+        }
+
+        if (!schedules?.length) {
+          return { path: '/auto' }
         }
       }
 
