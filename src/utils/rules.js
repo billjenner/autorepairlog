@@ -48,6 +48,18 @@ export function calculateMilesPerDay(mileageRows = []) {
   return days > 0 && miles > 0 ? miles / days : null
 }
 
+// Current mileage = last service miles + days since last service * average miles per day.
+export function calculateCurrentMileage(lastMiles, lastDate, milesPerDay, today = Date.now()) {
+  const miles = toNumberOrNull(lastMiles)
+  const lastDay = toUtcDay(lastDate)
+  const rate = toNumberOrNull(milesPerDay)
+  const todayDay = toUtcDay(new Date(today).toISOString())
+  if (miles === null || lastDay === null || rate === null || todayDay === null) return null
+
+  const daysSince = Math.max(0, (todayDay - lastDay) / MS_PER_DAY)
+  return Math.round(miles + daysSince * rate)
+}
+
 // Predicts when a service is next due from its last occurrence and the auto's driving rate.
 export function predictServiceOccurrence(service, { latestMiles, milesPerDay, today }) {
   const lastMiles = toNumberOrNull(service.last_miles)
