@@ -18,11 +18,18 @@
             · {{ group.logs.length }} time{{ group.logs.length === 1 ? '' : 's' }}
           </span>
         </q-card-section>
-        <q-markup-table flat dense>
+        <q-markup-table flat dense style="table-layout: fixed">
+          <colgroup>
+            <col style="width: 20%" />
+            <col style="width: 20%" />
+            <col style="width: 20%" />
+            <col style="width: 20%" />
+            <col style="width: 20%" />
+          </colgroup>
           <thead>
             <tr>
               <th class="text-left">Date</th>
-              <th class="text-right">Miles</th>
+              <th class="text-left">Miles</th>
               <th class="text-right">Parts</th>
               <th class="text-right">Labor</th>
               <th class="text-right">Total</th>
@@ -31,7 +38,7 @@
           <tbody>
             <tr v-for="log in group.logs" :key="log.service_log_id">
               <td class="text-left">{{ formatDate(log.service_date) }}</td>
-              <td class="text-right">{{ formatNumber(log.service_miles) }}</td>
+              <td class="text-left">{{ formatNumber(log.service_miles) }}</td>
               <td class="text-right">{{ formatMoney(log.parts) }}</td>
               <td class="text-right">{{ formatMoney(log.labor) }}</td>
               <td class="text-right">{{ formatMoney(log.total_cost) }}</td>

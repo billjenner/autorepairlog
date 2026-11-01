@@ -66,7 +66,7 @@ const serviceStore = useServiceStore()
 const usersStore = useUsersStore()
 const profileStore = useProfileStore()
 const selectedScheduleId = ref(null)
-const activeSection = ref(null)
+const activeSection = ref('alerts')
 const selectedSchedule = computed(() =>
   serviceStore.scheduleOptions.find((s) => s.schedule_id === selectedScheduleId.value),
 )
