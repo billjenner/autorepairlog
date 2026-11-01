@@ -11,7 +11,7 @@
         class="col-12 col-sm-6 col-md-4 column items-center"
       >
         <div class="text-caption text-grey-7 text-center q-mb-sm">{{ chart.title }}</div>
-        <div style="width: 100%; max-width: 360px; height: 300px">
+        <div style="width: 100%; max-width: 240px; height: 200px">
           <Pie :data="chart.data" :options="chartOptions" />
         </div>
       </div>
