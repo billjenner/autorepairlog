@@ -43,7 +43,13 @@
 
       <div v-if="noteRows.length" class="q-mt-lg">
         <div class="text-h6 q-mb-sm">Notes</div>
-        <q-markup-table flat bordered dense>
+        <q-markup-table flat bordered dense class="notes-table">
+          <colgroup>
+            <col style="width: 16.6667%" />
+            <col style="width: 16.6667%" />
+            <col style="width: 16.6667%" />
+            <col style="width: 50%" />
+          </colgroup>
           <thead>
             <tr>
               <th class="text-left">Service</th>
@@ -319,3 +325,10 @@ async function load() {
 
 watch(() => props.autoId, load, { immediate: true })
 </script>
+
+<style scoped>
+.notes-table :deep(table) {
+  table-layout: fixed;
+  width: 100%;
+}
+</style>
