@@ -45,28 +45,31 @@
         <div class="text-h6 q-mb-sm">Notes</div>
         <q-markup-table flat bordered dense class="notes-table">
           <colgroup>
-            <col style="width: 16.6667%" />
-            <col style="width: 16.6667%" />
-            <col style="width: 16.6667%" />
-            <col style="width: 50%" />
+            <col style="width: 33.3333%" />
+            <col style="width: 33.3333%" />
+            <col style="width: 33.3333%" />
           </colgroup>
           <thead>
             <tr>
               <th class="text-left">Service</th>
               <th class="text-left">Date</th>
               <th class="text-left">Source</th>
-              <th class="text-left">Notes</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="note in noteRows" :key="note.key">
-              <td class="text-left">{{ note.name }}</td>
-              <td class="text-left">{{ formatDate(note.date) }}</td>
-              <td class="text-left">{{ note.source }}</td>
-              <td class="text-left" style="white-space: normal">
-                <NotesViewer :notes="note.notes" />
-              </td>
-            </tr>
+            <template v-for="note in noteRows" :key="note.key">
+              <tr>
+                <td class="text-left">{{ note.name }}</td>
+                <td class="text-left">{{ formatDate(note.date) }}</td>
+                <td class="text-left">{{ note.source }}</td>
+              </tr>
+              <tr>
+                <td colspan="3" class="text-left" style="white-space: normal">
+                  <div class="text-caption text-weight-medium q-mb-xs">Notes</div>
+                  <NotesViewer :notes="note.notes" />
+                </td>
+              </tr>
+            </template>
           </tbody>
         </q-markup-table>
       </div>
