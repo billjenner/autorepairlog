@@ -26,6 +26,17 @@
           <q-btn
             v-if="usersStore.currentUser && usersStore.currentUser.email"
             flat
+            label="Dashboard"
+            to="/dashboard"
+            class="q-mx-sm"
+            style="min-width: 135px"
+            :style="buttonStyle('/dashboard')"
+            @mouseover="hoveredPath = '/dashboard'"
+            @mouseleave="hoveredPath = null"
+          />
+          <q-btn
+            v-if="usersStore.currentUser && usersStore.currentUser.email"
+            flat
             label="Auto"
             to="/auto"
             class="q-mx-sm"
@@ -136,6 +147,9 @@
           <q-item-section>Intro</q-item-section>
         </q-item>
         <template v-if="usersStore.currentUser && usersStore.currentUser.email">
+          <q-item clickable v-ripple @click="navigateAndClose('/dashboard')">
+            <q-item-section>Dashboard</q-item-section>
+          </q-item>
           <q-item clickable v-ripple @click="navigateAndClose('/auto')">
             <q-item-section>Auto</q-item-section>
           </q-item>

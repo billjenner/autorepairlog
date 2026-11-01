@@ -163,6 +163,18 @@ const routes = [
         },
       },
       {
+        path: 'dashboard',
+        component: () => import('@/pages/Dashboard.vue'),
+        meta: {
+          requiresAuth: true,
+          seo: {
+            title: 'Dashboard',
+            description: 'View alerts, costs and exports for your autos.',
+            canonicalPath: '/dashboard',
+          },
+        },
+      },
+      {
         path: 'service',
         component: () => import('@/pages/Service.vue'),
         meta: {
