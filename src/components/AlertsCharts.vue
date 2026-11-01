@@ -8,10 +8,10 @@
       <div
         v-for="chart in charts"
         :key="chart.service_id"
-        class="col-12 col-sm-6 col-md-4 column items-center"
+        class="col-12 col-sm-4 col-md-2 column items-center"
       >
         <div class="text-caption text-grey-7 text-center q-mb-sm">{{ chart.title }}</div>
-        <div style="width: 100%; max-width: 240px; height: 200px">
+        <div style="width: 100%; max-width: 180px; height: 150px">
           <Pie :data="chart.data" :options="chartOptions" />
         </div>
       </div>
