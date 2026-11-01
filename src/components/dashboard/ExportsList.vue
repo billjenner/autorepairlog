@@ -69,6 +69,7 @@
       <div class="row items-center justify-between q-mt-md">
         <q-toggle
           v-model="includeNotes"
+          dense
           :label="`Include notes: ${includeNotes ? 'Yes' : 'No'}`"
         />
         <div class="row q-gutter-sm">
