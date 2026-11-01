@@ -1,5 +1,6 @@
 <template>
   <div>
+    <AutoHeading :auto-id="autoId" @loaded="onAutoLoaded" />
     <q-banner v-if="error" class="bg-negative text-white" rounded>{{ error }}</q-banner>
     <div v-else-if="!rows.length" class="text-grey-7 q-pa-md">
       {{ loading ? 'Loading…' : 'No service log entries for this auto.' }}
@@ -84,6 +85,7 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { computed, ref, watch } from 'vue'
 import NotesViewer from '@/components/NotesViewer.vue'
+import AutoHeading from '@/components/AutoHeading.vue'
 import { supabase } from '@/lib/supabase'
 import { useServiceOrderStore } from '@/stores/serviceOrder'
 
@@ -94,6 +96,16 @@ const props = defineProps({
 const serviceOrderStore = useServiceOrderStore()
 const rows = ref([])
 const loading = ref(false)
+const autoTitle = ref('')
+const autoVin = ref('')
+const autoPrefix = computed(() => autoTitle.value.replace(/[^A-Za-z0-9]/g, ''))
+
+function onAutoLoaded({ title, vin }) {
+  autoTitle.value = title
+  autoVin.value = vin
+}
+const exportFilename = (extension) =>
+  `${autoPrefix.value ? `${autoPrefix.value}_` : ''}ServiceLog_${timestampForFilename()}.${extension}`
 const error = ref('')
 const includeNotes = ref(false)
 let requestId = 0
@@ -129,7 +141,7 @@ function exportBody() {
     Number(row.parts || 0).toFixed(2),
     Number(row.labor || 0).toFixed(2),
     Number(row.total_cost || 0).toFixed(2),
-    row.invoiceUrl || '',
+    row.invoiceUrl ? 'Yes' : 'No',
   ])
 }
 
@@ -143,7 +155,10 @@ function exportNotes() {
 }
 
 function exportCsv() {
-  const lines = [exportHead.join(',')]
+  const lines = []
+  if (autoTitle.value) lines.push(toCsvField(autoTitle.value))
+  if (autoTitle.value) lines.push(autoVin.value ? toCsvField(`VIN: ${autoVin.value}`) : '')
+  lines.push(exportHead.join(','))
   for (const values of exportBody()) lines.push(values.map(toCsvField).join(','))
 
   if (includeNotes.value && noteRows.value.length) {
@@ -155,7 +170,7 @@ function exportCsv() {
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
-  link.download = `ServiceLog_${timestampForFilename()}.csv`
+  link.download = exportFilename('csv')
   link.click()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
@@ -166,10 +181,20 @@ function exportPdf() {
 
   doc.setFontSize(16)
   doc.setFont('helvetica', 'bold')
-  doc.text('Service Log', 14, 18)
+  const pageWidth = doc.internal.pageSize.getWidth()
+  let tableStartY = 24
+  if (autoTitle.value) {
+    doc.text(autoTitle.value, pageWidth / 2, 18, { align: 'center' })
+    if (autoVin.value) {
+      doc.setFontSize(11)
+      doc.setFont('helvetica', 'normal')
+      doc.text(`VIN: ${autoVin.value}`, pageWidth / 2, 25, { align: 'center' })
+    }
+    tableStartY = 32
+  }
 
   autoTable(doc, {
-    startY: 24,
+    startY: tableStartY,
     head: [exportHead],
     body: exportBody(),
     theme: 'grid',
@@ -180,7 +205,7 @@ function exportPdf() {
       3: { halign: 'right' },
       4: { halign: 'right' },
       5: { halign: 'right' },
-      6: { cellWidth: 50, overflow: 'ellipsize' },
+      6: { cellWidth: 25 },
     },
     margin: { left: 14, right: 14 },
   })
@@ -188,6 +213,7 @@ function exportPdf() {
   if (includeNotes.value && noteRows.value.length) {
     const startY = doc.lastAutoTable.finalY + 12
     doc.setFontSize(12)
+    doc.setFont('helvetica', 'bold')
     doc.text('Notes', 14, startY)
     autoTable(doc, {
       startY: startY + 4,
@@ -201,7 +227,7 @@ function exportPdf() {
     })
   }
 
-  doc.save(`ServiceLog_${timestampForFilename()}.pdf`)
+  doc.save(exportFilename('pdf'))
 }
 
 const hasText = (value) => Boolean(String(value || '').replace(/<[^>]*>/g, '').trim())

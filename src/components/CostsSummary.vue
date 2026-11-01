@@ -1,9 +1,6 @@
 <template>
   <div>
-    <div v-if="autoTitle" class="q-mb-md text-center">
-      <div class="text-h5">{{ autoTitle }}</div>
-      <div v-if="autoVin" class="text-subtitle2 text-grey-7">VIN: {{ autoVin }}</div>
-    </div>
+    <AutoHeading :auto-id="autoId" />
     <q-banner v-if="error" class="bg-negative text-white" rounded>{{ error }}</q-banner>
     <div v-else-if="!groups.length" class="text-grey-7 q-pa-md">
       {{ loading ? 'Loading…' : 'No service history for this auto.' }}
@@ -64,6 +61,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { supabase } from '@/lib/supabase'
+import AutoHeading from '@/components/AutoHeading.vue'
 
 const props = defineProps({
   autoId: { type: [Number, String], default: null },
@@ -71,8 +69,6 @@ const props = defineProps({
 
 const groups = ref([])
 const purchaseDate = ref(null)
-const autoTitle = ref('')
-const autoVin = ref('')
 const loading = ref(false)
 const error = ref('')
 let requestId = 0
@@ -108,8 +104,6 @@ async function load() {
   if (!props.autoId) {
     groups.value = []
     purchaseDate.value = null
-    autoTitle.value = ''
-    autoVin.value = ''
     return
   }
 
@@ -117,7 +111,7 @@ async function load() {
   try {
     const { data: auto, error: autoError } = await supabase
       .from('auto')
-      .select('purchase_date, year, make, model, color, vin')
+      .select('purchase_date')
       .eq('auto_id', props.autoId)
       .maybeSingle()
     if (autoError) throw autoError
@@ -155,10 +149,6 @@ async function load() {
 
     if (currentRequest !== requestId) return
     purchaseDate.value = auto?.purchase_date || null
-    autoVin.value = auto?.vin?.trim() || ''
-    autoTitle.value = auto
-      ? [auto.year, auto.make, auto.model, auto.color].filter(Boolean).join(' ')
-      : ''
     groups.value = [...byService.values()].sort((a, b) => a.name.localeCompare(b.name))
   } catch (err) {
     if (currentRequest !== requestId) return

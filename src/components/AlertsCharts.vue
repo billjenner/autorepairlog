@@ -1,5 +1,6 @@
 <template>
   <div>
+    <AutoHeading :auto-id="autoId" />
     <q-banner v-if="error" class="bg-negative text-white" rounded>{{ error }}</q-banner>
     <div v-else-if="!charts.length" class="text-grey-7 q-pa-md">
       {{ loading ? 'Loading…' : 'No services to chart for this auto.' }}
@@ -24,6 +25,7 @@ import { ref, watch } from 'vue'
 import { Pie } from 'vue-chartjs'
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from 'chart.js'
 import { supabase } from '@/lib/supabase'
+import AutoHeading from '@/components/AutoHeading.vue'
 import { calculateCurrentMileage, predictFutureServices } from '@/utils/rules'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
