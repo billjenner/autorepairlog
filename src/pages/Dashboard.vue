@@ -18,21 +18,31 @@
         <div class="row justify-between items-center q-my-md" style="max-width: 60%; margin-inline: auto">
           <q-btn
             flat
-            color="accent"
+            :color="activeSection === 'alerts' ? 'white' : 'accent'"
             label="Alerts"
             no-caps
-            class="bg-white text-h6"
+            class="text-h6"
+            :class="activeSection === 'alerts' ? 'bg-accent' : 'bg-white'"
             @click="activeSection = 'alerts'"
           />
           <q-btn
             flat
-            color="accent"
+            :color="activeSection === 'costs' ? 'white' : 'accent'"
             label="Costs"
             no-caps
-            class="bg-white text-h6"
+            class="text-h6"
+            :class="activeSection === 'costs' ? 'bg-accent' : 'bg-white'"
             @click="activeSection = 'costs'"
           />
-          <q-btn flat color="accent" label="Exports" no-caps class="bg-white text-h6" />
+          <q-btn
+            flat
+            :color="activeSection === 'exports' ? 'white' : 'accent'"
+            label="Exports"
+            no-caps
+            class="text-h6"
+            :class="activeSection === 'exports' ? 'bg-accent' : 'bg-white'"
+            @click="activeSection = 'exports'"
+          />
         </div>
 
         <CostsSummary
