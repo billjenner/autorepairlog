@@ -24,7 +24,7 @@
 
         <template v-if="!$q.screen.lt.md">
           <q-btn
-            v-if="dashboardEnabled"
+            v-if="navVisible['/dashboard']"
             flat
             label="Dashboard"
             to="/dashboard"
@@ -35,7 +35,7 @@
             @mouseleave="hoveredPath = null"
           />
           <q-btn
-            v-if="usersStore.currentUser && usersStore.currentUser.email"
+            v-if="navVisible['/auto']"
             flat
             label="Auto"
             to="/auto"
@@ -46,7 +46,7 @@
             @mouseleave="hoveredPath = null"
           />
           <q-btn
-            v-if="usersStore.currentUser && usersStore.currentUser.email"
+            v-if="navVisible['/schedule']"
             flat
             label="Schedule"
             to="/schedule"
@@ -57,7 +57,7 @@
             @mouseleave="hoveredPath = null"
           />
           <q-btn
-            v-if="usersStore.currentUser && usersStore.currentUser.email"
+            v-if="navVisible['/service']"
             flat
             label="Service"
             to="/service"
@@ -68,7 +68,7 @@
             @mouseleave="hoveredPath = null"
           />
           <q-btn
-            v-if="usersStore.currentUser && usersStore.currentUser.email"
+            v-if="navVisible['/service-order']"
             flat
             label="Service Order"
             to="/service-order"
@@ -79,7 +79,7 @@
             @mouseleave="hoveredPath = null"
           />
           <q-btn
-            v-if="usersStore.currentUser && usersStore.currentUser.email"
+            v-if="navVisible['/service-log']"
             flat
             label="Service log"
             to="/service-log"
@@ -148,26 +148,51 @@
         </q-item>
         <template v-if="usersStore.currentUser && usersStore.currentUser.email">
           <q-item
-            v-if="dashboardEnabled"
+            v-if="navVisible['/dashboard']"
             clickable
             v-ripple
             @click="navigateAndClose('/dashboard')"
           >
             <q-item-section>Dashboard</q-item-section>
           </q-item>
-          <q-item clickable v-ripple @click="navigateAndClose('/auto')">
+          <q-item
+            v-if="navVisible['/auto']"
+            clickable
+            v-ripple
+            @click="navigateAndClose('/auto')"
+          >
             <q-item-section>Auto</q-item-section>
           </q-item>
-          <q-item clickable v-ripple @click="navigateAndClose('/schedule')">
+          <q-item
+            v-if="navVisible['/schedule']"
+            clickable
+            v-ripple
+            @click="navigateAndClose('/schedule')"
+          >
             <q-item-section>Schedule</q-item-section>
           </q-item>
-          <q-item clickable v-ripple @click="navigateAndClose('/service')">
+          <q-item
+            v-if="navVisible['/service']"
+            clickable
+            v-ripple
+            @click="navigateAndClose('/service')"
+          >
             <q-item-section>Service</q-item-section>
           </q-item>
-          <q-item clickable v-ripple @click="navigateAndClose('/service-order')">
+          <q-item
+            v-if="navVisible['/service-order']"
+            clickable
+            v-ripple
+            @click="navigateAndClose('/service-order')"
+          >
             <q-item-section>Service Order</q-item-section>
           </q-item>
-          <q-item clickable v-ripple @click="navigateAndClose('/service-log')">
+          <q-item
+            v-if="navVisible['/service-log']"
+            clickable
+            v-ripple
+            @click="navigateAndClose('/service-log')"
+          >
             <q-item-section>Service Log</q-item-section>
           </q-item>
           <q-item clickable v-ripple @click="navigateAndClose('/help')">
@@ -247,9 +272,11 @@ import { useServiceStore } from '@/stores/service'
 import OfflineConnectionCard from '@/components/OfflineConnectionCard.vue'
 import { checkLoginBusinessRules } from '@/utils/rules'
 import {
-  readCachedDashboardEnabled,
-  writeCachedDashboardEnabled,
-} from '@/utils/dashboardAvailabilityCache'
+  EMPTY_AVAILABILITY,
+  deriveNavVisibility,
+  readCachedNavAvailability,
+  writeCachedNavAvailability,
+} from '@/utils/navAvailability'
 
 const $q = useQuasar()
 const route = useRoute()
@@ -263,8 +290,12 @@ const deferredInstallPrompt = ref(null)
 const showInstallDialog = ref(false)
 const showSignOutDialog = ref(false)
 const showOfflineDialog = ref(false)
-const dashboardEnabled = ref(false)
-let dashboardCheckId = 0
+const navAvailability = ref({ ...EMPTY_AVAILABILITY })
+let navCheckId = 0
+let navUserId = null
+
+const isLoggedIn = computed(() => Boolean(usersStore.currentUser && usersStore.currentUser.email))
+const navVisible = computed(() => deriveNavVisibility(navAvailability.value, isLoggedIn.value))
 
 const appVersion = import.meta.env.APP_VERSION
 const appCommit = import.meta.env.APP_COMMIT
@@ -320,22 +351,25 @@ function buttonStyle(path) {
   return { backgroundColor: 'var(--q-secondary)' }
 }
 
-async function refreshDashboardAvailability() {
-  const checkId = ++dashboardCheckId
+async function refreshNavAvailability() {
+  const checkId = ++navCheckId
   const userId = usersStore.currentUser?.user_id
+  const isStale = () => checkId !== navCheckId || usersStore.currentUser?.user_id !== userId
 
   if (!userId) {
-    dashboardEnabled.value = false
+    navAvailability.value = { ...EMPTY_AVAILABILITY }
+    navUserId = null
     return
   }
 
-  // Cache first: show the last known state immediately, then confirm via network.
-  const cached = await readCachedDashboardEnabled(userId)
-  if (checkId !== dashboardCheckId || usersStore.currentUser?.user_id !== userId) {
-    return
-  }
-  if (cached !== null) {
-    dashboardEnabled.value = cached
+  // Cache first (only when the user changes): show the last known state, then confirm via network.
+  if (navUserId !== userId) {
+    const cached = await readCachedNavAvailability(userId)
+    if (isStale()) {
+      return
+    }
+    navAvailability.value = cached || { ...EMPTY_AVAILABILITY }
+    navUserId = userId
   }
 
   const profile =
@@ -343,30 +377,27 @@ async function refreshDashboardAvailability() {
       ? profileStore.currentProfile
       : await profileStore.loadCurrentProfile(userId)
 
-  if (checkId !== dashboardCheckId || usersStore.currentUser?.user_id !== userId) {
+  if (isStale()) {
     return
   }
 
-  const schedules = await serviceStore.loadDashboardScheduleOptions({
+  const fresh = await serviceStore.loadNavAvailability({
     isAdmin: Number(profile?.admin_level) > 0,
     profileId: profile?.profile_id,
   })
 
-  if (checkId !== dashboardCheckId || usersStore.currentUser?.user_id !== userId) {
+  if (isStale()) {
     return
   }
 
-  if (schedules !== null) {
-    dashboardEnabled.value = schedules.length > 0
-    writeCachedDashboardEnabled(userId, dashboardEnabled.value)
-  } else if (cached === null) {
-    dashboardEnabled.value = false
-  }
-  if (schedules === null) {
-    console.error('[MainLayout] dashboard availability check failed:', serviceStore.error)
+  if (fresh) {
+    navAvailability.value = fresh
+    writeCachedNavAvailability(userId, fresh)
+  } else {
+    console.error('[MainLayout] nav availability check failed:', serviceStore.error)
     $q.notify({
       type: 'negative',
-      message: 'Unable to check Dashboard availability.',
+      message: 'Unable to check menu availability.',
       timeout: 7000,
     })
   }
@@ -440,8 +471,9 @@ watch(
     usersStore.currentUser?.user_id,
     profileStore.currentProfile?.profile_id,
     profileStore.currentProfile?.admin_level,
+    route.path,
   ],
-  refreshDashboardAvailability,
+  refreshNavAvailability,
   { immediate: true },
 )
 

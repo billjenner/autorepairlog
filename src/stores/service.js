@@ -66,6 +66,56 @@ export const useServiceStore = defineStore('Service', {
       return this.scheduleOptions
     },
 
+    // Returns { hasAuto, hasSchedule, hasDashboard }, or null if any check failed.
+    async loadNavAvailability({ isAdmin = false, profileId = null } = {}) {
+      this.error = null
+
+      if (!supabase) {
+        this.error = 'Supabase client is not configured.'
+        return null
+      }
+
+      if (!isAdmin && !profileId) {
+        return { hasAuto: false, hasSchedule: false, hasDashboard: false }
+      }
+
+      let autoQuery = supabase
+        .from('auto')
+        .select('auto_id', { count: 'exact', head: true })
+        .eq('is_active', true)
+      let scheduleQuery = supabase
+        .from('schedule')
+        .select('schedule_id, auto:auto_id!inner(profile_id)', { count: 'exact', head: true })
+        .eq('is_active', true)
+        .eq('auto.is_active', true)
+
+      if (!isAdmin) {
+        autoQuery = autoQuery.eq('profile_id', profileId)
+        scheduleQuery = scheduleQuery.eq('auto.profile_id', profileId)
+      }
+
+      const [autoResult, scheduleResult, dashboardSchedules] = await Promise.all([
+        autoQuery,
+        scheduleQuery,
+        this.loadDashboardScheduleOptions({ isAdmin, profileId }),
+      ])
+
+      const failure = autoResult.error || scheduleResult.error
+      if (failure) {
+        this.error = failure.message
+        return null
+      }
+      if (dashboardSchedules === null) {
+        return null
+      }
+
+      return {
+        hasAuto: (autoResult.count || 0) > 0,
+        hasSchedule: (scheduleResult.count || 0) > 0,
+        hasDashboard: dashboardSchedules.length > 0,
+      }
+    },
+
     async loadDashboardScheduleOptions({ isAdmin = false, profileId = null } = {}) {
       this.error = null
 
