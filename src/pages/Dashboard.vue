@@ -21,11 +21,11 @@
             color="accent"
             label="Alerts"
             no-caps
-            class="bg-white"
+            class="bg-white text-h6"
             @click="activeSection = 'alerts'"
           />
-          <q-btn flat color="accent" label="Costs" no-caps class="bg-white" />
-          <q-btn flat color="accent" label="Exports" no-caps class="bg-white" />
+          <q-btn flat color="accent" label="Costs" no-caps class="bg-white text-h6" />
+          <q-btn flat color="accent" label="Exports" no-caps class="bg-white text-h6" />
         </div>
 
         <AlertsCharts
