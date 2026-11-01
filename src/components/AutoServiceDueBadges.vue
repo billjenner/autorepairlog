@@ -36,6 +36,7 @@
       </q-card>
     </q-dialog>
   </div>
+</template>
 
 <script setup>
 import { computed, ref, watch } from 'vue'
