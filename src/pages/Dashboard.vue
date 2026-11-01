@@ -45,6 +45,12 @@
           />
         </div>
 
+        <ExportsList
+          v-if="activeSection === 'exports' && selectedSchedule"
+          class="q-pa-md"
+          :auto-id="selectedSchedule.auto_id"
+        />
+
         <CostsSummary
           v-if="activeSection === 'costs' && selectedSchedule"
           class="q-pa-md"
@@ -67,6 +73,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import AlertsCharts from '@/components/AlertsCharts.vue'
 import CostsSummary from '@/components/CostsSummary.vue'
+import ExportsList from '@/components/ExportsList.vue'
 import { useServiceStore } from '@/stores/service'
 import { templateAutoLabel } from '@/stores/schedule'
 import { useUsersStore } from '@/stores/users'
