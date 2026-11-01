@@ -42,34 +42,47 @@ let requestId = 0
 
 const chartOptions = { responsive: true, maintainAspectRatio: false }
 
-function percentUsed(service, milesPerDay) {
+function usage(service, milesPerDay) {
   const lastDate = service.last_date || service.estimated_last_date
-  const options = []
+  const ratios = []
+  const remainingDays = []
 
   // Date based: days since last service / days in the month or year interval.
   const intervalMonths = (service.interval_months || 0) + (service.interval_years || 0) * 12
   if (lastDate && intervalMonths > 0) {
     const last = Date.parse(`${lastDate}T00:00:00Z`)
     const daysSince = (Date.now() - last) / MS_PER_DAY
-    options.push(daysSince / ((intervalMonths * 365.25) / 12))
+    const intervalDays = (intervalMonths * 365.25) / 12
+    ratios.push(daysSince / intervalDays)
+    remainingDays.push(intervalDays - daysSince)
   }
 
   // Mileage based: estimated current miles - last service miles / mileage interval.
   if (service.interval_miles > 0 && service.last_miles !== null && lastDate) {
     const current = calculateCurrentMileage(service.last_miles, lastDate, milesPerDay)
-    if (current !== null) options.push((current - service.last_miles) / service.interval_miles)
+    if (current !== null) {
+      const driven = current - service.last_miles
+      ratios.push(driven / service.interval_miles)
+      if (milesPerDay > 0) remainingDays.push((service.interval_miles - driven) / milesPerDay)
+    }
   }
 
-  return options.length ? Math.max(0, Math.max(...options)) : null
+  if (!ratios.length) return null
+  return {
+    used: Math.max(0, Math.max(...ratios)),
+    remainingDays: remainingDays.length ? Math.min(...remainingDays) : Infinity,
+  }
 }
 
 function buildChart(service, milesPerDay) {
-  const used = percentUsed(service, milesPerDay)
-  if (used === null) return null
+  const usageInfo = usage(service, milesPerDay)
+  if (usageInfo === null) return null
+  const { used, remainingDays } = usageInfo
   const percent = Math.round(used * 100)
   const color = used >= 1 ? '#f44336' : used >= 0.9 ? '#ff9800' : '#4caf50'
   return {
     service_id: service.service_id,
+    remainingDays,
     title: `${service.name} (${percent}%)`,
     data: {
       labels: ['Used', 'Remaining'],
@@ -111,6 +124,7 @@ async function load() {
       .filter((service) => ids.has(service.service_id))
       .map((service) => buildChart(service, auto.miles_per_day))
       .filter(Boolean)
+      .sort((a, b) => a.remainingDays - b.remainingDays || 0)
 
     if (currentRequest === requestId) charts.value = next
   } catch (err) {
