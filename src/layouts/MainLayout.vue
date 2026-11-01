@@ -246,6 +246,10 @@ import { useProfileStore } from '@/stores/profile'
 import { useServiceStore } from '@/stores/service'
 import OfflineConnectionCard from '@/components/OfflineConnectionCard.vue'
 import { checkLoginBusinessRules } from '@/utils/rules'
+import {
+  readCachedDashboardEnabled,
+  writeCachedDashboardEnabled,
+} from '@/utils/dashboardAvailabilityCache'
 
 const $q = useQuasar()
 const route = useRoute()
@@ -325,6 +329,15 @@ async function refreshDashboardAvailability() {
     return
   }
 
+  // Cache first: show the last known state immediately, then confirm via network.
+  const cached = await readCachedDashboardEnabled(userId)
+  if (checkId !== dashboardCheckId || usersStore.currentUser?.user_id !== userId) {
+    return
+  }
+  if (cached !== null) {
+    dashboardEnabled.value = cached
+  }
+
   const profile =
     profileStore.currentProfile?.user_id === userId
       ? profileStore.currentProfile
@@ -343,7 +356,12 @@ async function refreshDashboardAvailability() {
     return
   }
 
-  dashboardEnabled.value = Boolean(schedules?.length)
+  if (schedules !== null) {
+    dashboardEnabled.value = schedules.length > 0
+    writeCachedDashboardEnabled(userId, dashboardEnabled.value)
+  } else if (cached === null) {
+    dashboardEnabled.value = false
+  }
   if (schedules === null) {
     console.error('[MainLayout] dashboard availability check failed:', serviceStore.error)
     $q.notify({
