@@ -15,7 +15,7 @@
           class="col-12 col-sm-6"
         />
 
-        <div class="row justify-between items-center q-my-md" style="max-width: 60%; margin-inline: auto">
+        <div class="row justify-center items-center q-my-md q-gutter-x-xl">
           <q-btn
             flat
             :color="activeSection === 'alerts' ? 'white' : 'accent'"
@@ -71,9 +71,9 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import AlertsCharts from '@/components/AlertsCharts.vue'
-import CostsSummary from '@/components/CostsSummary.vue'
-import ExportsList from '@/components/ExportsList.vue'
+import AlertsCharts from '@/components/dashboard/AlertsCharts.vue'
+import CostsSummary from '@/components/dashboard/CostsSummary.vue'
+import ExportsList from '@/components/dashboard/ExportsList.vue'
 import { useServiceStore } from '@/stores/service'
 import { templateAutoLabel } from '@/stores/schedule'
 import { useUsersStore } from '@/stores/users'
