@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 
 const SCHEDULE_SELECT =
   '*, auto:auto!inner(profile_id, isTemplate, is_active, year, make, model, color), ' +
-  'service(service_id, name, interval_miles, interval_months, interval_years, last_date, last_miles, disallow_notifications)'
+  'service(service_id, name, interval_miles, interval_months, interval_years, last_date, last_miles, allow_notifications)'
 
 export function templateAutoLabel(auto) {
   if (!auto) {
@@ -168,7 +168,7 @@ export const useScheduleStore = defineStore('Schedule', {
       const { data: source, error: selectError } = await supabase
         .from('service')
         .select(
-          'name, notes, interval_miles, interval_months, interval_years, disallow_notifications',
+          'name, notes, interval_miles, interval_months, interval_years, allow_notifications',
         )
         .eq('schedule_id', sourceScheduleId)
         .eq('is_active', true)
@@ -203,7 +203,7 @@ export const useScheduleStore = defineStore('Schedule', {
       const { data, error } = await supabase
         .from('service')
         .select(
-          'service_id, name, interval_miles, interval_months, interval_years, last_date, last_miles, disallow_notifications',
+          'service_id, name, interval_miles, interval_months, interval_years, last_date, last_miles, allow_notifications',
         )
         .eq('schedule_id', scheduleId)
         .eq('is_active', true)
@@ -272,10 +272,10 @@ export const useScheduleStore = defineStore('Schedule', {
           return false
         }
 
-        for (const { service_id, last_miles, last_date, disallow_notifications } of updates) {
+        for (const { service_id, last_miles, last_date, allow_notifications } of updates) {
           const { error } = await supabase
             .from('service')
-            .update({ last_miles, last_date, disallow_notifications })
+            .update({ last_miles, last_date, allow_notifications })
             .eq('service_id', service_id)
 
           if (error) {

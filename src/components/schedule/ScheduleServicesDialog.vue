@@ -7,7 +7,7 @@
           <q-item v-for="service in sortedServices" :key="service.service_id">
             <q-item-section>
               <q-item-label>{{ serviceLabel(service) }}</q-item-label>
-              <q-item-label v-if="service.disallow_notifications" caption>
+              <q-item-label v-if="!service.allow_notifications" caption>
                 Notifications disabled
               </q-item-label>
             </q-item-section>

@@ -13,7 +13,7 @@ CREATE TABLE public.service (
 );
 
 ALTER TABLE public.service
-ADD COLUMN disallow_notifications BOOLEAN NOT NULL DEFAULT FALSE;
+ADD COLUMN allow_notifications BOOLEAN NOT NULL DEFAULT True;
 
 
 ALTER TABLE public.service ENABLE ROW LEVEL SECURITY;

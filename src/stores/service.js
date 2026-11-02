@@ -25,7 +25,7 @@ export const useServiceStore = defineStore('Service', {
           service.last_miles === ''
             ? null
             : this.toNonNegativeInteger(service.last_miles),
-        disallow_notifications: Boolean(service.disallow_notifications),
+        allow_notifications: Boolean(service.allow_notifications),
       }
     },
 

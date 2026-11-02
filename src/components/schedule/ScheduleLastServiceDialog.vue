@@ -35,7 +35,7 @@
               <td class="text-right">{{ row.interval_years ?? '' }}</td>
               <td class="text-center">
                 <q-checkbox
-                  v-model="row.disallow_notifications"
+                  v-model="row.allow_notifications"
                   dense
                   :aria-label="`Disable notifications for ${row.name}`"
                 />
@@ -179,7 +179,7 @@ function save() {
       interval_miles: row.interval_miles,
       interval_months: row.interval_months,
       interval_years: row.interval_years,
-      disallow_notifications: Boolean(row.disallow_notifications),
+      allow_notifications: Boolean(row.allow_notifications),
       last_miles:
         row.never || row.unknown || row.last_miles === '' ? null : (row.last_miles ?? null),
       last_date: row.never || row.unknown ? null : row.last_date || null,

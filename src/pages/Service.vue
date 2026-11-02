@@ -133,7 +133,7 @@
                 </div>
                 <div class="col-12">
                   <q-toggle
-                    v-model="form.disallow_notifications"
+                    v-model="form.allow_notifications"
                     dense
                     label="Disable notifications"
                   />
@@ -317,9 +317,9 @@ const columns = [
     sortable: true,
   },
   {
-    name: 'disallow_notifications',
+    name: 'allow_notifications',
     label: 'Notifications',
-    field: 'disallow_notifications',
+    field: 'allow_notifications',
     format: (value) => (value ? 'Disabled' : 'Enabled'),
     align: 'left',
     sortable: true,
@@ -399,7 +399,7 @@ function createEmptyForm() {
     interval_years: 0,
     last_date: null,
     last_miles: null,
-    disallow_notifications: false,
+    allow_notifications: true,
   }
 }
 
@@ -441,7 +441,7 @@ function editService(service) {
     interval_years: service.interval_years ?? 0,
     last_date: service.last_date ? String(service.last_date).slice(0, 10) : null,
     last_miles: service.last_miles ?? null,
-    disallow_notifications: Boolean(service.disallow_notifications),
+    allow_notifications: Boolean(service.allow_notifications),
   })
   selectedScheduleId.value = service.schedule_id
   editingServiceId.value = service.service_id
