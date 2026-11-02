@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { predictFutureServices } from '@/utils/rules'
 
-const DUPLICATE_WINDOW_DAYS = 30
+const DUPLICATE_WINDOW_DAYS = 1
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 const inFlightProfiles = new Set()
 
@@ -31,7 +31,7 @@ async function loadRecentNotificationKeys(profileId, now) {
   return new Set((data || []).map((row) => `${row.auto_id}:${row.service_id}`))
 }
 
-// Shows a toaster for each past-due service that has no notification in the last 30 days,
+// Shows a toaster for each past-due service that has no notification in the last day,
 // then records the toaster in the notification table.
 export async function checkServiceNotifications($q, profile, now = Date.now()) {
   const profileId = profile?.profile_id
@@ -57,7 +57,7 @@ export async function checkServiceNotifications($q, profile, now = Date.now()) {
       const subject = 'Service past due'
       const message = buildMessage(auto, service)
 
-      $q.notify({ type: 'warning', message, caption: subject, timeout: 10000 })
+      $q.notify({ type: 'negative', message, caption: subject, timeout: 10000 })
 
       const { error } = await supabase.from('notification').insert({
         profile_id: profileId,
