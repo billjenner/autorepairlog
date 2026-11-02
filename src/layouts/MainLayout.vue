@@ -271,6 +271,7 @@ import { useProfileStore } from '@/stores/profile'
 import { useServiceStore } from '@/stores/service'
 import OfflineConnectionCard from '@/components/OfflineConnectionCard.vue'
 import { checkLoginBusinessRules } from '@/utils/rules'
+import { checkServiceNotifications } from '@/utils/notifications'
 import {
   EMPTY_AVAILABILITY,
   deriveNavVisibility,
@@ -404,6 +405,8 @@ async function refreshNavAvailability() {
       timeout: 7000,
     })
   }
+
+  await checkServiceNotifications($q, profile)
 }
 
 function dismissInstallDialog() {
