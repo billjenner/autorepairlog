@@ -57,6 +57,7 @@ export async function checkServiceNotifications($q, profile, now = Date.now()) {
       const subject = 'Service past due'
       const message = buildMessage(auto, service)
 
+      await new Promise((resolve) => setTimeout(resolve, 2000))
       $q.notify({ type: 'negative', message, caption: subject, timeout: 10000 })
 
       const { error } = await supabase.from('notifications').insert({
