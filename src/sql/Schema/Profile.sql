@@ -26,8 +26,10 @@ ALTER TABLE public.profile
 ADD COLUMN allow_in_app_notifications BOOLEAN NOT NULL DEFAULT TRUE;
 
 ALTER TABLE public.profile
-ADD COLUMN allow_sms_notifications BOOLEAN NOT NULL DEFAULT TRUE;
+ADD COLUMN allow_web_notifications BOOLEAN NOT NULL DEFAULT TRUE;
 
+ALTER TABLE public.profile
+DROP COLUMN allow_sms_notifications;
 -- ============================================================
 -- Add to table
 -- ============================================================

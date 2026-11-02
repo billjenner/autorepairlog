@@ -62,8 +62,8 @@
                   :disable="!usersStore.currentUser"
                 />
                 <q-toggle
-                  v-model="profile.allow_sms_notifications"
-                  label="Allow SMS notifications"
+                  v-model="profile.allow_web_notifications"
+                  label="Allow web notifications"
                   :disable="!usersStore.currentUser"
                 />
               </div>
@@ -115,7 +115,7 @@ const profile = reactive({
   fname: '',
   lname: '',
   allow_in_app_notifications: true,
-  allow_sms_notifications: true,
+  allow_web_notifications: true,
 })
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
@@ -124,14 +124,14 @@ function resetProfile() {
   profile.fname = ''
   profile.lname = ''
   profile.allow_in_app_notifications = true
-  profile.allow_sms_notifications = true
+  profile.allow_web_notifications = true
 }
 
 function setProfile(data) {
   profile.fname = data?.fname ?? usersStore.currentUser?.user_metadata?.fname ?? ''
   profile.lname = data?.lname ?? usersStore.currentUser?.user_metadata?.lname ?? ''
   profile.allow_in_app_notifications = data?.allow_in_app_notifications ?? true
-  profile.allow_sms_notifications = data?.allow_sms_notifications ?? true
+  profile.allow_web_notifications = data?.allow_web_notifications ?? true
 }
 
 async function loadProfile() {
