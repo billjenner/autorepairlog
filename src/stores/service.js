@@ -20,9 +20,12 @@ export const useServiceStore = defineStore('Service', {
         interval_years: this.toNonNegativeInteger(service.interval_years),
         last_date: service.last_date || null,
         last_miles:
-          service.last_miles === null || service.last_miles === undefined || service.last_miles === ''
+          service.last_miles === null ||
+          service.last_miles === undefined ||
+          service.last_miles === ''
             ? null
             : this.toNonNegativeInteger(service.last_miles),
+        disallow_notifications: Boolean(service.disallow_notifications),
       }
     },
 

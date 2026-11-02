@@ -19,6 +19,7 @@
               <th class="text-right">Miles</th>
               <th class="text-right">Months</th>
               <th class="text-right">Years</th>
+              <th class="text-center">Disable notifications</th>
               <th class="text-center">Never</th>
               <th class="text-center">I don't know</th>
               <th class="text-left">Last Service Mileage</th>
@@ -32,6 +33,13 @@
               <td class="text-right">{{ row.interval_miles ?? '' }}</td>
               <td class="text-right">{{ row.interval_months ?? '' }}</td>
               <td class="text-right">{{ row.interval_years ?? '' }}</td>
+              <td class="text-center">
+                <q-checkbox
+                  v-model="row.disallow_notifications"
+                  dense
+                  :aria-label="`Disable notifications for ${row.name}`"
+                />
+              </td>
               <td class="text-center">
                 <q-checkbox v-model="row.never" dense @update:model-value="row.unknown = false" />
               </td>
@@ -171,6 +179,7 @@ function save() {
       interval_miles: row.interval_miles,
       interval_months: row.interval_months,
       interval_years: row.interval_years,
+      disallow_notifications: Boolean(row.disallow_notifications),
       last_miles:
         row.never || row.unknown || row.last_miles === '' ? null : (row.last_miles ?? null),
       last_date: row.never || row.unknown ? null : row.last_date || null,

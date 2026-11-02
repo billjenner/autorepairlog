@@ -146,7 +146,7 @@ export async function predictFutureServices(profileId, today = Date.now()) {
     supabase
       .from('schedule')
       .select(
-        'schedule_id, auto_id, service(service_id, name, interval_miles, interval_months, interval_years, last_miles, last_date, is_active)',
+        'schedule_id, auto_id, service(service_id, name, interval_miles, interval_months, interval_years, last_miles, last_date, is_active, disallow_notifications)',
       )
       .in('auto_id', autoIds)
       .eq('is_active', true),
@@ -178,6 +178,7 @@ export async function predictFutureServices(profileId, today = Date.now()) {
           interval_years: toNumberOrNull(service.interval_years),
           last_miles: toNumberOrNull(service.last_miles),
           last_date: service.last_date ? String(service.last_date).slice(0, 10) : null,
+          disallow_notifications: Boolean(service.disallow_notifications),
           estimated_last_date: estimatedLastDate,
           ...predictServiceOccurrence(
             { ...service, last_date: service.last_date || estimatedLastDate },

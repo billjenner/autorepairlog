@@ -5,7 +5,12 @@
       <q-card-section class="q-pt-none">
         <q-list dense>
           <q-item v-for="service in sortedServices" :key="service.service_id">
-            <q-item-section>{{ serviceLabel(service) }}</q-item-section>
+            <q-item-section>
+              <q-item-label>{{ serviceLabel(service) }}</q-item-label>
+              <q-item-label v-if="service.disallow_notifications" caption>
+                Notifications disabled
+              </q-item-label>
+            </q-item-section>
           </q-item>
         </q-list>
       </q-card-section>
