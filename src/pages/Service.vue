@@ -320,7 +320,7 @@ const columns = [
     name: 'allow_notifications',
     label: 'Notifications',
     field: 'allow_notifications',
-    format: (value) => (value ? 'Disabled' : 'Enabled'),
+    format: (value) => (value ? 'Enabled' : 'Disabled'),
     align: 'left',
     sortable: true,
   },
