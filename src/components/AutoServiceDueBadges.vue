@@ -56,7 +56,7 @@ let requestId = 0
 const buckets = computed(() =>
   [
     { key: 'overdue', label: 'Overdue', color: 'negative' },
-    { key: 'd30', label: '30 days', color: 'warning', textColor: 'dark' },
+    { key: 'd30', label: '30 days', color: 'warning' },
     { key: 'd90', label: '90 days', color: 'positive' },
     { key: 'year', label: '1 year', color: 'positive' },
   ].map((bucket) => ({
