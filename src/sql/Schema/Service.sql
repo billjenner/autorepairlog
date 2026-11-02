@@ -12,6 +12,10 @@ CREATE TABLE public.service (
     created_date TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+ALTER TABLE public.service
+ADD COLUMN disallow_notifications BOOLEAN NOT NULL DEFAULT FALSE;
+
+
 ALTER TABLE public.service ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow all access to service"
