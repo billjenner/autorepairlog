@@ -161,7 +161,7 @@ export const useUsersStore = defineStore('Users', {
 
       if (!supabase) {
         this.error = 'Supabase client is not configured.'
-        this.isOffline = true
+        this.isOffline = false
         return null
       }
 

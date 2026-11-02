@@ -23,7 +23,7 @@ function buildMessage(auto, service) {
 async function loadRecentNotificationKeys(profileId, now) {
   const since = new Date(now - DUPLICATE_WINDOW_DAYS * MS_PER_DAY).toISOString()
   const { data, error } = await supabase
-    .from('notification')
+    .from('notifications')
     .select('auto_id, service_id')
     .eq('profile_id', profileId)
     .gte('date_created', since)
@@ -32,7 +32,7 @@ async function loadRecentNotificationKeys(profileId, now) {
 }
 
 // Shows a toaster for each past-due service that has no notification in the last day,
-// then records the toaster in the notification table.
+// then records the toaster in the notifications table.
 export async function checkServiceNotifications($q, profile, now = Date.now()) {
   const profileId = profile?.profile_id
   if (!supabase || !profileId || !profile.allow_in_app_notifications) return
@@ -59,7 +59,7 @@ export async function checkServiceNotifications($q, profile, now = Date.now()) {
 
       $q.notify({ type: 'negative', message, caption: subject, timeout: 10000 })
 
-      const { error } = await supabase.from('notification').insert({
+      const { error } = await supabase.from('notifications').insert({
         profile_id: profileId,
         auto_id: auto.auto_id,
         service_id: service.service_id,
