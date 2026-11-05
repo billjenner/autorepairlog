@@ -26,6 +26,7 @@
           <q-btn
             v-if="navVisible['/dashboard']"
             flat
+            icon="dashboard"
             label="Dashboard"
             to="/dashboard"
             class="q-mx-sm"
@@ -37,6 +38,7 @@
           <q-btn
             v-if="navVisible['/auto']"
             flat
+            icon="directions_car"
             label="Auto"
             to="/auto"
             class="q-mx-sm"
@@ -48,6 +50,7 @@
           <q-btn
             v-if="navVisible['/schedule']"
             flat
+            icon="event_available"
             label="Schedule"
             to="/schedule"
             class="q-mx-sm"
@@ -59,6 +62,7 @@
           <q-btn
             v-if="navVisible['/service']"
             flat
+            icon="build"
             label="Service"
             to="/service"
             class="q-mx-sm"
@@ -70,6 +74,7 @@
           <q-btn
             v-if="navVisible['/service-order']"
             flat
+            icon="receipt_long"
             label="Service Order"
             to="/service-order"
             class="q-mx-sm"
@@ -81,6 +86,7 @@
           <q-btn
             v-if="navVisible['/service-log']"
             flat
+            icon="history"
             label="Service log"
             to="/service-log"
             class="q-mx-sm"
@@ -153,6 +159,9 @@
             v-ripple
             @click="navigateAndClose('/dashboard')"
           >
+            <q-item-section avatar>
+              <q-icon name="dashboard" />
+            </q-item-section>
             <q-item-section>Dashboard</q-item-section>
           </q-item>
           <q-item
@@ -161,6 +170,9 @@
             v-ripple
             @click="navigateAndClose('/auto')"
           >
+            <q-item-section avatar>
+              <q-icon name="directions_car" />
+            </q-item-section>
             <q-item-section>Auto</q-item-section>
           </q-item>
           <q-item
@@ -169,6 +181,9 @@
             v-ripple
             @click="navigateAndClose('/schedule')"
           >
+            <q-item-section avatar>
+              <q-icon name="event_available" />
+            </q-item-section>
             <q-item-section>Schedule</q-item-section>
           </q-item>
           <q-item
@@ -177,6 +192,9 @@
             v-ripple
             @click="navigateAndClose('/service')"
           >
+            <q-item-section avatar>
+              <q-icon name="build" />
+            </q-item-section>
             <q-item-section>Service</q-item-section>
           </q-item>
           <q-item
@@ -185,6 +203,9 @@
             v-ripple
             @click="navigateAndClose('/service-order')"
           >
+            <q-item-section avatar>
+              <q-icon name="receipt_long" />
+            </q-item-section>
             <q-item-section>Service Order</q-item-section>
           </q-item>
           <q-item
@@ -193,6 +214,9 @@
             v-ripple
             @click="navigateAndClose('/service-log')"
           >
+            <q-item-section avatar>
+              <q-icon name="history" />
+            </q-item-section>
             <q-item-section>Service Log</q-item-section>
           </q-item>
           <q-item clickable v-ripple @click="navigateAndClose('/help')">
