@@ -238,12 +238,21 @@
             <q-item-section>Service Log</q-item-section>
           </q-item>
           <q-item clickable v-ripple @click="navigateAndClose('/help')">
+            <q-item-section avatar>
+              <q-icon name="help_outline" />
+            </q-item-section>
             <q-item-section>Help</q-item-section>
           </q-item>
           <q-item v-if="isAdmin" clickable v-ripple @click="navigateAndClose('/users')">
+            <q-item-section avatar>
+              <q-icon name="group" />
+            </q-item-section>
             <q-item-section>Users</q-item-section>
           </q-item>
           <q-item v-if="isAdmin" clickable v-ripple @click="navigateAndClose('/feedback')">
+            <q-item-section avatar>
+              <q-icon name="feedback" />
+            </q-item-section>
             <q-item-section>Feedback</q-item-section>
           </q-item>
         </template>
