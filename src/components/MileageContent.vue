@@ -86,10 +86,11 @@
           class="q-mr-auto"
           @click="requestDeleteEditedMileage"
         />
-        <q-btn flat label="Cancel" @click="resetForm" />
+        <q-btn flat label="Cancel" class="q-mb-md" @click="resetForm" />
         <q-btn
           type="submit"
           color="primary"
+          class="q-mr-md"
           :label="editingMileageId ? 'Update mileage' : 'Save mileage'"
           :loading="mileageStore.loading"
         />
