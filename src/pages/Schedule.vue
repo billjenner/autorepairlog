@@ -131,7 +131,9 @@
                 </div>
 
                 <div class="q-mt-md">
-                  <div class="text-caption text-grey-7 q-mb-xs">Notes</div>
+                  <q-toggle v-model="showNotes" dense label="Notes" />
+                </div>
+                <div v-if="showNotes" class="q-mt-sm">
                   <notes-editor v-model="form.notes" />
                 </div>
               </q-card>
@@ -279,6 +281,7 @@ const scheduleStore = useScheduleStore()
 const usersStore = useUsersStore()
 const profileStore = useProfileStore()
 const showForm = ref(false)
+const showNotes = ref(false)
 const editingScheduleId = ref(null)
 const pendingDeleteSchedule = ref(null)
 const selectedTemplateScheduleId = ref(null)
@@ -420,6 +423,7 @@ function resetForm() {
   form.auto_id = null
   form.notes = ''
   editingScheduleId.value = null
+  showNotes.value = false
   showForm.value = false
 }
 
@@ -435,6 +439,7 @@ function editSchedule(schedule) {
   form.auto_id = schedule.auto_id
   form.notes = schedule.notes || ''
   editingScheduleId.value = schedule.schedule_id
+  showNotes.value = Boolean(schedule.notes)
   showForm.value = true
 }
 
