@@ -252,7 +252,7 @@
                 </div>
                 <div class="col-12 col-sm-4">
                   <q-input
-                    v-model="form.total_cost"
+                    :model-value="form.total_cost"
                     type="number"
                     label="Total cost"
                     min="0"
@@ -260,6 +260,7 @@
                     clearable
                     filled
                     dense
+                    @update:model-value="limitTotalCostDecimals"
                   />
                 </div>
                 <div class="col-12">
@@ -345,7 +346,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import NotesEditor from '@/components/NotesEditor.vue'
 import ScheduleNotesDialog from '@/components/schedule/ScheduleNotesDialog.vue'
@@ -667,6 +668,19 @@ async function load() {
 
 // Mileage must be at least the auto's latest mileage record. An edit that leaves the
 // mileage unchanged is not re-checked, so older entries can still be edited.
+// Keeps at most two decimal places while typing, without rounding the digits entered.
+function limitTotalCostDecimals(value) {
+  const text = value === null || value === undefined ? '' : String(value)
+  const [whole, decimals] = text.split('.')
+  form.total_cost = value
+  if (decimals !== undefined && decimals.length > 2) {
+    // Assign the raw value first so the input re-renders even when the trimmed value is unchanged.
+    nextTick(() => {
+      form.total_cost = `${whole}.${decimals.slice(0, 2)}`
+    })
+  }
+}
+
 async function hasValidMileage(isEditing) {
   if (form.mileage === null || form.mileage === '') {
     return true
