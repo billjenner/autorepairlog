@@ -3,8 +3,10 @@
     <div class="row items-center justify-between q-mx-md q-mt-md q-mb-md">
       <div class="text-h5">Mileage</div>
       <q-btn
+        v-if="!showForm"
         color="primary"
-        :label="showForm ? 'Cancel' : 'Add Mileage'"
+        label="Add Mileage"
+        class="q-mb-md"
         :disable="!autoOptions.length"
         @click="toggleForm"
       />
@@ -86,7 +88,7 @@
           class="q-mr-auto"
           @click="requestDeleteEditedMileage"
         />
-        <q-btn flat label="Cancel" class="q-mb-md" @click="resetForm" />
+        <q-btn flat label="Cancel" @click="resetForm" />
         <q-btn
           type="submit"
           color="primary"
