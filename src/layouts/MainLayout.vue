@@ -29,8 +29,8 @@
             icon="dashboard"
             label="Dashboard"
             to="/dashboard"
-            class="q-mx-sm"
-            style="min-width: 135px"
+            class="q-mx-xs"
+            style="min-width: 160px; font-size: 0.8rem"
             :style="buttonStyle('/dashboard')"
             @mouseover="hoveredPath = '/dashboard'"
             @mouseleave="hoveredPath = null"
@@ -41,8 +41,8 @@
             icon="directions_car"
             label="Auto"
             to="/auto"
-            class="q-mx-sm"
-            style="min-width: 135px"
+            class="q-mx-xs"
+            style="min-width: 160px; font-size: 0.8rem"
             :style="buttonStyle('/auto')"
             @mouseover="hoveredPath = '/auto'"
             @mouseleave="hoveredPath = null"
@@ -53,8 +53,8 @@
             icon="event_available"
             label="Schedule"
             to="/schedule"
-            class="q-mx-sm"
-            style="min-width: 135px"
+            class="q-mx-xs"
+            style="min-width: 160px; font-size: 0.8rem"
             :style="buttonStyle('/schedule')"
             @mouseover="hoveredPath = '/schedule'"
             @mouseleave="hoveredPath = null"
@@ -65,8 +65,8 @@
             icon="build"
             label="Service"
             to="/service"
-            class="q-mx-sm"
-            style="min-width: 135px"
+            class="q-mx-xs"
+            style="min-width: 160px; font-size: 0.8rem"
             :style="buttonStyle('/service')"
             @mouseover="hoveredPath = '/service'"
             @mouseleave="hoveredPath = null"
@@ -77,8 +77,8 @@
             icon="receipt_long"
             label="Service Order"
             to="/service-order"
-            class="q-mx-sm"
-            style="min-width: 135px"
+            class="q-mx-xs"
+            style="min-width: 160px; font-size: 0.8rem"
             :style="buttonStyle('/service-order')"
             @mouseover="hoveredPath = '/service-order'"
             @mouseleave="hoveredPath = null"
@@ -89,8 +89,8 @@
             icon="history"
             label="Service log"
             to="/service-log"
-            class="q-mx-sm"
-            style="min-width: 135px"
+            class="q-mx-xs"
+            style="min-width: 160px; font-size: 0.8rem"
             :style="buttonStyle('/service-log')"
             @mouseover="hoveredPath = '/service-log'"
             @mouseleave="hoveredPath = null"
@@ -100,8 +100,8 @@
             flat
             label="LOGIN"
             to="/login"
-            class="q-mx-sm"
-            style="min-width: 135px"
+            class="q-mx-xs"
+            style="min-width: 110px; font-size: 0.8rem"
             :style="buttonStyle('/login')"
             @mouseover="hoveredPath = '/login'"
             @mouseleave="hoveredPath = null"
@@ -164,12 +164,7 @@
             </q-item-section>
             <q-item-section>Dashboard</q-item-section>
           </q-item>
-          <q-item
-            v-if="navVisible['/auto']"
-            clickable
-            v-ripple
-            @click="navigateAndClose('/auto')"
-          >
+          <q-item v-if="navVisible['/auto']" clickable v-ripple @click="navigateAndClose('/auto')">
             <q-item-section avatar>
               <q-icon name="directions_car" />
             </q-item-section>
