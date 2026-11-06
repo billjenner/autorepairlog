@@ -2,44 +2,76 @@
   <div>
     <AutoHeading :auto-id="autoId" @loaded="onAutoLoaded" />
     <q-banner v-if="error" class="bg-negative text-white" rounded>{{ error }}</q-banner>
-    <div v-else-if="!rows.length" class="text-grey-7 q-pa-md">
-      {{ loading ? 'Loading…' : 'No service log entries for this auto.' }}
+    <div v-else-if="!rows.length && !fuelRows.length" class="text-grey-7 q-pa-md">
+      {{ loading ? 'Loading…' : 'No fuel or service log entries for this auto.' }}
     </div>
     <div v-else>
-      <div class="text-h5 text-center q-mb-md">Service Log</div>
-      <q-markup-table flat bordered dense>
-        <thead>
-          <tr>
-            <th class="text-left">Service</th>
-            <th class="text-left">Attachment</th>
-            <th class="text-left">Date</th>
-            <th class="text-right">Miles</th>
-            <th class="text-right">Parts</th>
-            <th class="text-right">Labor</th>
-            <th class="text-right">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in rows" :key="row.service_log_id">
-            <td class="text-left">{{ row.name }}</td>
-            <td class="text-left">
-              <a
-                v-if="row.invoiceUrl"
-                :href="row.invoiceUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View attachment
-              </a>
-            </td>
-            <td class="text-left">{{ formatDate(row.service_date) }}</td>
-            <td class="text-right">{{ formatNumber(row.service_miles) }}</td>
-            <td class="text-right">{{ formatMoney(row.parts) }}</td>
-            <td class="text-right">{{ formatMoney(row.labor) }}</td>
-            <td class="text-right">{{ formatMoney(row.total_cost) }}</td>
-          </tr>
-        </tbody>
-      </q-markup-table>
+      <div v-if="fuelRows.length" class="q-mb-lg">
+        <div class="text-h5 text-center q-mb-md">Fuel Log</div>
+        <q-markup-table flat bordered dense>
+          <thead>
+            <tr>
+              <th class="text-left">Date</th>
+              <th class="text-right">Miles</th>
+              <th class="text-right">Gallons</th>
+              <th class="text-right">Price/Gal</th>
+              <th class="text-right">Total</th>
+              <th class="text-left">Fuel Type</th>
+              <th class="text-left">Station</th>
+              <th class="text-left">Location</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in fuelRows" :key="row.fuel_log_id">
+              <td class="text-left">{{ formatDate(row.date) }}</td>
+              <td class="text-right">{{ formatNumber(row.mileage) }}</td>
+              <td class="text-right">{{ formatGallons(row.gallons) }}</td>
+              <td class="text-right">{{ formatPrice(row.price_per_gallon) }}</td>
+              <td class="text-right">{{ formatMoney(row.total_cost) }}</td>
+              <td class="text-left">{{ row.fuel_type || '' }}</td>
+              <td class="text-left">{{ row.station || '' }}</td>
+              <td class="text-left">{{ row.location || '' }}</td>
+            </tr>
+          </tbody>
+        </q-markup-table>
+      </div>
+
+      <div v-if="rows.length">
+        <div class="text-h5 text-center q-mb-md">Service Log</div>
+        <q-markup-table flat bordered dense>
+          <thead>
+            <tr>
+              <th class="text-left">Service</th>
+              <th class="text-left">Attachment</th>
+              <th class="text-left">Date</th>
+              <th class="text-right">Miles</th>
+              <th class="text-right">Parts</th>
+              <th class="text-right">Labor</th>
+              <th class="text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in rows" :key="row.service_log_id">
+              <td class="text-left">{{ row.name }}</td>
+              <td class="text-left">
+                <a
+                  v-if="row.invoiceUrl"
+                  :href="row.invoiceUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View attachment
+                </a>
+              </td>
+              <td class="text-left">{{ formatDate(row.service_date) }}</td>
+              <td class="text-right">{{ formatNumber(row.service_miles) }}</td>
+              <td class="text-right">{{ formatMoney(row.parts) }}</td>
+              <td class="text-right">{{ formatMoney(row.labor) }}</td>
+              <td class="text-right">{{ formatMoney(row.total_cost) }}</td>
+            </tr>
+          </tbody>
+        </q-markup-table>
+      </div>
 
       <div v-if="noteRows.length" class="q-mt-lg">
         <div class="text-h6 q-mb-sm">Notes</div>
@@ -105,6 +137,7 @@ const props = defineProps({
 
 const serviceOrderStore = useServiceOrderStore()
 const rows = ref([])
+const fuelRows = ref([])
 const loading = ref(false)
 const autoTitle = ref('')
 const autoVin = ref('')
@@ -142,6 +175,31 @@ function toCsvField(value) {
 }
 
 const exportHead = ['SERVICE', 'DATE', 'MILES', 'PARTS', 'LABOR', 'TOTAL', 'ATTACHMENT']
+const fuelExportHead = [
+  'DATE',
+  'MILES',
+  'GALLONS',
+  'PRICE/GAL',
+  'TOTAL',
+  'FUEL TYPE',
+  'STATION',
+  'LOCATION',
+]
+
+function fuelExportBody() {
+  return fuelRows.value.map((row) => [
+    formatDate(row.date),
+    row.mileage ?? '',
+    row.gallons === null || row.gallons === undefined ? '' : Number(row.gallons).toFixed(3),
+    row.price_per_gallon === null || row.price_per_gallon === undefined
+      ? ''
+      : Number(row.price_per_gallon).toFixed(3),
+    Number(row.total_cost || 0).toFixed(2),
+    row.fuel_type || '',
+    row.station || '',
+    row.location || '',
+  ])
+}
 
 function exportBody() {
   return rows.value.map((row) => [
@@ -168,9 +226,15 @@ function exportCsv() {
   const lines = []
   if (autoTitle.value) lines.push(toCsvField(autoTitle.value))
   if (autoTitle.value) lines.push(autoVin.value ? toCsvField(`VIN: ${autoVin.value}`) : '')
-  lines.push(exportHead.join(','))
-  for (const values of exportBody()) lines.push(values.map(toCsvField).join(','))
-
+  if (fuelRows.value.length) {
+    lines.push('FUEL LOG', fuelExportHead.join(','))
+    for (const values of fuelExportBody()) lines.push(values.map(toCsvField).join(','))
+    if (rows.value.length) lines.push('', 'SERVICE LOG')
+  }
+  if (rows.value.length) {
+    lines.push(exportHead.join(','))
+    for (const values of exportBody()) lines.push(values.map(toCsvField).join(','))
+  }
   if (includeNotes.value && noteRows.value.length) {
     lines.push('', 'NOTES', 'SERVICE,DATE,SOURCE,NOTES')
     for (const values of exportNotes()) lines.push(values.map(toCsvField).join(','))
@@ -203,22 +267,54 @@ function exportPdf() {
     tableStartY = 32
   }
 
-  autoTable(doc, {
-    startY: tableStartY,
-    head: [exportHead],
-    body: exportBody(),
-    theme: 'grid',
-    styles: { fontSize: 9, cellPadding: 3 },
-    headStyles,
-    columnStyles: {
-      2: { halign: 'right' },
-      3: { halign: 'right' },
-      4: { halign: 'right' },
-      5: { halign: 'right' },
-      6: { cellWidth: 25 },
-    },
-    margin: { left: 14, right: 14 },
-  })
+  const sectionTitle = (text, y) => {
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'bold')
+    doc.text(text, 14, y)
+  }
+
+  if (fuelRows.value.length) {
+    sectionTitle('Fuel Log', tableStartY)
+    autoTable(doc, {
+      startY: tableStartY + 4,
+      head: [fuelExportHead],
+      body: fuelExportBody(),
+      theme: 'grid',
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles,
+      columnStyles: {
+        1: { halign: 'right' },
+        2: { halign: 'right' },
+        3: { halign: 'right' },
+        4: { halign: 'right' },
+      },
+      margin: { left: 14, right: 14 },
+    })
+    tableStartY = doc.lastAutoTable.finalY + 12
+    if (rows.value.length) {
+      sectionTitle('Service Log', tableStartY)
+      tableStartY += 4
+    }
+  }
+
+  if (rows.value.length) {
+    autoTable(doc, {
+      startY: tableStartY,
+      head: [exportHead],
+      body: exportBody(),
+      theme: 'grid',
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles,
+      columnStyles: {
+        2: { halign: 'right' },
+        3: { halign: 'right' },
+        4: { halign: 'right' },
+        5: { halign: 'right' },
+        6: { cellWidth: 25 },
+      },
+      margin: { left: 14, right: 14 },
+    })
+  }
 
   if (includeNotes.value && noteRows.value.length) {
     const startY = doc.lastAutoTable.finalY + 12
@@ -240,7 +336,12 @@ function exportPdf() {
   doc.save(exportFilename('pdf'))
 }
 
-const hasText = (value) => Boolean(String(value || '').replace(/<[^>]*>/g, '').trim())
+const hasText = (value) =>
+  Boolean(
+    String(value || '')
+      .replace(/<[^>]*>/g, '')
+      .trim(),
+  )
 
 // One entry per non-empty note; order notes and log notes are listed separately.
 const noteRows = computed(() =>
@@ -280,16 +381,34 @@ function formatMoney(value) {
   return Number(value || 0).toLocaleString(undefined, { style: 'currency', currency: 'USD' })
 }
 
+function formatGallons(value) {
+  return value === null || value === undefined ? '—' : Number(value).toFixed(3)
+}
+
+function formatPrice(value) {
+  return value === null || value === undefined ? '—' : `$${Number(value).toFixed(3)}`
+}
+
 async function load() {
   const currentRequest = ++requestId
   error.value = ''
   if (!props.autoId) {
     rows.value = []
+    fuelRows.value = []
     return
   }
 
   loading.value = true
   try {
+    const { data: fuelData, error: fuelError } = await supabase
+      .from('fuel_log')
+      .select(
+        'fuel_log_id, date, mileage, gallons, price_per_gallon, total_cost, fuel_type, station, location',
+      )
+      .eq('auto_id', props.autoId)
+      .order('date', { ascending: true })
+    if (fuelError) throw fuelError
+
     const { data, error: logError } = await supabase
       .from('service_log')
       .select(
@@ -313,6 +432,7 @@ async function load() {
     )
 
     if (currentRequest !== requestId) return
+    fuelRows.value = fuelData || []
     rows.value = sorted.map((log) => ({
       ...log,
       invoiceUrl: urls.get(log.service_order?.invoice_url) || '',
@@ -321,6 +441,7 @@ async function load() {
     if (currentRequest !== requestId) return
     error.value = err.message || 'Unable to load exports.'
     rows.value = []
+    fuelRows.value = []
   } finally {
     if (currentRequest === requestId) loading.value = false
   }
