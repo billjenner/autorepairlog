@@ -83,6 +83,7 @@ import { predictFutureServices } from '@/utils/rules'
 const props = defineProps({
   profileId: { type: [Number, String], default: null },
   refreshKey: { type: null, default: null },
+  autoId: { type: [Number, String], default: null },
 })
 
 const logRows = ref([])
@@ -157,7 +158,10 @@ async function load() {
 
   loading.value = true
   try {
-    const autos = await predictFutureServices(props.profileId)
+    const allAutos = await predictFutureServices(props.profileId)
+    const autos = props.autoId
+      ? allAutos.filter((auto) => auto.auto_id === props.autoId)
+      : allAutos
     const autoIds = autos.map((auto) => auto.auto_id)
     const intervalsByService = new Map()
     const upcoming = []
@@ -221,7 +225,7 @@ async function load() {
   }
 }
 
-watch(() => [props.profileId, props.refreshKey], load, { immediate: true })
+watch(() => [props.profileId, props.refreshKey, props.autoId], load, { immediate: true })
 </script>
 
 <style scoped>

@@ -160,7 +160,7 @@
 
             <q-table
               class="q-mt-sm"
-              :rows="scheduleStore.schedules"
+              :rows="visibleSchedules"
               :columns="columns"
               :loading="scheduleStore.loading"
               :pagination="{ rowsPerPage: 0 }"
@@ -255,6 +255,7 @@
           class="q-mt-lg"
           :profile-id="profileStore.currentProfile?.profile_id || null"
           :refresh-key="scheduleStore.schedules"
+          :auto-id="form.auto_id"
         />
       </div>
     </div>
@@ -302,6 +303,11 @@ const hideTemplateTools = computed(() => {
   }
   return scheduleStore.schedules.some((schedule) => schedule.auto_id === form.auto_id)
 })
+const visibleSchedules = computed(() =>
+  form.auto_id
+    ? scheduleStore.schedules.filter((schedule) => schedule.auto_id === form.auto_id)
+    : scheduleStore.schedules,
+)
 const hasActiveAutoListed = computed(() => scheduleStore.templateAutos.length > 0)
 const scheduleExpanded = computed({
   get: () =>
