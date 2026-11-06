@@ -288,8 +288,17 @@ const isAdminUser = ref(false)
 const scheduleExpandedOverride = ref(null)
 const scheduleDataLoaded = ref(false)
 const form = reactive({ auto_id: null, notes: '' })
-// Level 0 users who already have a non-template schedule can't add or use templates.
-const hideTemplateTools = computed(() => !isAdminUser.value && scheduleStore.schedules.length > 0)
+// Level 0 users can't use templates for an auto that already has a schedule.
+// An auto without a schedule still shows the template list.
+const hideTemplateTools = computed(() => {
+  if (isAdminUser.value || !scheduleStore.schedules.length) {
+    return false
+  }
+  if (editingScheduleId.value || !form.auto_id) {
+    return true
+  }
+  return scheduleStore.schedules.some((schedule) => schedule.auto_id === form.auto_id)
+})
 const hasActiveAutoListed = computed(() => scheduleStore.templateAutos.length > 0)
 const scheduleExpanded = computed({
   get: () =>
