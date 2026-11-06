@@ -48,6 +48,18 @@
             @mouseleave="hoveredPath = null"
           />
           <q-btn
+            v-if="navVisible['/fuel-log']"
+            flat
+            icon="local_gas_station"
+            label="Fuel"
+            to="/fuel-log"
+            class="q-mx-xs"
+            style="min-width: 110px; font-size: 0.8rem"
+            :style="buttonStyle('/fuel-log')"
+            @mouseover="hoveredPath = '/fuel-log'"
+            @mouseleave="hoveredPath = null"
+          />
+          <q-btn
             v-if="navVisible['/schedule']"
             flat
             icon="event_available"
@@ -169,6 +181,17 @@
               <q-icon name="directions_car" />
             </q-item-section>
             <q-item-section>Auto</q-item-section>
+          </q-item>
+          <q-item
+            v-if="navVisible['/fuel-log']"
+            clickable
+            v-ripple
+            @click="navigateAndClose('/fuel-log')"
+          >
+            <q-item-section avatar>
+              <q-icon name="local_gas_station" />
+            </q-item-section>
+            <q-item-section>Fuel</q-item-section>
           </q-item>
           <q-item
             v-if="navVisible['/schedule']"

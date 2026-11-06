@@ -8,7 +8,7 @@ CREATE TABLE public.fuel_log (
     total_cost NUMERIC(10,2),
     fuel_type TEXT,
     station TEXT,
-    location TEXT,
+    location TEXT,  --- not used
     is_full_tank BOOLEAN NOT NULL DEFAULT TRUE,
     notes TEXT,
     created_date TIMESTAMPTZ NOT NULL DEFAULT NOW()

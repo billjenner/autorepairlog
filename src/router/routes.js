@@ -139,6 +139,18 @@ const routes = [
         },
       },
       {
+        path: 'fuel-log',
+        component: () => import('@/pages/FuelLog.vue'),
+        meta: {
+          requiresAuth: true,
+          seo: {
+            title: 'Fuel Log',
+            description: 'Create and manage your fuel log records.',
+            canonicalPath: '/fuel-log',
+          },
+        },
+      },
+      {
         path: 'mileage',
         component: () => import('@/pages/Mileage.vue'),
         meta: {

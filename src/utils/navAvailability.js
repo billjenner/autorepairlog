@@ -10,8 +10,8 @@ export const EMPTY_AVAILABILITY = Object.freeze({
 
 // Visibility rules:
 //  - not logged in: hide auto and every other navigation option below
-//  - no active auto: hide schedule, service, service order, service log, dashboard
-//  - active auto: show auto and schedule
+//  - no active auto: hide fuel log, schedule, service, service order, service log, dashboard
+//  - active auto: show auto, fuel log and schedule
 //  - active auto and schedule: also show service, service order, service log
 //  - dashboard: only when the dashboard schedule check found something
 // This is the single place these rules live; toolbar and drawer both consume it.
@@ -20,6 +20,7 @@ export function deriveNavVisibility(availability, loggedIn = false) {
   if (!loggedIn) {
     return {
       '/auto': false,
+      '/fuel-log': false,
       '/schedule': false,
       '/service': false,
       '/service-order': false,
@@ -33,6 +34,7 @@ export function deriveNavVisibility(availability, loggedIn = false) {
 
   return {
     '/auto': true,
+    '/fuel-log': hasAuto,
     '/schedule': schedule,
     '/service': service,
     '/service-order': service,
