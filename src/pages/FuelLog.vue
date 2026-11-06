@@ -31,12 +31,12 @@
               clearable
               debounce="200"
               placeholder="Search fuel log"
-              class="col-12 col-md-4"
+              class="col-12 col-md-4 service-list-search"
               style="width: 100%; max-width: 400px"
             >
               <template #prepend><q-icon name="search" /></template>
             </q-input>
-            <div class="col-auto">
+            <div class="col-auto service-list-action">
               <q-btn
                 v-if="!showForm"
                 color="primary"
