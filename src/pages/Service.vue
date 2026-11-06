@@ -163,6 +163,7 @@
               <q-btn
                 type="submit"
                 color="primary"
+                class="q-mr-md"
                 :label="editingServiceId ? 'Update service' : 'Save service'"
                 :loading="serviceStore.loading"
                 :disable="!hasRequiredFields || (Boolean(editingServiceId) && !hasPositiveInterval)"

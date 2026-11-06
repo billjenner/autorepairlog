@@ -106,15 +106,13 @@
 
             <div class="row items-center justify-between q-ml-md q-mt-md">
               <q-btn
-                v-if="!hideTemplateTools"
+                v-if="!hideTemplateTools && !showForm"
                 color="primary"
-                :label="showForm ? 'Cancel' : 'Add Schedule'"
-                :disable="!usersStore.currentUser || (!showForm && !hasSelectedTemplate)"
+                label="Add Schedule"
+                :disable="!usersStore.currentUser || !hasSelectedTemplate"
                 @click="toggleForm"
               >
-                <q-tooltip v-if="!hasSelectedTemplate && !showForm">{{
-                  selectTemplateMessage
-                }}</q-tooltip>
+                <q-tooltip v-if="!hasSelectedTemplate">{{ selectTemplateMessage }}</q-tooltip>
               </q-btn>
             </div>
 
@@ -151,6 +149,7 @@
                 <q-btn
                   type="submit"
                   color="primary"
+                  class="q-mr-md"
                   :label="editingScheduleId ? 'Update schedule' : 'Save schedule'"
                   :loading="scheduleStore.loading"
                   :disable="!editingScheduleId && !hasSelectedTemplate"

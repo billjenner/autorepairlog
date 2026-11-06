@@ -14,6 +14,7 @@
           filled
           dense
           lazy-rules
+          :disable="showForm"
           :rules="[(value) => !showForm || !!value || 'Select an auto.']"
           class="col-12 col-sm-6"
         />
@@ -349,6 +350,7 @@
               <q-btn
                 type="submit"
                 color="primary"
+                class="q-mr-md"
                 :label="editingOrderId ? 'Update service order' : 'Save service order'"
                 :loading="serviceOrderStore.loading"
                 :disable="!hasRequiredFields || !hasAtLeastOneService"
@@ -776,6 +778,11 @@ function toggleForm() {
 
   if (!selectedAutoId.value && autoOptions.value.length === 1) {
     selectedAutoId.value = autoOptions.value[0].value
+  }
+  if (!autoOptions.value.some((option) => option.value === selectedAutoId.value)) {
+    $q.notify({ type: 'negative', message: 'Select an active auto before adding a service order.' })
+    autoSelectRef.value?.validate()
+    return
   }
   Object.assign(form, { ...createEmptyForm(), auto_id: selectedAutoId.value })
   resetServiceEntry()
