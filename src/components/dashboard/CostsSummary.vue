@@ -2,11 +2,53 @@
   <div>
     <AutoHeading :auto-id="autoId" />
     <q-banner v-if="error" class="bg-negative text-white" rounded>{{ error }}</q-banner>
-    <div v-else-if="!groups.length" class="text-grey-7 q-pa-md">
-      {{ loading ? 'Loading…' : 'No service history for this auto.' }}
+    <div v-else-if="!groups.length && !fuel.logs.length" class="text-grey-7 q-pa-md">
+      {{ loading ? 'Loading…' : 'No service or fuel history for this auto.' }}
     </div>
     <div v-else>
       <div class="text-subtitle1 q-mb-md">{{ rangeLabel }}</div>
+
+      <q-card v-if="fuel.logs.length" flat bordered class="q-mb-md">
+        <q-card-section class="text-h6 q-pb-none">
+          Fuel
+          <span class="text-caption text-grey-7">
+            · {{ fuel.logs.length }} fill-up{{ fuel.logs.length === 1 ? '' : 's' }}
+          </span>
+        </q-card-section>
+        <q-markup-table flat dense style="table-layout: fixed">
+          <colgroup>
+            <col style="width: 20%" />
+            <col style="width: 20%" />
+            <col style="width: 20%" />
+            <col style="width: 20%" />
+            <col style="width: 20%" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th class="text-left">Date</th>
+              <th class="text-left">Miles</th>
+              <th class="text-right">Gallons</th>
+              <th class="text-right">Price/Gal</th>
+              <th class="text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="log in fuel.logs" :key="log.fuel_log_id">
+              <td class="text-left">{{ formatDate(log.date) }}</td>
+              <td class="text-left">{{ formatNumber(log.mileage) }}</td>
+              <td class="text-right">{{ formatGallons(log.gallons) }}</td>
+              <td class="text-right">{{ formatPrice(log.price_per_gallon) }}</td>
+              <td class="text-right">{{ formatMoney(log.total_cost) }}</td>
+            </tr>
+            <tr class="text-bold">
+              <td colspan="2" class="text-left">Total for Fuel</td>
+              <td class="text-right">{{ formatGallons(fuel.gallons) }}</td>
+              <td class="text-right"></td>
+              <td class="text-right">{{ formatMoney(fuel.total) }}</td>
+            </tr>
+          </tbody>
+        </q-markup-table>
+      </q-card>
 
       <q-card v-for="group in groups" :key="group.key" flat bordered class="q-mb-md">
         <q-card-section class="text-h6 q-pb-none">
@@ -68,12 +110,15 @@ const props = defineProps({
 })
 
 const groups = ref([])
+const fuel = ref({ logs: [], gallons: 0, total: 0 })
 const purchaseDate = ref(null)
 const loading = ref(false)
 const error = ref('')
 let requestId = 0
 
-const autoTotal = computed(() => groups.value.reduce((sum, group) => sum + group.total, 0))
+const autoTotal = computed(
+  () => groups.value.reduce((sum, group) => sum + group.total, 0) + fuel.value.total,
+)
 const rangeLabel = computed(
   () =>
     `${purchaseDate.value ? formatDate(purchaseDate.value) : 'Start'} – ${formatDate(new Date())}`,
@@ -93,6 +138,14 @@ function formatMoney(value) {
   return Number(value || 0).toLocaleString(undefined, { style: 'currency', currency: 'USD' })
 }
 
+function formatGallons(value) {
+  return value === null || value === undefined ? '—' : Number(value).toFixed(3)
+}
+
+function formatPrice(value) {
+  return value === null || value === undefined ? '—' : `$${Number(value).toFixed(3)}`
+}
+
 // Costs are summed in cents to avoid floating point drift.
 function cents(value) {
   return Math.round(Number(value || 0) * 100)
@@ -103,6 +156,7 @@ async function load() {
   error.value = ''
   if (!props.autoId) {
     groups.value = []
+    fuel.value = { logs: [], gallons: 0, total: 0 }
     purchaseDate.value = null
     return
   }
@@ -130,6 +184,23 @@ async function load() {
     const { data: logs, error: logError } = await query
     if (logError) throw logError
 
+    let fuelQuery = supabase
+      .from('fuel_log')
+      .select('fuel_log_id, date, mileage, gallons, price_per_gallon, total_cost')
+      .eq('auto_id', props.autoId)
+      .lte('date', new Date().toISOString().slice(0, 10))
+      .order('date', { ascending: true })
+    if (auto?.purchase_date) fuelQuery = fuelQuery.gte('date', auto.purchase_date)
+
+    const { data: fuelLogs, error: fuelError } = await fuelQuery
+    if (fuelError) throw fuelError
+
+    const fuelSummary = { logs: fuelLogs || [], gallons: 0, total: 0 }
+    for (const log of fuelSummary.logs) {
+      fuelSummary.gallons += Number(log.gallons || 0)
+      fuelSummary.total += cents(log.total_cost) / 100
+    }
+
     const byService = new Map()
     for (const log of logs || []) {
       const group = byService.get(log.service_id) || {
@@ -149,11 +220,13 @@ async function load() {
 
     if (currentRequest !== requestId) return
     purchaseDate.value = auto?.purchase_date || null
+    fuel.value = fuelSummary
     groups.value = [...byService.values()].sort((a, b) => a.name.localeCompare(b.name))
   } catch (err) {
     if (currentRequest !== requestId) return
     error.value = err.message || 'Unable to load costs.'
     groups.value = []
+    fuel.value = { logs: [], gallons: 0, total: 0 }
   } finally {
     if (currentRequest === requestId) loading.value = false
   }
