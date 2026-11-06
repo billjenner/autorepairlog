@@ -566,9 +566,11 @@ async function loadAuto() {
 
 async function saveAuto() {
   const isEditing = Boolean(editingAutoId.value)
+  const isAdmin = Number(profileStore.currentProfile?.admin_level) > 0
+  const payload = { ...form, isTemplate: isAdmin ? form.isTemplate : false }
   let savedAuto = isEditing
-    ? await autoStore.updateAuto(profileId.value, editingAutoId.value, form)
-    : await autoStore.createAuto(profileId.value, form)
+    ? await autoStore.updateAuto(profileId.value, editingAutoId.value, payload)
+    : await autoStore.createAuto(profileId.value, payload)
 
   if (!savedAuto) {
     return
