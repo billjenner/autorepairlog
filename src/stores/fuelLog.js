@@ -20,6 +20,9 @@ function toNullableNumber(value, { integer = false, decimals = null } = {}) {
 export const useFuelLogStore = defineStore('FuelLog', {
   state: () => ({
     fuelLogs: [],
+    fuelTypes: [],
+    stations: [],
+    stationRows: [],
     error: null,
     loading: false,
   }),
@@ -43,9 +46,114 @@ export const useFuelLogStore = defineStore('FuelLog', {
         fuel_type: entry.fuel_type?.trim() || null,
         station: entry.station?.trim() || null,
         location: entry.location?.trim() || null,
-        is_full_tank: Boolean(entry.is_full_tank),
         notes: entry.notes?.trim() || null,
       }
+    },
+
+    // Adds fuel type, station and location values to the lookup tables when not already present.
+    // Best effort: a lookup failure never fails the fuel log save.
+    async syncLookups(payload) {
+      const normalize = (value) =>
+        String(value ?? '')
+          .trim()
+          .toLowerCase()
+
+      try {
+        if (payload.fuel_type) {
+          const { data, error } = await supabase.from('fuel_type').select('fuel_type')
+          if (error) throw error
+          const exists = (data || []).some(
+            (row) => normalize(row.fuel_type) === normalize(payload.fuel_type),
+          )
+          if (!exists) {
+            const { error: insertError } = await supabase
+              .from('fuel_type')
+              .insert({ fuel_type: payload.fuel_type })
+            if (insertError) throw insertError
+            this.fuelTypes = [...this.fuelTypes, payload.fuel_type].sort((a, b) =>
+              a.localeCompare(b),
+            )
+          }
+        }
+
+        if (payload.station || payload.location) {
+          const { data, error } = await supabase.from('station').select('station, location')
+          if (error) throw error
+          const exists = (data || []).some(
+            (row) =>
+              normalize(row.station) === normalize(payload.station) &&
+              normalize(row.location) === normalize(payload.location),
+          )
+          if (!exists) {
+            const { error: insertError } = await supabase
+              .from('station')
+              .insert({ station: payload.station, location: payload.location })
+            if (insertError) throw insertError
+            this.stationRows = [
+              ...this.stationRows,
+              { station: payload.station, location: payload.location },
+            ]
+            if (
+              payload.station &&
+              !this.stations.some((name) => normalize(name) === normalize(payload.station))
+            ) {
+              this.stations = [...this.stations, payload.station].sort((a, b) => a.localeCompare(b))
+            }
+          }
+        }
+      } catch (err) {
+        console.error('[fuel log lookups] failed:', err.message)
+      }
+    },
+
+    // Station rows plus the distinct, sorted station names from public.station.
+    async loadStations() {
+      if (!supabase) {
+        this.stations = []
+        this.stationRows = []
+        return []
+      }
+
+      const { data, error } = await supabase.from('station').select('station, location')
+      if (error) {
+        console.error('[stations] failed:', error.message)
+        return this.stations
+      }
+
+      this.stationRows = data || []
+      const unique = new Map()
+      for (const row of this.stationRows) {
+        const name = String(row.station ?? '').trim()
+        if (name && !unique.has(name.toLowerCase())) {
+          unique.set(name.toLowerCase(), name)
+        }
+      }
+      this.stations = [...unique.values()].sort((a, b) => a.localeCompare(b))
+      return this.stations
+    },
+
+    // Distinct, sorted fuel type names from public.fuel_type.
+    async loadFuelTypes() {
+      if (!supabase) {
+        this.fuelTypes = []
+        return []
+      }
+
+      const { data, error } = await supabase.from('fuel_type').select('fuel_type')
+      if (error) {
+        console.error('[fuel types] failed:', error.message)
+        return this.fuelTypes
+      }
+
+      const unique = new Map()
+      for (const row of data || []) {
+        const name = String(row.fuel_type ?? '').trim()
+        if (name && !unique.has(name.toLowerCase())) {
+          unique.set(name.toLowerCase(), name)
+        }
+      }
+      this.fuelTypes = [...unique.values()].sort((a, b) => a.localeCompare(b))
+      return this.fuelTypes
     },
 
     async loadFuelLogs(autoIds = []) {
@@ -92,17 +200,15 @@ export const useFuelLogStore = defineStore('FuelLog', {
           return null
         }
 
-        const { data, error } = await supabase
-          .from('fuel_log')
-          .insert(this.buildPayload(entry))
-          .select()
-          .single()
+        const payload = this.buildPayload(entry)
+        const { data, error } = await supabase.from('fuel_log').insert(payload).select().single()
 
         if (error) {
           this.error = error.message
           return null
         }
 
+        await this.syncLookups(payload)
         this.fuelLogs = [data, ...this.fuelLogs]
         return data
       } finally {
@@ -125,9 +231,10 @@ export const useFuelLogStore = defineStore('FuelLog', {
           return null
         }
 
+        const payload = this.buildPayload(entry)
         const { data, error } = await supabase
           .from('fuel_log')
-          .update(this.buildPayload(entry))
+          .update(payload)
           .eq('fuel_log_id', fuelLogId)
           .select()
           .single()
@@ -137,6 +244,7 @@ export const useFuelLogStore = defineStore('FuelLog', {
           return null
         }
 
+        await this.syncLookups(payload)
         this.fuelLogs = this.fuelLogs.map((item) => (item.fuel_log_id === fuelLogId ? data : item))
         return data
       } finally {

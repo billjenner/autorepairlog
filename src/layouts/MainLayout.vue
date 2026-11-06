@@ -54,7 +54,7 @@
             label="Fuel"
             to="/fuel-log"
             class="q-mx-xs"
-            style="min-width: 110px; font-size: 0.8rem"
+            style="min-width: 160px; font-size: 0.8rem"
             :style="buttonStyle('/fuel-log')"
             @mouseover="hoveredPath = '/fuel-log'"
             @mouseleave="hoveredPath = null"

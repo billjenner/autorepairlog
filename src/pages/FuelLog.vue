@@ -65,7 +65,7 @@
                 {{ editingFuelLogId ? 'Edit fuel log' : 'Fuel details' }}
               </div>
               <div class="row q-col-gutter-md">
-                <div class="col-12">
+                <div class="col-12 col-sm-4">
                   <q-input
                     :model-value="selectedAutoLabel"
                     label="Auto"
@@ -74,6 +74,92 @@
                     dense
                     hint="Change the auto using the selector above."
                   />
+                </div>
+                <div class="col-12 col-sm-4">
+                  <q-select
+                    :model-value="form.station"
+                    :options="stationOptions"
+                    label="Station"
+                    use-input
+                    hide-selected
+                    fill-input
+                    clearable
+                    filled
+                    dense
+                    input-debounce="0"
+                    new-value-mode="add"
+                    @filter="filterStations"
+                    @input-value="(value) => (form.station = value)"
+                    @update:model-value="(value) => (form.station = value || '')"
+                  >
+                    <template #option="scope">
+                      <q-item v-bind="scope.itemProps">
+                        <q-item-section>
+                          <q-item-label>
+                            <template
+                              v-for="(part, index) in highlightParts(scope.opt, form.station)"
+                              :key="index"
+                            >
+                              <span v-if="part.match" class="text-weight-bold bg-yellow-4">{{
+                                part.text
+                              }}</span>
+                              <template v-else>{{ part.text }}</template>
+                            </template>
+                          </q-item-label>
+                        </q-item-section>
+                      </q-item>
+                    </template>
+                    <template #no-option>
+                      <q-item>
+                        <q-item-section class="text-grey">
+                          No matches. Press Enter to add a new station.
+                        </q-item-section>
+                      </q-item>
+                    </template>
+                  </q-select>
+                </div>
+                <div class="col-12 col-sm-4">
+                  <q-select
+                    :model-value="form.location"
+                    :options="locationOptions"
+                    label="Location"
+                    use-input
+                    hide-selected
+                    fill-input
+                    clearable
+                    filled
+                    dense
+                    input-debounce="0"
+                    new-value-mode="add"
+                    @filter="filterLocations"
+                    @input-value="(value) => (form.location = value)"
+                    @update:model-value="(value) => (form.location = value || '')"
+                  >
+                    <template #option="scope">
+                      <q-item v-bind="scope.itemProps">
+                        <q-item-section>
+                          <q-item-label>
+                            <template
+                              v-for="(part, index) in highlightParts(scope.opt, form.location)"
+                              :key="index"
+                            >
+                              <span v-if="part.match" class="text-weight-bold bg-yellow-4">{{
+                                part.text
+                              }}</span>
+                              <template v-else>{{ part.text }}</template>
+                            </template>
+                          </q-item-label>
+                        </q-item-section>
+                      </q-item>
+                    </template>
+                    <template #no-option>
+                      <q-item>
+                        <q-item-section class="text-grey">
+                          No matches. Press Enter to add a new location.
+                        </q-item-section>
+                      </q-item>
+                    </template>
+                  </q-select>
                 </div>
                 <div class="col-12 col-sm-4">
                   <q-input
@@ -99,7 +185,47 @@
                   />
                 </div>
                 <div class="col-12 col-sm-4">
-                  <q-input v-model="form.fuel_type" label="Fuel type" clearable filled dense />
+                  <q-select
+                    :model-value="form.fuel_type"
+                    :options="fuelTypeOptions"
+                    label="Fuel type"
+                    use-input
+                    hide-selected
+                    fill-input
+                    clearable
+                    filled
+                    dense
+                    input-debounce="0"
+                    new-value-mode="add"
+                    @filter="filterFuelTypes"
+                    @input-value="(value) => (form.fuel_type = value)"
+                    @update:model-value="(value) => (form.fuel_type = value || '')"
+                  >
+                    <template #option="scope">
+                      <q-item v-bind="scope.itemProps">
+                        <q-item-section>
+                          <q-item-label>
+                            <template
+                              v-for="(part, index) in highlightParts(scope.opt, form.fuel_type)"
+                              :key="index"
+                            >
+                              <span v-if="part.match" class="text-weight-bold bg-yellow-4">{{
+                                part.text
+                              }}</span>
+                              <template v-else>{{ part.text }}</template>
+                            </template>
+                          </q-item-label>
+                        </q-item-section>
+                      </q-item>
+                    </template>
+                    <template #no-option>
+                      <q-item>
+                        <q-item-section class="text-grey">
+                          No matches. Press Enter to add a new fuel type.
+                        </q-item-section>
+                      </q-item>
+                    </template>
+                  </q-select>
                 </div>
                 <div class="col-12 col-sm-4">
                   <q-input
@@ -118,11 +244,10 @@
                     v-model="form.price_per_gallon"
                     type="number"
                     label="Price per gallon"
-                    min="0"
-                    step="0.001"
-                    clearable
+                    readonly
                     filled
                     dense
+                    hint="Calculated from total cost and gallons."
                   />
                 </div>
                 <div class="col-12 col-sm-4">
@@ -135,17 +260,7 @@
                     clearable
                     filled
                     dense
-                    hint="Calculated from gallons and price when left blank."
                   />
-                </div>
-                <div class="col-12 col-sm-6">
-                  <q-input v-model="form.station" label="Station" clearable filled dense />
-                </div>
-                <div class="col-12 col-sm-6">
-                  <q-input v-model="form.location" label="Location" clearable filled dense />
-                </div>
-                <div class="col-12">
-                  <q-toggle v-model="form.is_full_tank" dense label="Full tank" />
                 </div>
                 <div class="col-12">
                   <q-toggle v-model="showNotes" dense label="Notes" />
@@ -236,6 +351,7 @@ import NotesEditor from '@/components/NotesEditor.vue'
 import ScheduleNotesDialog from '@/components/schedule/ScheduleNotesDialog.vue'
 import { useAutoStore } from '@/stores/auto'
 import { useFuelLogStore } from '@/stores/fuelLog'
+import { useMileageStore } from '@/stores/mileage'
 import { templateAutoLabel } from '@/stores/schedule'
 import { useUsersStore } from '@/stores/users'
 import { useProfileStore } from '@/stores/profile'
@@ -244,6 +360,7 @@ import { notifySuccess } from '../utils/notify'
 const $q = useQuasar()
 const autoStore = useAutoStore()
 const fuelLogStore = useFuelLogStore()
+const mileageStore = useMileageStore()
 const usersStore = useUsersStore()
 const profileStore = useProfileStore()
 const showForm = ref(false)
@@ -254,6 +371,80 @@ const autoSelectRef = ref(null)
 const pendingDeleteId = ref(null)
 const selectedNotes = ref('')
 const searchText = ref('')
+const fuelTypeOptions = ref([])
+const stationOptions = ref([])
+const locationOptions = ref([])
+
+// When the entered station matches a public.station row, only that station's locations are offered.
+function locationNamesForStation() {
+  const station = form.station?.trim().toLowerCase()
+  const rows = fuelLogStore.stationRows
+  const stationMatches = station
+    ? rows.filter(
+        (row) =>
+          String(row.station ?? '')
+            .trim()
+            .toLowerCase() === station,
+      )
+    : []
+  const source = stationMatches.length ? stationMatches : rows
+
+  const unique = new Map()
+  for (const row of source) {
+    const name = String(row.location ?? '').trim()
+    if (name && !unique.has(name.toLowerCase())) {
+      unique.set(name.toLowerCase(), name)
+    }
+  }
+  return [...unique.values()].sort((a, b) => a.localeCompare(b))
+}
+
+function filterLocations(value, update) {
+  update(() => {
+    const term = value.trim().toLowerCase()
+    const names = locationNamesForStation()
+    locationOptions.value = term ? names.filter((name) => name.toLowerCase().includes(term)) : names
+  })
+}
+
+function filterStations(value, update) {
+  update(() => {
+    const term = value.trim().toLowerCase()
+    stationOptions.value = term
+      ? fuelLogStore.stations.filter((name) => name.toLowerCase().includes(term))
+      : [...fuelLogStore.stations]
+  })
+}
+
+function filterFuelTypes(value, update) {
+  update(() => {
+    const term = value.trim().toLowerCase()
+    fuelTypeOptions.value = term
+      ? fuelLogStore.fuelTypes.filter((name) => name.toLowerCase().includes(term))
+      : [...fuelLogStore.fuelTypes]
+  })
+}
+
+// Splits text into segments so the matching part can be highlighted without v-html.
+function highlightParts(text, term) {
+  const value = String(text ?? '')
+  const needle = String(term ?? '').trim()
+  if (!needle) {
+    return [{ text: value, match: false }]
+  }
+
+  const start = value.toLowerCase().indexOf(needle.toLowerCase())
+  if (start === -1) {
+    return [{ text: value, match: false }]
+  }
+
+  const end = start + needle.length
+  return [
+    { text: value.slice(0, start), match: false },
+    { text: value.slice(start, end), match: true },
+    { text: value.slice(end), match: false },
+  ].filter((part) => part.text)
+}
 const form = reactive(createEmptyForm())
 
 const notesDialogOpen = computed({
@@ -342,14 +533,6 @@ const columns = [
     align: 'left',
     sortable: true,
   },
-  {
-    name: 'is_full_tank',
-    label: 'Full Tank',
-    field: 'is_full_tank',
-    format: (value) => (value ? 'Yes' : 'No'),
-    align: 'left',
-    sortable: true,
-  },
   { name: 'actions', label: '', field: 'fuel_log_id', align: 'right' },
 ]
 
@@ -394,7 +577,6 @@ function createEmptyForm() {
     fuel_type: '',
     station: '',
     location: '',
-    is_full_tank: true,
     notes: '',
   }
 }
@@ -422,6 +604,26 @@ function toggleForm() {
   }
   Object.assign(form, { ...createEmptyForm(), auto_id: selectedAutoId.value })
   showForm.value = true
+  prefillMileage()
+}
+
+// Fills a blank mileage field for a new entry from the auto's latest mileage record.
+async function prefillMileage() {
+  const autoId = selectedAutoId.value
+  if (!autoId || editingFuelLogId.value) {
+    return
+  }
+
+  const miles = await mileageStore.fetchLatestMiles(autoId)
+  if (
+    miles !== null &&
+    showForm.value &&
+    !editingFuelLogId.value &&
+    selectedAutoId.value === autoId &&
+    (form.mileage === null || form.mileage === '')
+  ) {
+    form.mileage = miles
+  }
 }
 
 function editFuelLog(entry) {
@@ -435,7 +637,6 @@ function editFuelLog(entry) {
     fuel_type: entry.fuel_type || '',
     station: entry.station || '',
     location: entry.location || '',
-    is_full_tank: Boolean(entry.is_full_tank),
     notes: entry.notes || '',
   })
   selectedAutoId.value = entry.auto_id
@@ -460,6 +661,36 @@ async function load() {
   const profile = await profileStore.loadCurrentProfile(currentUserId.value)
   const autos = await autoStore.loadAuto(profile?.profile_id)
   await fuelLogStore.loadFuelLogs(autos.map((auto) => auto.auto_id))
+  await fuelLogStore.loadFuelTypes()
+  await fuelLogStore.loadStations()
+}
+
+// Mileage must be at least the auto's latest mileage record. An edit that leaves the
+// mileage unchanged is not re-checked, so older entries can still be edited.
+async function hasValidMileage(isEditing) {
+  if (form.mileage === null || form.mileage === '') {
+    return true
+  }
+
+  const mileage = Number(form.mileage)
+  if (isEditing) {
+    const original = fuelLogStore.fuelLogs.find(
+      (item) => item.fuel_log_id === editingFuelLogId.value,
+    )
+    if (original && Number(original.mileage) === mileage) {
+      return true
+    }
+  }
+
+  const latest = await mileageStore.fetchLatestMiles(form.auto_id)
+  if (latest !== null && mileage < Number(latest)) {
+    $q.notify({
+      type: 'negative',
+      message: `Mileage must be ${Number(latest).toLocaleString()} or higher (latest mileage record).`,
+    })
+    return false
+  }
+  return true
 }
 
 async function saveFuelLog() {
@@ -468,6 +699,10 @@ async function saveFuelLog() {
   }
 
   const isEditing = Boolean(editingFuelLogId.value)
+  if (!(await hasValidMileage(isEditing))) {
+    return
+  }
+
   const saved = isEditing
     ? await fuelLogStore.updateFuelLog(editingFuelLogId.value, form)
     : await fuelLogStore.createFuelLog(form)
@@ -497,6 +732,17 @@ async function deleteFuelLog() {
   }
 }
 
+// Price per gallon is read-only and derived from total cost and gallons.
+watch(
+  () => [form.gallons, form.total_cost],
+  ([gallons, totalCost]) => {
+    const hasValues = gallons !== null && gallons !== '' && totalCost !== null && totalCost !== ''
+    form.price_per_gallon =
+      hasValues && Number(gallons) > 0
+        ? Number((Number(totalCost) / Number(gallons)).toFixed(3))
+        : null
+  },
+)
 watch(selectedAutoId, (autoId) => {
   if (showForm.value) {
     form.auto_id = autoId
