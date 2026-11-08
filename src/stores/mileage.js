@@ -9,6 +9,21 @@ export const useMileageStore = defineStore('Mileage', {
   }),
 
   actions: {
+    async hasMileageRecord(autoId, date, miles) {
+      if (!supabase) throw new Error('Supabase client is not configured.')
+      const { data, error } = await supabase
+        .from('mileage')
+        .select('mileage_id')
+        .eq('auto_id', autoId)
+        .eq('date', date)
+        .eq('miles', miles)
+        .eq('is_active', true)
+        .limit(1)
+        .maybeSingle()
+      if (error) throw error
+      return Boolean(data)
+    },
+
     async fetchLatestMilesChecked(autoId) {
       if (!supabase) throw new Error('Supabase client is not configured.')
       const { data, error } = await supabase

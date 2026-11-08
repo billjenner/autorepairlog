@@ -40,7 +40,7 @@
               <q-btn
                 color="primary"
                 :label="showForm ? 'Cancel' : 'Add Service Order'"
-                :disable="!usersStore.currentUser"
+                :disable="!usersStore.currentUser || saving"
                 @click="toggleForm"
               />
             </div>
@@ -57,6 +57,12 @@
           >
             Sign in to manage service orders.
           </q-banner>
+          <q-banner v-if="namesError" class="bg-negative text-white q-mb-md" rounded>
+            {{ namesError }}
+            <template #action>
+              <q-btn flat label="Retry" @click="loadNames" />
+            </template>
+          </q-banner>
 
           <q-form v-if="showForm" @submit.prevent="saveServiceOrder" class="q-mt-md q-gutter-md">
             <q-card flat bordered class="q-pa-md bg-grey-1">
@@ -66,17 +72,96 @@
               <div class="row q-col-gutter-md"></div>
               <div class="row q-col-gutter-md">
                 <div class="col-12 col-sm-5">
-                  <q-input
-                    v-model.trim="form.shop_name"
+                  <q-select
+                    :model-value="form.shop_name"
+                    :options="shopOptions"
                     label="Shop name"
+                    use-input
+                    hide-selected
+                    fill-input
+                    clearable
                     filled
                     dense
                     lazy-rules
-                    :rules="[(value) => !!value || 'Enter a shop name.']"
-                  />
+                    input-debounce="0"
+                    new-value-mode="add"
+                    :rules="[(value) => !!value?.trim() || 'Enter a shop name.']"
+                    @filter="filterShops"
+                    @input-value="(value) => (form.shop_name = value || '')"
+                    @update:model-value="(value) => (form.shop_name = value || '')"
+                  >
+                    <template #option="scope">
+                      <q-item v-bind="scope.itemProps">
+                        <q-item-section>
+                          <q-item-label>
+                            <template
+                              v-for="(part, index) in serviceNameParts(scope.opt, {
+                                search: form.shop_name,
+                              })"
+                              :key="index"
+                            >
+                              <span v-if="part.match" class="text-weight-bold bg-yellow-4">{{
+                                part.text
+                              }}</span>
+                              <template v-else>{{ part.text }}</template>
+                            </template>
+                          </q-item-label>
+                        </q-item-section>
+                      </q-item>
+                    </template>
+                    <template #no-option>
+                      <q-item
+                        ><q-item-section class="text-grey">
+                          No matches. Press Enter to add a new shop.
+                        </q-item-section></q-item
+                      >
+                    </template>
+                  </q-select>
                 </div>
                 <div class="col-12 col-sm-3">
-                  <q-input v-model.trim="form.mechanic_name" label="Mechanic" filled dense />
+                  <q-select
+                    :model-value="form.mechanic_name"
+                    :options="mechanicOptions"
+                    label="Mechanic"
+                    use-input
+                    hide-selected
+                    fill-input
+                    clearable
+                    filled
+                    dense
+                    input-debounce="0"
+                    new-value-mode="add"
+                    @filter="filterMechanics"
+                    @input-value="(value) => (form.mechanic_name = value || '')"
+                    @update:model-value="(value) => (form.mechanic_name = value || '')"
+                  >
+                    <template #option="scope">
+                      <q-item v-bind="scope.itemProps">
+                        <q-item-section>
+                          <q-item-label>
+                            <template
+                              v-for="(part, index) in serviceNameParts(scope.opt, {
+                                search: form.mechanic_name,
+                              })"
+                              :key="index"
+                            >
+                              <span v-if="part.match" class="text-weight-bold bg-yellow-4">{{
+                                part.text
+                              }}</span>
+                              <template v-else>{{ part.text }}</template>
+                            </template>
+                          </q-item-label>
+                        </q-item-section>
+                      </q-item>
+                    </template>
+                    <template #no-option>
+                      <q-item
+                        ><q-item-section class="text-grey">
+                          No matches. Press Enter to add a new mechanic.
+                        </q-item-section></q-item
+                      >
+                    </template>
+                  </q-select>
                 </div>
                 <div class="col-4">
                   <q-input
@@ -136,6 +221,7 @@
                       />
                     </template>
                   </q-input>
+                  <q-toggle v-model="log.showNotes" dense label="Service notes" />
                 </div>
                 <div class="col-12 col-sm-2">
                   <q-input
@@ -176,6 +262,12 @@
                     @update:model-value="onExistingLogChange(log, false)"
                   />
                 </div>
+                <div v-if="log.showNotes" class="col-12">
+                  <notes-editor
+                    v-model="log.notes"
+                    @update:model-value="onExistingLogChange(log, false)"
+                  />
+                </div>
               </div>
               <div
                 v-for="entry in serviceEntries"
@@ -187,6 +279,7 @@
                     v-model="entry.service_id"
                     :options="filteredServices(entry)"
                     label="Select a service"
+                    :class="{ 'service-select-highlight': !entry.service_id }"
                     option-label="name"
                     option-value="service_id"
                     emit-value
@@ -226,6 +319,7 @@
                       </q-item>
                     </template>
                   </q-select>
+                  <q-toggle v-model="entry.showNotes" dense label="Service notes" />
                 </div>
                 <!-- <div class="col-12 col-sm-1 flex items-center justify-center text-subtitle1">
                   {{ serviceType(entry) }}
@@ -268,10 +362,14 @@
                     dense
                   />
                 </div>
+                <div v-if="entry.showNotes" class="col-12">
+                  <notes-editor v-model="entry.notes" />
+                </div>
               </div>
+              <hr />
               <div class="row q-col-gutter-md">
                 <div class="col-12 col-sm-10 flex items-center">
-                  <q-toggle v-model="showNotes" dense label="Notes" />
+                  <q-toggle v-model="showNotes" dense label="Service order notes" />
                 </div>
                 <div class="col-12 col-sm-2">
                   <q-input
@@ -338,21 +436,25 @@
             </q-card>
 
             <div class="row justify-end q-gutter-sm">
+              <div v-if="!hasAtLeastOneService" class="col-12 text-negative text-right">
+                Select at least one service before saving.
+              </div>
               <q-btn
                 v-if="editingOrderId"
                 flat
                 color="negative"
                 label="DELETE SERVICE ORDER"
                 class="q-mr-auto"
+                :disable="saving"
                 @click="requestDeleteEditedOrder"
               />
-              <q-btn flat label="Cancel" @click="resetForm" />
+              <q-btn flat label="Cancel" :disable="saving" @click="resetForm" />
               <q-btn
                 type="submit"
                 color="primary"
                 class="q-mr-md"
                 :label="editingOrderId ? 'Update service order' : 'Save service order'"
-                :loading="serviceOrderStore.loading"
+                :loading="saving || serviceOrderStore.loading"
                 :disable="!hasRequiredFields || !hasAtLeastOneService"
               />
             </div>
@@ -386,7 +488,14 @@
             <template #body-cell-actions="props">
               <q-td :props="props" class="text-right">
                 <q-btn flat dense color="accent" label="Details" @click="openDetails(props.row)" />
-                <q-btn flat dense color="primary" label="Edit" @click="editOrder(props.row)" />
+                <q-btn
+                  flat
+                  dense
+                  color="primary"
+                  label="Edit"
+                  :disable="saving"
+                  @click="editOrder(props.row)"
+                />
               </q-td>
             </template>
           </q-table>
@@ -479,6 +588,10 @@ import { templateAutoLabel } from '@/stores/schedule'
 import { useUsersStore } from '@/stores/users'
 import { useProfileStore } from '@/stores/profile'
 import { notifySuccess } from '../utils/notify'
+import { buildServiceLogEntry } from '../utils/serviceOrderEntries'
+import { recordServiceOrderMileage } from '../utils/serviceOrderMileage'
+import { distinctServiceOrderNames, fetchServiceOrderNames } from '../utils/serviceOrderNames'
+import { supabase } from '@/lib/supabase'
 
 const $q = useQuasar()
 const route = useRoute()
@@ -489,6 +602,7 @@ const mileageStore = useMileageStore()
 const usersStore = useUsersStore()
 const profileStore = useProfileStore()
 const showForm = ref(false)
+const saving = ref(false)
 const showNotes = ref(false)
 const attachInvoice = ref(false)
 const invoiceFile = ref(null)
@@ -505,6 +619,12 @@ const detailsLogsLoading = ref(false)
 const detailsLogsError = ref('')
 const serviceLogsOrderId = ref(null)
 const serviceLogCounts = ref({})
+const shopNames = ref([])
+const mechanicNames = ref([])
+const shopOptions = ref([])
+const mechanicOptions = ref([])
+const namesError = ref('')
+let namesRequest = 0
 let detailsRequest = 0
 const detailsOpen = computed({
   get: () => Boolean(detailsOrder.value),
@@ -588,6 +708,44 @@ const columns = [
 ]
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
+const currentProfileId = computed(() =>
+  profileStore.currentProfile?.user_id === currentUserId.value
+    ? profileStore.currentProfile?.profile_id
+    : null,
+)
+
+async function loadNames() {
+  const request = ++namesRequest
+  const profileId = currentProfileId.value
+  shopNames.value = []
+  mechanicNames.value = []
+  shopOptions.value = []
+  mechanicOptions.value = []
+  namesError.value = ''
+  try {
+    const names = await fetchServiceOrderNames(supabase, profileId)
+    if (request !== namesRequest || currentProfileId.value !== profileId) return
+    shopNames.value = names.shops
+    mechanicNames.value = names.mechanics
+  } catch (error) {
+    if (request === namesRequest)
+      namesError.value = `Unable to load shop and mechanic names: ${error.message}`
+  }
+}
+
+function filterShops(value, update) {
+  update(() => {
+    const term = value.trim().toLowerCase()
+    shopOptions.value = shopNames.value.filter((name) => name.toLowerCase().includes(term))
+  })
+}
+
+function filterMechanics(value, update) {
+  update(() => {
+    const term = value.trim().toLowerCase()
+    mechanicOptions.value = mechanicNames.value.filter((name) => name.toLowerCase().includes(term))
+  })
+}
 const storeError = computed(
   () =>
     serviceOrderStore.error || serviceStore.error || serviceLogStore.error || mileageStore.error,
@@ -677,7 +835,16 @@ function resetForm() {
 }
 
 function createServiceEntry() {
-  return { key: nextEntryKey++, service_id: null, search: '', parts: 0, labor: 0, total: 0 }
+  return {
+    key: nextEntryKey++,
+    service_id: null,
+    search: '',
+    parts: 0,
+    labor: 0,
+    total: 0,
+    notes: '',
+    showNotes: false,
+  }
 }
 
 function resetServiceEntry() {
@@ -883,7 +1050,7 @@ async function loadExistingLogs(serviceOrderId) {
   const logs = await serviceLogStore.fetchLogsForOrder(serviceOrderId)
   if (editingOrderId.value === serviceOrderId) {
     dirtyLogIds.clear()
-    existingLogs.value = logs
+    existingLogs.value = logs.map((log) => ({ ...log, showNotes: Boolean(log.notes) }))
   }
 }
 
@@ -917,6 +1084,12 @@ function onInvoiceRejected() {
 }
 
 async function load() {
+  namesRequest++
+  shopNames.value = []
+  mechanicNames.value = []
+  shopOptions.value = []
+  mechanicOptions.value = []
+  namesError.value = ''
   if (!currentUserId.value) {
     serviceOrderStore.serviceOrders = []
     serviceOrderStore.autoOptions = []
@@ -926,7 +1099,14 @@ async function load() {
     return
   }
 
-  const profile = await profileStore.loadCurrentProfile(currentUserId.value)
+  const userId = currentUserId.value
+  const profile = await profileStore.loadCurrentProfile(userId)
+  if (currentUserId.value !== userId) return
+  if (profile?.profile_id) {
+    await loadNames()
+  } else {
+    namesError.value = `Unable to load shop and mechanic names: ${profileStore.error || 'A current profile is required.'}`
+  }
   const isAdmin = Number(profile?.admin_level) > 0
   await Promise.all([
     serviceOrderStore.loadAutoOptions({
@@ -951,11 +1131,21 @@ async function load() {
 }
 
 async function saveServiceOrder() {
-  if (
-    !(await autoSelectRef.value?.validate()) ||
-    !hasRequiredFields.value ||
-    !hasAtLeastOneService.value
-  ) {
+  if (saving.value) return
+  saving.value = true
+  try {
+    await saveServiceOrderChanges()
+  } finally {
+    saving.value = false
+  }
+}
+
+async function saveServiceOrderChanges() {
+  if (!hasAtLeastOneService.value) {
+    $q.notify({ type: 'negative', message: 'Select at least one service before saving.' })
+    return
+  }
+  if (!(await autoSelectRef.value?.validate()) || !hasRequiredFields.value) {
     return
   }
 
@@ -998,8 +1188,30 @@ async function saveServiceOrder() {
     return
   }
 
+  const savedAuto = serviceOrderStore.autoOptions.find((auto) => auto.auto_id === saved.auto_id)
+  if (savedAuto?.profile_id === currentProfileId.value) {
+    shopNames.value = distinctServiceOrderNames(
+      [...shopNames.value.map((shop_name) => ({ shop_name })), saved],
+      'shop_name',
+    )
+    mechanicNames.value = distinctServiceOrderNames(
+      [...mechanicNames.value.map((mechanic_name) => ({ mechanic_name })), saved],
+      'mechanic_name',
+    )
+  }
+
   // Keep the saved order in edit mode so a retry after a later failure updates it.
   editingOrderId.value = saved.service_order_id
+
+  try {
+    await recordServiceOrderMileage(mileageStore, saved)
+  } catch (error) {
+    $q.notify({
+      color: 'negative',
+      message: `Service order saved, but mileage history was not updated: ${error.message}. Retry saving.`,
+    })
+    return
+  }
 
   if (invoiceFile.value) {
     const auto = serviceOrderStore.autoOptions.find((item) => item.auto_id === saved.auto_id)
@@ -1029,18 +1241,9 @@ async function saveServiceOrder() {
   const selectedEntries = serviceEntries.value.filter((entry) => findService(entry.service_id))
   for (const entry of selectedEntries) {
     const service = findService(entry.service_id)
-    const log = await serviceLogStore.createServiceLog({
-      service_order_id: saved.service_order_id,
-      service_id: service.service_id,
-      service_date: saved.service_date || form.service_date,
-      service_miles: saved.mileage_at_service ?? form.mileage_at_service,
-      name: service.name,
-      notes: saved.notes ?? form.notes,
-      parts: entry.parts,
-      labor: entry.labor,
-      total_cost: entryTotal(entry),
-      use_total_cost: true,
-    })
+    const log = await serviceLogStore.createServiceLog(
+      buildServiceLogEntry(saved, form, service, entry),
+    )
     if (!log) {
       // Drop rows already saved so a retry does not duplicate them.
       serviceEntries.value = serviceEntries.value.filter(
@@ -1128,3 +1331,15 @@ watch(
 watch(currentUserId, load)
 onMounted(load)
 </script>
+
+<style scoped>
+.service-select-highlight :deep(.q-field__label),
+.service-select-highlight :deep(.q-field__input) {
+  color: var(--q-warning);
+}
+
+.service-select-highlight :deep(.q-field__control) {
+  outline: 1px solid var(--q-warning);
+  outline-offset: -1px;
+}
+</style>
