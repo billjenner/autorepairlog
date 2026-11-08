@@ -209,6 +209,7 @@
                     :model-value="calculatedMpg === null ? '' : calculatedMpg.toFixed(2)"
                     label="Miles per gallon"
                     readonly
+                    tabindex="-1"
                     filled
                     dense
                   />
@@ -274,6 +275,7 @@
                     type="number"
                     label="Price per gallon"
                     readonly
+                    tabindex="-1"
                     filled
                     dense
                     hint="Calculated from total cost and gallons."
@@ -337,24 +339,6 @@
             table-header-class="bg-accent text-white"
             no-data-label="No fuel log records yet."
           >
-            <template
-              v-for="name in ['prior_mileage', 'mileage']"
-              :key="name"
-              #[`body-cell-${name}`]="props"
-            >
-              <q-td :props="props" class="text-right">
-                <q-btn
-                  v-if="props.row[name] !== null && props.row[name] !== undefined"
-                  flat
-                  dense
-                  no-caps
-                  color="primary"
-                  :label="Number(props.row[name]).toLocaleString()"
-                  @click="selectedMileage = props.row"
-                />
-                <span v-else>—</span>
-              </q-td>
-            </template>
             <template #body-cell-actions="props">
               <q-td :props="props" class="text-right">
                 <q-btn
@@ -378,36 +362,6 @@
           </q-table>
 
           <schedule-notes-dialog v-model="notesDialogOpen" :notes="selectedNotes" />
-
-          <q-dialog
-            :model-value="!!selectedMileage"
-            @update:model-value="
-              (open) => {
-                if (!open) selectedMileage = null
-              }
-            "
-          >
-            <q-card v-if="selectedMileage" style="min-width: 320px">
-              <q-card-section class="text-h6">Fuel mileage details</q-card-section>
-              <q-card-section>
-                <div>Prior mileage: {{ formatMileage(selectedMileage.prior_mileage) }}</div>
-                <div>Mileage: {{ formatMileage(selectedMileage.mileage) }}</div>
-                <div>
-                  Miles difference:
-                  {{
-                    formatMileage(
-                      mileageDifference(selectedMileage.prior_mileage, selectedMileage.mileage),
-                    )
-                  }}
-                </div>
-                <div>Gallons: {{ selectedMileage.gallons ?? '—' }}</div>
-                <div>Miles per gallon: {{ formatMpg(selectedMileage.mile_per_gallon) }}</div>
-              </q-card-section>
-              <q-card-actions align="right"
-                ><q-btn flat label="Close" v-close-popup
-              /></q-card-actions>
-            </q-card>
-          </q-dialog>
 
           <q-dialog v-model="confirmDeleteOpen">
             <q-card style="min-width: 320px">
@@ -461,7 +415,6 @@ const searchText = ref('')
 const fuelTypeOptions = ref([])
 const stationOptions = ref([])
 const locationOptions = ref([])
-const selectedMileage = ref(null)
 const loadingPriorMileage = ref(false)
 const priorMileageError = ref('')
 const saving = ref(false)
@@ -592,18 +545,18 @@ const columns = [
     sortable: true,
   },
   {
-    name: 'prior_mileage',
-    label: 'Prior Mileage',
-    field: 'prior_mileage',
+    name: 'mile_per_gallon',
+    label: 'Miles per Gallon',
+    field: 'mile_per_gallon',
+    format: formatMpg,
     align: 'right',
     sortable: true,
   },
   {
-    name: 'mileage',
-    label: 'Mileage',
-    field: 'mileage',
-    format: (value) =>
-      value === null || value === undefined ? '—' : Number(value).toLocaleString(),
+    name: 'miles_per_refill',
+    label: 'Miles per refill',
+    field: (row) => mileageDifference(row.prior_mileage, row.mileage),
+    format: formatMileage,
     align: 'right',
     sortable: true,
   },
