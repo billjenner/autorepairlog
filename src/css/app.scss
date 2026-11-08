@@ -1,5 +1,9 @@
 // app global css
 
+.selected-auto-schedule .q-field__control.bg-warning {
+  background-color: color-mix(in srgb, var(--q-warning) 50%, white) !important;
+}
+
 .service-list-search {
   order: 3;
 }

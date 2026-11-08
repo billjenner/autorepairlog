@@ -11,6 +11,7 @@
               emit-value
               map-options
               bg-color="warning"
+              :class="{ 'selected-auto-schedule': selectedAutoId != null }"
               clearable
               filled
               dense
@@ -25,6 +26,7 @@
               emit-value
               map-options
               bg-color="warning"
+              :class="{ 'selected-auto-schedule': selectedOrderId != null && selectedOrderId !== ALL_ORDERS }"
               filled
               dense
               lazy-rules

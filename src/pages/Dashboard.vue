@@ -9,6 +9,7 @@
           emit-value
           map-options
           bg-color="warning"
+          :class="{ 'selected-auto-schedule': selectedScheduleId != null }"
           clearable
           filled
           dense
