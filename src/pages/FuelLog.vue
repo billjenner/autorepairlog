@@ -81,7 +81,7 @@
                     hint="Change the auto using the selector above."
                   />
                 </div>
-                <div class="col-12 col-sm-4">
+                <div class="col-12 col-sm-3">
                   <q-select
                     :model-value="form.station"
                     :options="stationOptions"
@@ -124,7 +124,7 @@
                     </template>
                   </q-select>
                 </div>
-                <div class="col-12 col-sm-4">
+                <div class="col-12 col-sm-3">
                   <q-select
                     :model-value="form.location"
                     :options="locationOptions"
@@ -167,7 +167,7 @@
                     </template>
                   </q-select>
                 </div>
-                <div class="col-12 col-sm-4">
+                <div class="col-12 col-sm-2">
                   <q-input
                     v-model="form.date"
                     type="date"
@@ -178,7 +178,7 @@
                     lazy-rules
                   />
                 </div>
-                <div class="col-12 col-sm-4">
+                <div class="col-12 col-sm-3">
                   <q-input
                     v-model="form.prior_mileage"
                     type="number"
@@ -191,7 +191,7 @@
                     :rules="[validOdometer]"
                   />
                 </div>
-                <div class="col-12 col-sm-4">
+                <div class="col-12 col-sm-3">
                   <q-input
                     v-model="form.mileage"
                     type="number"
@@ -204,7 +204,7 @@
                     :rules="[validOdometer, validCurrentMileage]"
                   />
                 </div>
-                <div class="col-12 col-sm-4">
+                <div class="col-12 col-sm-3">
                   <q-input
                     :model-value="calculatedMpg === null ? '' : calculatedMpg.toFixed(2)"
                     label="Miles per gallon"
@@ -213,7 +213,7 @@
                     dense
                   />
                 </div>
-                <div class="col-12 col-sm-4">
+                <div class="col-12 col-sm-3">
                   <q-select
                     :model-value="form.fuel_type"
                     :options="fuelTypeOptions"
@@ -256,7 +256,7 @@
                     </template>
                   </q-select>
                 </div>
-                <div class="col-12 col-sm-4">
+                <div class="col-12 col-sm-2">
                   <q-input
                     v-model="form.gallons"
                     type="number"
@@ -268,7 +268,7 @@
                     dense
                   />
                 </div>
-                <div class="col-12 col-sm-4">
+                <div class="col-12 col-sm-2">
                   <q-input
                     v-model="form.price_per_gallon"
                     type="number"
@@ -279,7 +279,7 @@
                     hint="Calculated from total cost and gallons."
                   />
                 </div>
-                <div class="col-12 col-sm-4">
+                <div class="col-12 col-sm-2">
                   <q-input
                     :model-value="form.total_cost"
                     type="number"
