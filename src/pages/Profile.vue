@@ -69,6 +69,28 @@
               </div>
             </q-card>
 
+            <q-card flat bordered class="q-pa-md bg-grey-1">
+              <div class="text-subtitle1 q-mb-sm">Manage Fuel Stations</div>
+              <div class="column items-start">
+                <q-btn
+                  flat
+                  no-caps
+                  color="primary"
+                  label="Manage stations"
+                  :disable="!usersStore.currentUser"
+                  @click="showStations = true"
+                />
+                <q-btn
+                  flat
+                  no-caps
+                  color="primary"
+                  label="Manage locations"
+                  :disable="!usersStore.currentUser"
+                  @click="showLocations = true"
+                />
+              </div>
+            </q-card>
+
             <div class="row justify-end q-gutter-sm">
               <q-btn
                 flat
@@ -87,6 +109,8 @@
               />
             </div>
           </q-form>
+          <ManageStationsDialog v-model="showStations" />
+          <ManageLocationsDialog v-model="showLocations" />
         </component>
       </div>
     </div>
@@ -99,6 +123,8 @@ import { useQuasar } from 'quasar'
 import { useUsersStore } from '@/stores/users'
 import { useProfileStore } from '@/stores/profile'
 import { notifySuccess } from '../utils/notify'
+import ManageStationsDialog from '@/components/profile/ManageStationsDialog.vue'
+import ManageLocationsDialog from '@/components/profile/ManageLocationsDialog.vue'
 
 defineProps({
   embedded: {
@@ -111,6 +137,8 @@ const usersStore = useUsersStore()
 const store = useProfileStore()
 const $q = useQuasar()
 const loading = ref(false)
+const showStations = ref(false)
+const showLocations = ref(false)
 const profile = reactive({
   fname: '',
   lname: '',
