@@ -16,17 +16,12 @@
           </span>
         </q-card-section>
         <q-markup-table flat dense style="table-layout: fixed">
-          <colgroup>
-            <col style="width: 20%" />
-            <col style="width: 20%" />
-            <col style="width: 20%" />
-            <col style="width: 20%" />
-            <col style="width: 20%" />
-          </colgroup>
           <thead>
             <tr>
               <th class="text-left">Date</th>
               <th class="text-left">Miles</th>
+              <th class="text-right">Miles Difference</th>
+              <th class="text-right">MPG</th>
               <th class="text-right">Gallons</th>
               <th class="text-right">Price/Gal</th>
               <th class="text-right">Total</th>
@@ -36,12 +31,20 @@
             <tr v-for="log in fuel.logs" :key="log.fuel_log_id">
               <td class="text-left">{{ formatDate(log.date) }}</td>
               <td class="text-left">{{ formatNumber(log.mileage) }}</td>
+              <td class="text-right">
+                {{ formatNumber(mileageDifference(log.prior_mileage, log.mileage)) }}
+              </td>
+              <td class="text-right">{{ formatMpg(log.mile_per_gallon) }}</td>
               <td class="text-right">{{ formatGallons(log.gallons) }}</td>
               <td class="text-right">{{ formatPrice(log.price_per_gallon) }}</td>
               <td class="text-right">{{ formatMoney(log.total_cost) }}</td>
             </tr>
             <tr class="text-bold">
               <td colspan="2" class="text-left">Total for Fuel</td>
+              <td class="text-right">{{ formatNumber(fuel.miles) }}</td>
+              <td class="text-right">
+                Avg: {{ formatMpg(fuel.mpgCount ? fuel.mpgSum / fuel.mpgCount : null) }}
+              </td>
               <td class="text-right">{{ formatGallons(fuel.gallons) }}</td>
               <td class="text-right"></td>
               <td class="text-right">{{ formatMoney(fuel.total) }}</td>
@@ -104,13 +107,15 @@
 import { computed, ref, watch } from 'vue'
 import { supabase } from '@/lib/supabase'
 import AutoHeading from '@/components/AutoHeading.vue'
+import { formatMpg, mileageDifference } from '@/utils/fuelMileage'
 
 const props = defineProps({
   autoId: { type: [Number, String], default: null },
 })
 
 const groups = ref([])
-const fuel = ref({ logs: [], gallons: 0, total: 0 })
+const emptyFuel = () => ({ logs: [], gallons: 0, total: 0, miles: 0, mpgSum: 0, mpgCount: 0 })
+const fuel = ref(emptyFuel())
 const purchaseDate = ref(null)
 const loading = ref(false)
 const error = ref('')
@@ -156,7 +161,7 @@ async function load() {
   error.value = ''
   if (!props.autoId) {
     groups.value = []
-    fuel.value = { logs: [], gallons: 0, total: 0 }
+    fuel.value = emptyFuel()
     purchaseDate.value = null
     return
   }
@@ -186,7 +191,9 @@ async function load() {
 
     let fuelQuery = supabase
       .from('fuel_log')
-      .select('fuel_log_id, date, mileage, gallons, price_per_gallon, total_cost')
+      .select(
+        'fuel_log_id, date, prior_mileage, mileage, mile_per_gallon, gallons, price_per_gallon, total_cost',
+      )
       .eq('auto_id', props.autoId)
       .lte('date', new Date().toISOString().slice(0, 10))
       .order('date', { ascending: true })
@@ -195,10 +202,15 @@ async function load() {
     const { data: fuelLogs, error: fuelError } = await fuelQuery
     if (fuelError) throw fuelError
 
-    const fuelSummary = { logs: fuelLogs || [], gallons: 0, total: 0 }
+    const fuelSummary = { ...emptyFuel(), logs: fuelLogs || [] }
     for (const log of fuelSummary.logs) {
       fuelSummary.gallons += Number(log.gallons || 0)
       fuelSummary.total += cents(log.total_cost) / 100
+      fuelSummary.miles += mileageDifference(log.prior_mileage, log.mileage) ?? 0
+      if (log.mile_per_gallon !== null && log.mile_per_gallon !== undefined) {
+        fuelSummary.mpgSum += Number(log.mile_per_gallon)
+        fuelSummary.mpgCount++
+      }
     }
 
     const byService = new Map()
@@ -226,7 +238,7 @@ async function load() {
     if (currentRequest !== requestId) return
     error.value = err.message || 'Unable to load costs.'
     groups.value = []
-    fuel.value = { logs: [], gallons: 0, total: 0 }
+    fuel.value = emptyFuel()
   } finally {
     if (currentRequest === requestId) loading.value = false
   }

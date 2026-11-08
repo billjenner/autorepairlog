@@ -13,6 +13,8 @@
             <tr>
               <th class="text-left">Date</th>
               <th class="text-right">Miles</th>
+              <th class="text-right">Miles Difference</th>
+              <th class="text-right">MPG</th>
               <th class="text-right">Gallons</th>
               <th class="text-right">Price/Gal</th>
               <th class="text-right">Total</th>
@@ -25,6 +27,10 @@
             <tr v-for="row in fuelRows" :key="row.fuel_log_id">
               <td class="text-left">{{ formatDate(row.date) }}</td>
               <td class="text-right">{{ formatNumber(row.mileage) }}</td>
+              <td class="text-right">
+                {{ formatNumber(mileageDifference(row.prior_mileage, row.mileage)) }}
+              </td>
+              <td class="text-right">{{ formatMpg(row.mile_per_gallon) }}</td>
               <td class="text-right">{{ formatGallons(row.gallons) }}</td>
               <td class="text-right">{{ formatPrice(row.price_per_gallon) }}</td>
               <td class="text-right">{{ formatMoney(row.total_cost) }}</td>
@@ -130,6 +136,7 @@ import NotesViewer from '@/components/NotesViewer.vue'
 import AutoHeading from '@/components/AutoHeading.vue'
 import { supabase } from '@/lib/supabase'
 import { useServiceOrderStore } from '@/stores/serviceOrder'
+import { formatMpg, mileageDifference } from '@/utils/fuelMileage'
 
 const props = defineProps({
   autoId: { type: [Number, String], default: null },
@@ -178,6 +185,8 @@ const exportHead = ['SERVICE', 'DATE', 'MILES', 'PARTS', 'LABOR', 'TOTAL', 'ATTA
 const fuelExportHead = [
   'DATE',
   'MILES',
+  'MILES DIFFERENCE',
+  'MPG',
   'GALLONS',
   'PRICE/GAL',
   'TOTAL',
@@ -190,6 +199,10 @@ function fuelExportBody() {
   return fuelRows.value.map((row) => [
     formatDate(row.date),
     row.mileage ?? '',
+    mileageDifference(row.prior_mileage, row.mileage) ?? '',
+    row.mile_per_gallon === null || row.mile_per_gallon === undefined
+      ? ''
+      : Number(row.mile_per_gallon).toFixed(2),
     row.gallons === null || row.gallons === undefined ? '' : Number(row.gallons).toFixed(3),
     row.price_per_gallon === null || row.price_per_gallon === undefined
       ? ''
@@ -287,6 +300,8 @@ function exportPdf() {
         2: { halign: 'right' },
         3: { halign: 'right' },
         4: { halign: 'right' },
+        5: { halign: 'right' },
+        6: { halign: 'right' },
       },
       margin: { left: 14, right: 14 },
     })
@@ -403,7 +418,7 @@ async function load() {
     const { data: fuelData, error: fuelError } = await supabase
       .from('fuel_log')
       .select(
-        'fuel_log_id, date, mileage, gallons, price_per_gallon, total_cost, fuel_type, station, location',
+        'fuel_log_id, date, prior_mileage, mileage, mile_per_gallon, gallons, price_per_gallon, total_cost, fuel_type, station, location',
       )
       .eq('auto_id', props.autoId)
       .order('date', { ascending: true })

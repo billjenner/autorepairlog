@@ -1,5 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { supabase } from '../lib/supabase'
+import { milesPerGallon } from '../utils/fuelMileage'
 
 function toNullableNumber(value, { integer = false, decimals = null } = {}) {
   if (value === null || value === undefined || value === '') {
@@ -28,8 +29,26 @@ export const useFuelLogStore = defineStore('FuelLog', {
   }),
 
   actions: {
+    async fetchLatestMileage(autoId) {
+      if (!supabase) throw new Error('Supabase client is not configured.')
+      const { data, error } = await supabase
+        .from('fuel_log')
+        .select('mileage')
+        .eq('auto_id', autoId)
+        .not('mileage', 'is', null)
+        .order('date', { ascending: false })
+        .order('fuel_log_id', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (error) throw error
+      return data?.mileage ?? null
+    },
+
     buildPayload(entry = {}) {
       const gallons = toNullableNumber(entry.gallons, { decimals: 3 })
+      const priorMileage = toNullableNumber(entry.prior_mileage, { integer: true })
+      const mileage = toNullableNumber(entry.mileage, { integer: true })
+      const mpg = milesPerGallon(priorMileage, mileage, gallons)
       const pricePerGallon = toNullableNumber(entry.price_per_gallon, { decimals: 3 })
       let totalCost = toNullableNumber(entry.total_cost, { decimals: 2 })
       if (totalCost === null && gallons !== null && pricePerGallon !== null) {
@@ -39,7 +58,9 @@ export const useFuelLogStore = defineStore('FuelLog', {
       return {
         auto_id: entry.auto_id || null,
         date: entry.date || null,
-        mileage: toNullableNumber(entry.mileage, { integer: true }),
+        prior_mileage: priorMileage,
+        mileage,
+        mile_per_gallon: mpg === null ? null : Number(mpg.toFixed(2)),
         gallons,
         price_per_gallon: pricePerGallon,
         total_cost: totalCost,

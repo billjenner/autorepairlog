@@ -60,6 +60,12 @@
           </q-banner>
 
           <q-form v-if="showForm" @submit.prevent="saveFuelLog" class="q-mt-md q-gutter-md">
+            <q-banner v-if="priorMileageError" class="bg-negative text-white" rounded>
+              {{ priorMileageError }}
+              <template #action>
+                <q-btn flat label="Retry" @click="prefillPriorMileage" />
+              </template>
+            </q-banner>
             <q-card flat bordered class="q-pa-md bg-grey-1">
               <div class="text-subtitle1 q-mb-sm">
                 {{ editingFuelLogId ? 'Edit fuel log' : 'Fuel details' }}
@@ -174,12 +180,35 @@
                 </div>
                 <div class="col-12 col-sm-4">
                   <q-input
+                    v-model="form.prior_mileage"
+                    type="number"
+                    label="Prior mileage"
+                    min="0"
+                    step="1"
+                    clearable
+                    filled
+                    dense
+                    :rules="[validOdometer]"
+                  />
+                </div>
+                <div class="col-12 col-sm-4">
+                  <q-input
                     v-model="form.mileage"
                     type="number"
                     label="Mileage"
                     min="0"
                     step="1"
                     clearable
+                    filled
+                    dense
+                    :rules="[validOdometer, validCurrentMileage]"
+                  />
+                </div>
+                <div class="col-12 col-sm-4">
+                  <q-input
+                    :model-value="calculatedMpg === null ? '' : calculatedMpg.toFixed(2)"
+                    label="Miles per gallon"
+                    readonly
                     filled
                     dense
                   />
@@ -279,16 +308,17 @@
                 color="negative"
                 label="Delete fuel log"
                 class="q-mr-auto"
+                :disable="saving"
                 @click="requestDeleteEditedFuelLog"
               />
-              <q-btn flat label="Cancel" @click="resetForm" />
+              <q-btn flat label="Cancel" :disable="saving" @click="resetForm" />
               <q-btn
                 type="submit"
                 color="primary"
                 class="q-mr-md"
                 :label="editingFuelLogId ? 'Update fuel log' : 'Save fuel log'"
-                :loading="fuelLogStore.loading"
-                :disable="!hasRequiredFields"
+                :loading="fuelLogStore.loading || saving"
+                :disable="!hasRequiredFields || loadingPriorMileage || !!priorMileageError"
               />
             </div>
           </q-form>
@@ -307,6 +337,24 @@
             table-header-class="bg-accent text-white"
             no-data-label="No fuel log records yet."
           >
+            <template
+              v-for="name in ['prior_mileage', 'mileage']"
+              :key="name"
+              #[`body-cell-${name}`]="props"
+            >
+              <q-td :props="props" class="text-right">
+                <q-btn
+                  v-if="props.row[name] !== null && props.row[name] !== undefined"
+                  flat
+                  dense
+                  no-caps
+                  color="primary"
+                  :label="Number(props.row[name]).toLocaleString()"
+                  @click="selectedMileage = props.row"
+                />
+                <span v-else>—</span>
+              </q-td>
+            </template>
             <template #body-cell-actions="props">
               <q-td :props="props" class="text-right">
                 <q-btn
@@ -317,12 +365,50 @@
                   :disable="!props.row.notes?.trim()"
                   @click="selectedNotes = props.row.notes"
                 />
-                <q-btn flat dense color="primary" label="Edit" @click="editFuelLog(props.row)" />
+                <q-btn
+                  flat
+                  dense
+                  color="primary"
+                  label="Edit"
+                  :disable="saving"
+                  @click="editFuelLog(props.row)"
+                />
               </q-td>
             </template>
           </q-table>
 
           <schedule-notes-dialog v-model="notesDialogOpen" :notes="selectedNotes" />
+
+          <q-dialog
+            :model-value="!!selectedMileage"
+            @update:model-value="
+              (open) => {
+                if (!open) selectedMileage = null
+              }
+            "
+          >
+            <q-card v-if="selectedMileage" style="min-width: 320px">
+              <q-card-section class="text-h6">Fuel mileage details</q-card-section>
+              <q-card-section>
+                <div>Prior mileage: {{ formatMileage(selectedMileage.prior_mileage) }}</div>
+                <div>Mileage: {{ formatMileage(selectedMileage.mileage) }}</div>
+                <div>
+                  Miles difference:
+                  {{
+                    formatMileage(
+                      mileageDifference(selectedMileage.prior_mileage, selectedMileage.mileage),
+                    )
+                  }}
+                </div>
+                <div>Gallons: {{ selectedMileage.gallons ?? '—' }}</div>
+                <div>Miles per gallon: {{ formatMpg(selectedMileage.mile_per_gallon) }}</div>
+                <div>Gallons per mile: {{ gallonsPerMile(selectedMileage) }}</div>
+              </q-card-section>
+              <q-card-actions align="right"
+                ><q-btn flat label="Close" v-close-popup
+              /></q-card-actions>
+            </q-card>
+          </q-dialog>
 
           <q-dialog v-model="confirmDeleteOpen">
             <q-card style="min-width: 320px">
@@ -357,6 +443,7 @@ import { templateAutoLabel } from '@/stores/schedule'
 import { useUsersStore } from '@/stores/users'
 import { useProfileStore } from '@/stores/profile'
 import { notifySuccess } from '../utils/notify'
+import { formatMpg, mileageDifference, milesPerGallon } from '../utils/fuelMileage'
 
 const $q = useQuasar()
 const autoStore = useAutoStore()
@@ -375,6 +462,11 @@ const searchText = ref('')
 const fuelTypeOptions = ref([])
 const stationOptions = ref([])
 const locationOptions = ref([])
+const selectedMileage = ref(null)
+const loadingPriorMileage = ref(false)
+const priorMileageError = ref('')
+const saving = ref(false)
+let prefillRequest = 0
 
 // When the entered station matches a public.station row, only that station's locations are offered.
 function locationNamesForStation() {
@@ -466,6 +558,38 @@ const confirmDeleteOpen = computed({
 })
 
 const money = (value) => (value === null || value === undefined ? '—' : Number(value).toFixed(2))
+const formatMileage = (value) =>
+  value === null || value === undefined ? '—' : Number(value).toLocaleString()
+const calculatedMpg = computed(() => milesPerGallon(form.prior_mileage, form.mileage, form.gallons))
+
+function gallonsPerMile(entry) {
+  const difference = mileageDifference(entry.prior_mileage, entry.mileage)
+  const gallons = Number(entry.gallons)
+  return difference !== null && entry.gallons !== null && Number.isFinite(gallons) && gallons > 0
+    ? (gallons / difference).toFixed(4)
+    : '—'
+}
+
+function validOdometer(value) {
+  if (value === null || value === undefined || value === '') return true
+  const number = Number(value)
+  return (
+    (Number.isSafeInteger(number) && number >= 0 && number <= 2147483647) ||
+    'Enter a whole number between 0 and 2,147,483,647.'
+  )
+}
+
+function validCurrentMileage(value) {
+  if (
+    value === null ||
+    value === undefined ||
+    value === '' ||
+    form.prior_mileage === null ||
+    form.prior_mileage === ''
+  )
+    return true
+  return Number(value) > Number(form.prior_mileage) || 'Mileage must be greater than prior mileage.'
+}
 
 const columns = [
   {
@@ -474,6 +598,13 @@ const columns = [
     field: (row) => (row.date ? String(row.date).slice(0, 10) : null),
     format: (value) => value || '—',
     align: 'left',
+    sortable: true,
+  },
+  {
+    name: 'prior_mileage',
+    label: 'Prior Mileage',
+    field: 'prior_mileage',
+    align: 'right',
     sortable: true,
   },
   {
@@ -571,6 +702,7 @@ function createEmptyForm() {
   return {
     auto_id: null,
     date: new Date().toISOString().slice(0, 10),
+    prior_mileage: null,
     mileage: null,
     gallons: null,
     price_per_gallon: null,
@@ -583,6 +715,9 @@ function createEmptyForm() {
 }
 
 function resetForm() {
+  prefillRequest++
+  loadingPriorMileage.value = false
+  priorMileageError.value = ''
   Object.assign(form, createEmptyForm())
   editingFuelLogId.value = null
   showNotes.value = false
@@ -605,32 +740,38 @@ function toggleForm() {
   }
   Object.assign(form, { ...createEmptyForm(), auto_id: selectedAutoId.value })
   showForm.value = true
-  prefillMileage()
+  prefillPriorMileage()
 }
 
-// Fills a blank mileage field for a new entry from the auto's latest mileage record.
-async function prefillMileage() {
+async function prefillPriorMileage() {
   const autoId = selectedAutoId.value
-  if (!autoId || editingFuelLogId.value) {
-    return
-  }
-
-  const miles = await mileageStore.fetchLatestMiles(autoId)
-  if (
-    miles !== null &&
-    showForm.value &&
-    !editingFuelLogId.value &&
-    selectedAutoId.value === autoId &&
-    (form.mileage === null || form.mileage === '')
-  ) {
-    form.mileage = miles
+  const request = ++prefillRequest
+  loadingPriorMileage.value = true
+  priorMileageError.value = ''
+  try {
+    let miles = await fuelLogStore.fetchLatestMileage(autoId)
+    if (miles === null) miles = await mileageStore.fetchLatestMilesChecked(autoId)
+    if (request === prefillRequest && showForm.value && !editingFuelLogId.value) {
+      if (form.prior_mileage === null || form.prior_mileage === '') form.prior_mileage = miles
+    }
+  } catch (error) {
+    if (request === prefillRequest) {
+      priorMileageError.value = `Unable to load prior mileage: ${error.message}`
+      $q.notify({ type: 'negative', message: priorMileageError.value })
+    }
+  } finally {
+    if (request === prefillRequest) loadingPriorMileage.value = false
   }
 }
 
 function editFuelLog(entry) {
+  prefillRequest++
+  loadingPriorMileage.value = false
+  priorMileageError.value = ''
   Object.assign(form, {
     auto_id: entry.auto_id,
     date: entry.date ? String(entry.date).slice(0, 10) : '',
+    prior_mileage: entry.prior_mileage ?? null,
     mileage: entry.mileage ?? null,
     gallons: entry.gallons ?? null,
     price_per_gallon: entry.price_per_gallon ?? null,
@@ -666,8 +807,6 @@ async function load() {
   await fuelLogStore.loadStations()
 }
 
-// Mileage must be at least the auto's latest mileage record. An edit that leaves the
-// mileage unchanged is not re-checked, so older entries can still be edited.
 // Keeps at most two decimal places while typing, without rounding the digits entered.
 function limitTotalCostDecimals(value) {
   const text = value === null || value === undefined ? '' : String(value)
@@ -681,54 +820,60 @@ function limitTotalCostDecimals(value) {
   }
 }
 
-async function hasValidMileage(isEditing) {
-  if (form.mileage === null || form.mileage === '') {
-    return true
-  }
-
-  const mileage = Number(form.mileage)
-  if (isEditing) {
-    const original = fuelLogStore.fuelLogs.find(
-      (item) => item.fuel_log_id === editingFuelLogId.value,
-    )
-    if (original && Number(original.mileage) === mileage) {
-      return true
-    }
-  }
-
-  const latest = await mileageStore.fetchLatestMiles(form.auto_id)
-  if (latest !== null && mileage < Number(latest)) {
-    $q.notify({
-      type: 'negative',
-      message: `Mileage must be ${Number(latest).toLocaleString()} or higher (latest mileage record).`,
-    })
-    return false
-  }
-  return true
-}
-
 async function saveFuelLog() {
-  if (!(await autoSelectRef.value?.validate()) || !hasRequiredFields.value) {
+  if (
+    saving.value ||
+    loadingPriorMileage.value ||
+    priorMileageError.value ||
+    !(await autoSelectRef.value?.validate()) ||
+    !hasRequiredFields.value
+  ) {
     return
   }
 
   const isEditing = Boolean(editingFuelLogId.value)
-  if (!(await hasValidMileage(isEditing))) {
-    return
+  const fuelLogId = editingFuelLogId.value
+  const entry = { ...form }
+  saving.value = true
+  let fuelSaved = false
+  try {
+    const hasMileage = entry.mileage !== null && entry.mileage !== ''
+    const latest = hasMileage ? await mileageStore.fetchLatestMilesChecked(entry.auto_id) : null
+    const saved = isEditing
+      ? await fuelLogStore.updateFuelLog(fuelLogId, entry)
+      : await fuelLogStore.createFuelLog(entry)
+    if (!saved) return
+    fuelSaved = true
+    editingFuelLogId.value = saved.fuel_log_id
+
+    if (hasMileage && (latest === null || Number(saved.mileage) > Number(latest))) {
+      const mileageSaved = await mileageStore.createMileage({
+        auto_id: saved.auto_id,
+        miles: saved.mileage,
+        date: saved.date,
+      })
+      if (!mileageSaved) {
+        $q.notify({
+          type: 'negative',
+          message: `Fuel log saved, but mileage history was not updated: ${mileageStore.error}`,
+        })
+        return
+      }
+    }
+    notifySuccess($q, `Fuel log ${isEditing ? 'updated' : 'saved'} successfully.`, {
+      color: 'positive',
+    })
+    resetForm()
+  } catch (error) {
+    $q.notify({
+      type: 'negative',
+      message: fuelSaved
+        ? `Fuel log saved, but mileage history was not updated: ${error.message}`
+        : `Unable to save fuel log: ${error.message}`,
+    })
+  } finally {
+    saving.value = false
   }
-
-  const saved = isEditing
-    ? await fuelLogStore.updateFuelLog(editingFuelLogId.value, form)
-    : await fuelLogStore.createFuelLog(form)
-
-  if (!saved) {
-    return
-  }
-
-  notifySuccess($q, `Fuel log ${isEditing ? 'updated' : 'saved'} successfully.`, {
-    color: 'positive',
-  })
-  resetForm()
 }
 
 async function deleteFuelLog() {
