@@ -1,0 +1,15 @@
+schedule_id,name,notes,interval_miles,interval_months,interval_years,is_active
+1,Oil Change,Scheduled replacement ,5000,0,1,true
+1,Rotate/Balance Tires,Scheduled / condition-based ,5000,0,0,true
+1,Tire replacement,"Inspect regularly, replace as needed - When tread reaches 2/32 inch, damage occurs, or tires age",5000,0,0,true
+1,Wheel alignment,"As needed - Check annually or when replacing tires, after suspension work, or if pulling/uneven wear occurs",0,0,1,true
+1,Air Filter,Scheduled / condition-based ,0,0,1,true
+1,Cabin Filter,"Scheduled / condition-based - Inspect every 12,000-15,000 miles; often replace around 15,000-30,000 miles",15000,0,0,true
+1,Fuel Filter,"Often 30,000-60,000 miles if serviceable; some are designed to last much longer or are not separately replaceable",30000,0,0,true
+1,Braking Serviced,"Inspect about every 5,000-7,500 miles or during tire rotations; replace pads/rotors based on wear",5000,0,1,true
+1,Spark Plugs,"Commonly 30,000-100,000+ miles depending on plug type and engine",30000,0,0,true
+1,Transmission,"Manufacturer-dependent , Often 30,000-60,000 miles for severe use; some vehicles specify longer intervals or no routine service under normal use.",60000,0,0,true
+1,Wiper Blades,"Inspect regularly, replace as needed. When streaking, skipping, or deteriorated",7500,0,0,true
+1,Batteries,Battery dependent - condition based replacement.,7500,0,5,true
+1,Radiator / Cooling System,"Inspect coolant, leaks, hoses, and radiator periodically; coolant replacement often every 5 years or 30,000-100,000+ miles depending on coolant and vehicle",30000,0,0,true
+1,Belts & Hoses,"Inspect at routine services; replace by specified interval if applicable, or when cracked, swollen, frayed, leaking, or worn ",75000,0,0,true

@@ -1,0 +1,24 @@
+schedule_id,type,name,description,notes,interval_miles,interval_months,interval_years,is_active
+2,m,Inspect brakes and brake lines,null,null,7500,0,0,true
+2,m,Tires and Wheels,null,"<ul><li>tire rotation,&nbsp;</li><li>check tire pressure,&nbsp;</li><li>inspect tire tread and wear,</li><li>&nbsp;wheel alignment,&nbsp;</li><li>wheel balancing</li></ul><div><br></div>",7500,0,0,true
+2,m,Oil& Filter Change,null,null,7500,0,0,true
+2,m,Inspect battery and charging system,null,null,0,0,1,true
+2,m,Inspect air conditioning operation,null,null,0,0,1,true
+2,m,Insptect engine air filter,null,Replace as needed,20000,0,0,true
+2,m,Inspect A/C system operation,null,null,0,0,1,true
+2,m,Inspect Battery and charging system,null,null,0,0,1,true
+2,m,Inspect Transmission fluid leaks,null,null,1500,0,0,true
+2,m,Inspect Parking Break,null,null,1500,0,0,true
+2,m,Inspect cabin air filter,null,Replace as Needed,7500,0,0,true
+2,m,Inpsect Drive Belts,null,null,1500,0,0,true
+2,m,Inspect Coolant hoses and connections,null,null,7500,0,0,true
+2,m,Inspect CV joints and axle boots,null,null,1500,0,0,true
+2,m,30K inspection,"Engine air filter, cabin air filter, fuel system inspections, brake fluid inspection",<p></p><p><br></p><p><br></p>,30000,0,0,true
+2,m,"AWD transfer case and rear axle oil replacement, where applicable",null,null,75000,0,0,true
+2,m,60K inspection,Inspect valve clearance and drive belt; service transmission fluid if required by transmission type and operating conditions,<br>,60000,0,0,true
+2,s,Replace spark plugs on the 2.0L engine,null,null,105000,0,0,true
+2,s,Coolant Replacement,null,null,120000,0,10,true
+2,m,Wiper blade replacement and window fluid top off,null,null,75000,0,0,true
+2,s,Tire replacement,null,null,40000,0,0,true
+2,m,Wheel alignment,null,null,40000,0,0,true
+2,m,Serpentine belt replacement,null,"If Cracks, fraying, glazing, missing ribs, or unusual belt noise<div><br></div>",75000,0,0,true
