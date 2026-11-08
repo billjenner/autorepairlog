@@ -148,7 +148,7 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" side="left" bordered overlay>
+    <q-drawer v-model="leftDrawerOpen" side="left" bordered overlay :width="176">
       <q-list padding>
         <q-item
           v-if="!(usersStore.currentUser && usersStore.currentUser.email)"
