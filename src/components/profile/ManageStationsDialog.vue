@@ -1,6 +1,7 @@
 <template>
   <StationLookupDialog
     :model-value="modelValue"
+    :profile-id="profileId"
     field="station"
     label="Station"
     plural-label="Stations"
@@ -12,6 +13,9 @@
 <script setup>
 import StationLookupDialog from './StationLookupDialog.vue'
 
-defineProps({ modelValue: { type: Boolean, default: false } })
+defineProps({
+  modelValue: { type: Boolean, default: false },
+  profileId: { type: [Number, String], default: null },
+})
 const emit = defineEmits(['update:modelValue'])
 </script>

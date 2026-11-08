@@ -50,13 +50,15 @@
           <q-banner v-if="fuelLogStore.error" class="bg-negative text-white q-mb-md" rounded>
             {{ fuelLogStore.error }}
           </q-banner>
-
           <q-banner
-            v-else-if="!usersStore.currentUser"
+            v-if="!fuelLogStore.error && !usersStore.currentUser"
             class="bg-warning text-dark q-mb-md"
             rounded
           >
             Sign in to manage fuel logs.
+          </q-banner>
+          <q-banner v-if="fuelLogStore.stationError" class="bg-warning text-dark q-mb-md" rounded>
+            {{ fuelLogStore.stationError }}
           </q-banner>
 
           <q-form v-if="showForm" @submit.prevent="saveFuelLog" class="q-mt-md q-gutter-md">
@@ -419,6 +421,7 @@ const loadingPriorMileage = ref(false)
 const priorMileageError = ref('')
 const saving = ref(false)
 let prefillRequest = 0
+let loadRequest = 0
 
 // When the entered station matches a public.station row, only that station's locations are offered.
 function locationNamesForStation() {
@@ -613,6 +616,11 @@ const columns = [
 ]
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
+const currentProfileId = computed(() =>
+  profileStore.currentProfile?.user_id === currentUserId.value
+    ? profileStore.currentProfile?.profile_id
+    : null,
+)
 const autoOptions = computed(() =>
   autoStore.auto.map((auto) => ({
     label: templateAutoLabel(auto),
@@ -738,17 +746,32 @@ function requestDeleteEditedFuelLog() {
 }
 
 async function load() {
+  const request = ++loadRequest
+  fuelLogStore.stationRequestId++
+  fuelLogStore.stationProfileId = null
+  fuelLogStore.stationRows = []
+  fuelLogStore.stations = []
+  fuelLogStore.stationError = null
   if (!currentUserId.value) {
     autoStore.auto = []
     fuelLogStore.fuelLogs = []
     return
   }
 
-  const profile = await profileStore.loadCurrentProfile(currentUserId.value)
+  const userId = currentUserId.value
+  const profile = await profileStore.loadCurrentProfile(userId)
+  if (request !== loadRequest || currentUserId.value !== userId) return
+  if (!profile?.profile_id) {
+    fuelLogStore.error = profileStore.error || 'A current profile is required to load fuel logs.'
+    return
+  }
   const autos = await autoStore.loadAuto(profile?.profile_id)
+  if (request !== loadRequest) return
   await fuelLogStore.loadFuelLogs(autos.map((auto) => auto.auto_id))
+  if (request !== loadRequest) return
   await fuelLogStore.loadFuelTypes()
-  await fuelLogStore.loadStations()
+  if (request !== loadRequest) return
+  await fuelLogStore.loadStations(profile.profile_id)
 }
 
 // Keeps at most two decimal places while typing, without rounding the digits entered.
@@ -778,14 +801,19 @@ async function saveFuelLog() {
   const isEditing = Boolean(editingFuelLogId.value)
   const fuelLogId = editingFuelLogId.value
   const entry = { ...form }
+  const profileId = currentProfileId.value
+  if (!profileId) {
+    $q.notify({ type: 'negative', message: 'A current profile is required to save fuel logs.' })
+    return
+  }
   saving.value = true
   let fuelSaved = false
   try {
     const hasMileage = entry.mileage !== null && entry.mileage !== ''
     const latest = hasMileage ? await mileageStore.fetchLatestMilesChecked(entry.auto_id) : null
     const saved = isEditing
-      ? await fuelLogStore.updateFuelLog(fuelLogId, entry)
-      : await fuelLogStore.createFuelLog(entry)
+      ? await fuelLogStore.updateFuelLog(fuelLogId, entry, profileId)
+      : await fuelLogStore.createFuelLog(entry, profileId)
     if (!saved) return
     fuelSaved = true
     editingFuelLogId.value = saved.fuel_log_id

@@ -109,8 +109,8 @@
               />
             </div>
           </q-form>
-          <ManageStationsDialog v-model="showStations" />
-          <ManageLocationsDialog v-model="showLocations" />
+          <ManageStationsDialog v-model="showStations" :profile-id="currentProfileId" />
+          <ManageLocationsDialog v-model="showLocations" :profile-id="currentProfileId" />
         </component>
       </div>
     </div>
@@ -147,6 +147,9 @@ const profile = reactive({
 })
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
+const currentProfileId = computed(() =>
+  store.currentProfile?.user_id === currentUserId.value ? store.currentProfile?.profile_id : null,
+)
 
 function resetProfile() {
   profile.fname = ''

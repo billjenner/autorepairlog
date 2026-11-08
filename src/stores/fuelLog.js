@@ -1,6 +1,7 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { supabase } from '../lib/supabase'
 import { milesPerGallon } from '../utils/fuelMileage'
+import { fetchStationRows, insertStationRow } from '../lib/stationLookup'
 
 function toNullableNumber(value, { integer = false, decimals = null } = {}) {
   if (value === null || value === undefined || value === '') {
@@ -24,6 +25,9 @@ export const useFuelLogStore = defineStore('FuelLog', {
     fuelTypes: [],
     stations: [],
     stationRows: [],
+    stationProfileId: null,
+    stationRequestId: 0,
+    stationError: null,
     error: null,
     loading: false,
   }),
@@ -73,7 +77,8 @@ export const useFuelLogStore = defineStore('FuelLog', {
 
     // Adds fuel type, station and location values to the lookup tables when not already present.
     // Best effort: a lookup failure never fails the fuel log save.
-    async syncLookups(payload) {
+    async syncLookups(payload, profileId) {
+      if (this.stationProfileId === profileId) this.stationError = null
       const normalize = (value) =>
         String(value ?? '')
           .trim()
@@ -98,23 +103,22 @@ export const useFuelLogStore = defineStore('FuelLog', {
         }
 
         if (payload.station || payload.location) {
-          const { data, error } = await supabase.from('station').select('station, location')
-          if (error) throw error
+          const data = await fetchStationRows(supabase, profileId)
           const exists = (data || []).some(
             (row) =>
               normalize(row.station) === normalize(payload.station) &&
               normalize(row.location) === normalize(payload.location),
           )
           if (!exists) {
-            const { error: insertError } = await supabase
-              .from('station')
-              .insert({ station: payload.station, location: payload.location })
-            if (insertError) throw insertError
-            this.stationRows = [
-              ...this.stationRows,
-              { station: payload.station, location: payload.location },
-            ]
+            await insertStationRow(supabase, profileId, payload.station, payload.location)
+            if (this.stationProfileId === profileId) {
+              this.stationRows = [
+                ...this.stationRows,
+                { station: payload.station, location: payload.location },
+              ]
+            }
             if (
+              this.stationProfileId === profileId &&
               payload.station &&
               !this.stations.some((name) => normalize(name) === normalize(payload.station))
             ) {
@@ -124,24 +128,30 @@ export const useFuelLogStore = defineStore('FuelLog', {
         }
       } catch (err) {
         console.error('[fuel log lookups] failed:', err.message)
+        if (this.stationProfileId === profileId) {
+          this.stationError = `Fuel log saved, but lookup values could not be updated: ${err.message}`
+        }
       }
     },
 
     // Station rows plus the distinct, sorted station names from public.station.
-    async loadStations() {
-      if (!supabase) {
-        this.stations = []
-        this.stationRows = []
+    async loadStations(profileId) {
+      const requestId = ++this.stationRequestId
+      this.stationProfileId = profileId || null
+      this.stations = []
+      this.stationRows = []
+      this.stationError = null
+      let data
+      try {
+        data = await fetchStationRows(supabase, profileId)
+      } catch (error) {
+        if (this.stationRequestId === requestId) {
+          this.stationError = `Unable to load stations: ${error.message}`
+        }
         return []
       }
-
-      const { data, error } = await supabase.from('station').select('station, location')
-      if (error) {
-        console.error('[stations] failed:', error.message)
-        return this.stations
-      }
-
-      this.stationRows = data || []
+      if (this.stationRequestId !== requestId) return []
+      this.stationRows = data
       const unique = new Map()
       for (const row of this.stationRows) {
         const name = String(row.station ?? '').trim()
@@ -211,7 +221,7 @@ export const useFuelLogStore = defineStore('FuelLog', {
       }
     },
 
-    async createFuelLog(entry = {}) {
+    async createFuelLog(entry = {}, profileId) {
       this.error = null
       this.loading = true
 
@@ -229,7 +239,7 @@ export const useFuelLogStore = defineStore('FuelLog', {
           return null
         }
 
-        await this.syncLookups(payload)
+        await this.syncLookups(payload, profileId)
         this.fuelLogs = [data, ...this.fuelLogs]
         return data
       } finally {
@@ -237,7 +247,7 @@ export const useFuelLogStore = defineStore('FuelLog', {
       }
     },
 
-    async updateFuelLog(fuelLogId, entry = {}) {
+    async updateFuelLog(fuelLogId, entry = {}, profileId) {
       this.error = null
       this.loading = true
 
@@ -265,7 +275,7 @@ export const useFuelLogStore = defineStore('FuelLog', {
           return null
         }
 
-        await this.syncLookups(payload)
+        await this.syncLookups(payload, profileId)
         this.fuelLogs = this.fuelLogs.map((item) => (item.fuel_log_id === fuelLogId ? data : item))
         return data
       } finally {

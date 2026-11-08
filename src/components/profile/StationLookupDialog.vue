@@ -44,8 +44,8 @@
       <q-card style="min-width: 320px">
         <q-card-section class="text-h6">Delete {{ label.toLowerCase() }}?</q-card-section>
         <q-card-section>
-          Remove {{ pendingDelete?.name }} from all matching shared lookup entries for all users?
-          Associated {{ otherLabel }} and existing fuel logs will be preserved.
+          Remove {{ pendingDelete?.name }} from your matching lookup entries? Associated
+          {{ otherLabel }} and existing fuel logs will be preserved.
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat label="Cancel" :disable="deleting" v-close-popup />
@@ -60,9 +60,11 @@
 import { ref, watch } from 'vue'
 import { supabase } from '@/lib/supabase'
 import { groupStationValues } from './stationLookup'
+import { clearStationValues, fetchStationRows } from '@/lib/stationLookup'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
+  profileId: { type: [Number, String], default: null },
   field: { type: String, required: true },
   label: { type: String, required: true },
   pluralLabel: { type: String, required: true },
@@ -81,12 +83,8 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    if (!supabase) throw new Error('Supabase client is not configured.')
-    const { data, error: queryError } = await supabase
-      .from('station')
-      .select('station_id, station, location')
-    if (queryError) throw queryError
-    if (request === requestId) items.value = groupStationValues(data || [], props.field)
+    const data = await fetchStationRows(supabase, props.profileId)
+    if (request === requestId) items.value = groupStationValues(data, props.field)
   } catch (err) {
     if (request === requestId) {
       items.value = []
@@ -102,18 +100,7 @@ async function remove() {
   deleting.value = true
   error.value = ''
   try {
-    if (!supabase) throw new Error('Supabase client is not configured.')
-    const ids = pendingDelete.value.ids
-    const { data, error: updateError } = await supabase
-      .from('station')
-      .update({ [props.field]: null })
-      .in('station_id', ids)
-      .in(props.field, pendingDelete.value.values)
-      .select('station_id')
-    if (updateError) throw updateError
-    if ((data || []).length !== ids.length) {
-      throw new Error('Some matching entries could not be updated. Reload and try again.')
-    }
+    await clearStationValues(supabase, props.profileId, props.field, pendingDelete.value)
     pendingDelete.value = null
     await load()
   } catch (err) {
@@ -125,9 +112,11 @@ async function remove() {
 }
 
 watch(
-  () => props.modelValue,
-  (open) => {
+  () => [props.modelValue, props.profileId],
+  ([open]) => {
     if (open) {
+      items.value = []
+      pendingDelete.value = null
       load()
     } else {
       requestId++
