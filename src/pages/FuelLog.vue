@@ -402,7 +402,6 @@
                 </div>
                 <div>Gallons: {{ selectedMileage.gallons ?? '—' }}</div>
                 <div>Miles per gallon: {{ formatMpg(selectedMileage.mile_per_gallon) }}</div>
-                <div>Gallons per mile: {{ gallonsPerMile(selectedMileage) }}</div>
               </q-card-section>
               <q-card-actions align="right"
                 ><q-btn flat label="Close" v-close-popup
@@ -561,14 +560,6 @@ const money = (value) => (value === null || value === undefined ? '—' : Number
 const formatMileage = (value) =>
   value === null || value === undefined ? '—' : Number(value).toLocaleString()
 const calculatedMpg = computed(() => milesPerGallon(form.prior_mileage, form.mileage, form.gallons))
-
-function gallonsPerMile(entry) {
-  const difference = mileageDifference(entry.prior_mileage, entry.mileage)
-  const gallons = Number(entry.gallons)
-  return difference !== null && entry.gallons !== null && Number.isFinite(gallons) && gallons > 0
-    ? (gallons / difference).toFixed(4)
-    : '—'
-}
 
 function validOdometer(value) {
   if (value === null || value === undefined || value === '') return true
