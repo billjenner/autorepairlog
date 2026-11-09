@@ -24,6 +24,8 @@ By combining historical records with mileage-based and calendar-based estimates,
 - Manage service schedules and recurring maintenance intervals.
 - Record service costs and summarize repair expenses.
 - Access maintenance records for future reference or vehicle resale.
+- Dictate notes in supported browsers using the microphone. Dictated text is appended to existing
+  notes; browser speech recognition may send audio to the browser provider for processing.
 
 ### 📅 Scheduling & Predictions
 
