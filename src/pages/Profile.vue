@@ -87,8 +87,23 @@
               />
             </div>
           </q-form>
+          <q-card flat bordered class="q-pa-md bg-grey-1 q-mt-md">
+            <div class="text-subtitle1 q-mb-sm">Manage shared users</div>
+            <q-btn
+              flat
+              color="primary"
+              label="Manage shared users"
+              :disable="!currentProfileId"
+              @click="showSharedUsers = true"
+            />
+          </q-card>
           <ManageStationsDialog v-model="showStations" :profile-id="currentProfileId" />
           <ManageLocationsDialog v-model="showLocations" :profile-id="currentProfileId" />
+          <ManageSharedUsersDialog
+            v-model="showSharedUsers"
+            :profile-id="currentProfileId"
+            :own-email="usersStore.currentUser?.email || ''"
+          />
         </component>
       </div>
     </div>
@@ -103,6 +118,7 @@ import { useProfileStore } from '@/stores/profile'
 import { notifySuccess } from '../utils/notify'
 import ManageStationsDialog from '@/components/profile/ManageStationsDialog.vue'
 import ManageLocationsDialog from '@/components/profile/ManageLocationsDialog.vue'
+import ManageSharedUsersDialog from '@/components/profile/ManageSharedUsersDialog.vue'
 
 defineProps({
   embedded: {
@@ -117,6 +133,7 @@ const $q = useQuasar()
 const loading = ref(false)
 const showStations = ref(false)
 const showLocations = ref(false)
+const showSharedUsers = ref(false)
 const profile = reactive({
   fname: '',
   lname: '',
