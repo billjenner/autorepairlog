@@ -63,3 +63,25 @@ By combining historical records with mileage-based and calendar-based estimates,
   hides Fuel navigation.
 - Manage shared-user email entries in Profile. Reciprocal sharing requires both users to list each
   other's verified account email; shared access is not yet enabled in the app.
+
+## Screenshots
+
+### Autos and service badges
+
+![Autos and service badges](public/ScreenShots/AutoAndBadges.jpg)
+
+### Auto details
+
+![Auto details](public/ScreenShots/AutoDetails.jpg)
+
+### Service alerts
+
+![Service alerts](public/ScreenShots/ServiceAlerts.jpg)
+
+### Service schedule
+
+![Service schedule](public/ScreenShots/ServiceSchedule.jpg)
+
+### Cost reports and data exports
+
+![Cost reports and data exports](public/ScreenShots/Reports.jpg)
