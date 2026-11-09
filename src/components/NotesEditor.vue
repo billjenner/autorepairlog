@@ -25,7 +25,10 @@
         <span v-else-if="dictation.status.value === 'starting'">Starting microphone...</span>
         <span v-else-if="dictation.status.value === 'listening'">Listening...</span>
         <span v-else-if="dictation.status.value === 'stopping'">Finishing dictation...</span>
-        <span v-else>Dictation appends text to your notes. Speech may be processed by your browser provider.</span>
+        <span v-else
+          >Dictation appends text to your notes. Speech may be processed by your browser
+          provider.</span
+        >
       </div>
     </div>
   </div>

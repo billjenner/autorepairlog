@@ -44,10 +44,11 @@ export function createNotesDictation({ Recognition, language, onTranscript }) {
           'not-allowed': 'Microphone access was denied. Check your browser permissions.',
           'service-not-allowed': 'Speech recognition is not allowed by your browser.',
           'audio-capture': 'No microphone is available. Check your microphone and try again.',
-          'network': 'Speech recognition encountered a network error. Check your connection.',
+          network: 'Speech recognition encountered a network error. Check your connection.',
           'no-speech': 'No speech was detected. Try dictating again.',
         }
-        error.value = messages[event.error] || `Speech recognition failed: ${event.error || 'unknown error'}.`
+        error.value =
+          messages[event.error] || `Speech recognition failed: ${event.error || 'unknown error'}.`
       }
       session.onend = () => {
         if (recognition !== session) return

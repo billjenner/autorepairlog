@@ -27,7 +27,10 @@ function result(transcript, isFinal = true) {
 }
 
 test('dictation appends escaped text without replacing existing notes', () => {
-  assert.equal(appendDictatedText('<p>Existing</p>', '  Oil & <filter>\nchanged  '), '<p>Existing</p><p>Oil &amp; &lt;filter&gt;<br>changed</p>')
+  assert.equal(
+    appendDictatedText('<p>Existing</p>', '  Oil & <filter>\nchanged  '),
+    '<p>Existing</p><p>Oil &amp; &lt;filter&gt;<br>changed</p>',
+  )
   assert.equal(appendDictatedText('existing', '  '), 'existing')
 })
 
