@@ -155,6 +155,7 @@
               <q-btn
                 type="submit"
                 color="primary"
+                class="q-mr-sm"
                 :label="editingLogId ? 'Update service log' : 'Save service log'"
                 :loading="serviceLogStore.loading"
                 :disable="!hasRequiredFields"
