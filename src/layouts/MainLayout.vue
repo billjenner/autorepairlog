@@ -237,6 +237,18 @@
             </q-item-section>
             <q-item-section>Service Log</q-item-section>
           </q-item>
+          <q-item clickable v-ripple @click="navigateAndClose('/profile')">
+            <q-item-section avatar>
+              <q-icon name="person" />
+            </q-item-section>
+            <q-item-section>Profile</q-item-section>
+          </q-item>
+          <q-item clickable v-ripple @click="navigateAndClose('/change-password')">
+            <q-item-section avatar>
+              <q-icon name="lock" />
+            </q-item-section>
+            <q-item-section>Change Password</q-item-section>
+          </q-item>
           <q-item clickable v-ripple @click="navigateAndClose('/help')">
             <q-item-section avatar>
               <q-icon name="help_outline" />
