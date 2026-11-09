@@ -221,7 +221,13 @@ function notifyCheckError($q, step, error) {
   })
 }
 
-export async function checkLoginBusinessRules($q, profileId, profileError, router) {
+export async function checkLoginBusinessRules(
+  $q,
+  profileId,
+  profileError,
+  router,
+  useMaintenanceTracking = true,
+) {
   if (profileError) {
     notifyCheckError($q, 'profile', new Error(profileError))
     return
@@ -287,6 +293,8 @@ export async function checkLoginBusinessRules($q, profileId, profileError, route
       })
     }
   }
+
+  if (!useMaintenanceTracking) return
 
   const { data: schedules, error: scheduleError } = await supabase
     .from('schedule')

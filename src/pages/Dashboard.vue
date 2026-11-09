@@ -18,6 +18,7 @@
 
         <div class="row justify-center items-center q-my-md q-gutter-x-xl">
           <q-btn
+            v-if="maintenanceTracking"
             flat
             :color="activeSection === 'alerts' ? 'white' : 'accent'"
             label="Alerts"
@@ -59,7 +60,7 @@
         />
 
         <AlertsCharts
-          v-if="activeSection === 'alerts' && selectedSchedule"
+          v-if="maintenanceTracking && activeSection === 'alerts' && selectedSchedule"
           class="q-pa-md"
           :profile-id="selectedSchedule.auto?.profile_id"
           :auto-id="selectedSchedule.auto_id"
@@ -91,6 +92,11 @@ const selectedSchedule = computed(() =>
 )
 
 const currentUserId = computed(() => usersStore.currentUser?.user_id || null)
+const maintenanceTracking = computed(
+  () =>
+    profileStore.currentProfile?.user_id === currentUserId.value &&
+    profileStore.currentProfile?.use_maintenance_tracking !== false,
+)
 const scheduleOptions = computed(() =>
   dashboardSchedules.value.map((schedule) => ({
     label: templateAutoLabel(schedule.auto),
@@ -110,6 +116,20 @@ async function load() {
       profileId: profile?.profile_id,
     })) || []
 }
+
+watch(
+  () => [
+    profileStore.currentProfile?.user_id,
+    currentUserId.value,
+    profileStore.currentProfile?.use_maintenance_tracking,
+  ],
+  ([profileUserId, userId, enabled]) => {
+    if (userId && profileUserId === userId && enabled === false && activeSection.value === 'alerts') {
+      activeSection.value = 'costs'
+    }
+  },
+  { immediate: true },
+)
 
 watch(
   scheduleOptions,

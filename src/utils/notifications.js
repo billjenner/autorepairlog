@@ -33,15 +33,23 @@ async function loadRecentNotificationKeys(profileId, now) {
 
 // Shows a toaster for each past-due service that has no notification in the last day,
 // then records the toaster in the notifications table.
-export async function checkServiceNotifications($q, profile, now = Date.now()) {
+export async function checkServiceNotifications(
+  $q,
+  profile,
+  now = Date.now(),
+  isCurrent = () => true,
+) {
   const profileId = profile?.profile_id
-  if (!supabase || !profileId || !profile.allow_in_app_notifications) return
+  const canContinue = () =>
+    profile.use_maintenance_tracking !== false && profile.allow_in_app_notifications && isCurrent()
+  if (!supabase || !profileId || !canContinue()) return
   if (inFlightProfiles.has(profileId)) return
 
   inFlightProfiles.add(profileId)
   try {
     const todayDay = Date.parse(`${new Date(now).toISOString().slice(0, 10)}T00:00:00Z`)
     const autos = await predictFutureServices(profileId, now)
+    if (!canContinue()) return
     const duePairs = autos.flatMap((auto) =>
       auto.services
         .filter((service) => service.allow_notifications && isPastDue(service, todayDay))
@@ -50,14 +58,17 @@ export async function checkServiceNotifications($q, profile, now = Date.now()) {
     if (!duePairs.length) return
 
     const recentKeys = await loadRecentNotificationKeys(profileId, now)
+    if (!canContinue()) return
 
     for (const { auto, service } of duePairs) {
+      if (!canContinue()) return
       if (recentKeys.has(`${auto.auto_id}:${service.service_id}`)) continue
 
       const subject = 'Service past due'
       const message = buildMessage(auto, service)
 
       await new Promise((resolve) => setTimeout(resolve, 2000))
+      if (!canContinue()) return
       $q.notify({ type: 'negative', message, caption: subject, timeout: 10000 })
 
       const { error } = await supabase.from('notifications').insert({

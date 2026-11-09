@@ -363,6 +363,8 @@ const navVisible = computed(() =>
     isLoggedIn.value,
     profileStore.currentProfile?.user_id === usersStore.currentUser?.user_id &&
       profileStore.currentProfile?.use_fuel_tracking !== false,
+    profileStore.currentProfile?.user_id === usersStore.currentUser?.user_id &&
+      profileStore.currentProfile?.use_maintenance_tracking !== false,
   ),
 )
 
@@ -473,7 +475,16 @@ async function refreshNavAvailability() {
     })
   }
 
-  await checkServiceNotifications($q, profile)
+  await checkServiceNotifications($q, profile, Date.now(), () => {
+    const currentProfile = profileStore.currentProfile
+    return (
+      usersStore.currentUser?.user_id === userId &&
+      currentProfile?.user_id === userId &&
+      currentProfile?.profile_id === profile?.profile_id &&
+      currentProfile?.use_maintenance_tracking !== false &&
+      Boolean(currentProfile?.allow_in_app_notifications)
+    )
+  })
 }
 
 function dismissInstallDialog() {
@@ -544,6 +555,8 @@ watch(
     usersStore.currentUser?.user_id,
     profileStore.currentProfile?.profile_id,
     profileStore.currentProfile?.admin_level,
+    profileStore.currentProfile?.use_maintenance_tracking,
+    profileStore.currentProfile?.allow_in_app_notifications,
     route.path,
   ],
   refreshNavAvailability,
@@ -576,7 +589,13 @@ watch(
 
     const profile = await profileStore.loadCurrentProfile(userId)
     try {
-      await checkLoginBusinessRules($q, profile?.profile_id, profileStore.error, router)
+      await checkLoginBusinessRules(
+        $q,
+        profile?.profile_id,
+        profileStore.error,
+        router,
+        profile?.use_maintenance_tracking !== false,
+      )
     } catch (error) {
       console.error('[MainLayout] business rules check failed:', error)
       $q.notify({

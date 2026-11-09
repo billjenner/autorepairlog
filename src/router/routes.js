@@ -167,6 +167,7 @@ const routes = [
         component: () => import('@/pages/Schedule.vue'),
         meta: {
           requiresAuth: true,
+          requiresMaintenanceTracking: true,
           seo: {
             title: 'Schedule',
             description: 'Create and manage your schedules.',
@@ -191,6 +192,7 @@ const routes = [
         component: () => import('@/pages/Service.vue'),
         meta: {
           requiresAuth: true,
+          requiresMaintenanceTracking: true,
           seo: {
             title: 'Service',
             description: 'Create and manage your services.',
@@ -203,6 +205,7 @@ const routes = [
         component: () => import('@/pages/ServiceOrder.vue'),
         meta: {
           requiresAuth: true,
+          requiresMaintenanceTracking: true,
           seo: {
             title: 'Service Order',
             description: 'Create and manage your service orders.',
@@ -215,6 +218,7 @@ const routes = [
         component: () => import('@/pages/ServiceLog.vue'),
         meta: {
           requiresAuth: true,
+          requiresMaintenanceTracking: true,
           seo: {
             title: 'Service Log',
             description: 'Create and manage your service logs.',

@@ -131,6 +131,13 @@ export default defineRouter(async (/* { store, ssrContext } */) => {
         }
       }
 
+      if (to.matched.some((record) => record.meta?.requiresMaintenanceTracking)) {
+        const { useProfileStore } = await import('@/stores/profile')
+        if (useProfileStore().currentProfile?.use_maintenance_tracking === false) {
+          return { path: '/auto' }
+        }
+      }
+
       if (to.path === '/dashboard') {
         const { useProfileStore } = await import('@/stores/profile')
         const { useServiceStore } = await import('@/stores/service')
