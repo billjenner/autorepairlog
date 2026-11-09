@@ -29,7 +29,10 @@ ALTER TABLE public.profile
 ADD COLUMN allow_web_notifications BOOLEAN NOT NULL DEFAULT TRUE;
 
 ALTER TABLE public.profile
-DROP COLUMN allow_sms_notifications;
+ADD COLUMN use_fuel_tracking BOOLEAN NOT NULL DEFAULT TRUE;
+
+ALTER TABLE public.profile
+ADD COLUMN use_maintenance_tracking BOOLEAN NOT NULL DEFAULT TRUE;
 -- ============================================================
 -- Add to table
 -- ============================================================

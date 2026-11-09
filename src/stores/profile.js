@@ -18,7 +18,12 @@ export const useProfileStore = defineStore('Profile', {
         lname: profile.lname?.trim() || '',
       }
 
-      for (const field of ['allow_in_app_notifications', 'allow_web_notifications']) {
+      for (const field of [
+        'allow_in_app_notifications',
+        'allow_web_notifications',
+        'use_fuel_tracking',
+        'use_maintenance_tracking',
+      ]) {
         if (typeof profile[field] === 'boolean') {
           payload[field] = profile[field]
         }

@@ -52,10 +52,30 @@
                 </div>
               </div>
             </q-card>
-
+            <q-card flat bordered class="q-pa-md bg-grey-1 q-mt-md">
+              <div class="text-subtitle1 q-mb-sm">Manage shared users</div>
+              <q-btn
+                flat
+                color="primary"
+                label="Manage shared users"
+                :disable="!currentProfileId"
+                @click="showSharedUsers = true"
+              />
+            </q-card>
             <q-card flat bordered class="q-pa-md bg-grey-1">
               <div class="text-subtitle1 q-mb-sm">Preferences</div>
               <div class="column">
+                <q-toggle
+                  v-model="profile.use_fuel_tracking"
+                  label="Use fuel tracking"
+                  :disable="!usersStore.currentUser"
+                />
+                <q-toggle
+                  v-model="profile.use_maintenance_tracking"
+                  label="Use maintenance tracking"
+                  :disable="!usersStore.currentUser"
+                />
+                <br />
                 <q-toggle
                   v-model="profile.allow_in_app_notifications"
                   label="Allow in-app notifications"
@@ -87,16 +107,7 @@
               />
             </div>
           </q-form>
-          <q-card flat bordered class="q-pa-md bg-grey-1 q-mt-md">
-            <div class="text-subtitle1 q-mb-sm">Manage shared users</div>
-            <q-btn
-              flat
-              color="primary"
-              label="Manage shared users"
-              :disable="!currentProfileId"
-              @click="showSharedUsers = true"
-            />
-          </q-card>
+
           <ManageStationsDialog v-model="showStations" :profile-id="currentProfileId" />
           <ManageLocationsDialog v-model="showLocations" :profile-id="currentProfileId" />
           <ManageSharedUsersDialog
@@ -137,6 +148,8 @@ const showSharedUsers = ref(false)
 const profile = reactive({
   fname: '',
   lname: '',
+  use_fuel_tracking: true,
+  use_maintenance_tracking: true,
   allow_in_app_notifications: true,
   allow_web_notifications: true,
 })
@@ -149,6 +162,8 @@ const currentProfileId = computed(() =>
 function resetProfile() {
   profile.fname = ''
   profile.lname = ''
+  profile.use_fuel_tracking = true
+  profile.use_maintenance_tracking = true
   profile.allow_in_app_notifications = true
   profile.allow_web_notifications = true
 }
@@ -156,6 +171,8 @@ function resetProfile() {
 function setProfile(data) {
   profile.fname = data?.fname ?? usersStore.currentUser?.user_metadata?.fname ?? ''
   profile.lname = data?.lname ?? usersStore.currentUser?.user_metadata?.lname ?? ''
+  profile.use_fuel_tracking = data?.use_fuel_tracking ?? true
+  profile.use_maintenance_tracking = data?.use_maintenance_tracking ?? true
   profile.allow_in_app_notifications = data?.allow_in_app_notifications ?? true
   profile.allow_web_notifications = data?.allow_web_notifications ?? true
 }
