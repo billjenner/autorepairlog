@@ -89,7 +89,7 @@ const props = defineProps({
 const logRows = ref([])
 const upcomingRows = ref([])
 const loading = ref(false)
-const descending = ref(false)
+const descending = ref(true)
 
 // Rows with no date always sort last; a descending sort also puts predictions above history.
 function sortRows(rows) {
@@ -159,9 +159,7 @@ async function load() {
   loading.value = true
   try {
     const allAutos = await predictFutureServices(props.profileId)
-    const autos = props.autoId
-      ? allAutos.filter((auto) => auto.auto_id === props.autoId)
-      : allAutos
+    const autos = props.autoId ? allAutos.filter((auto) => auto.auto_id === props.autoId) : allAutos
     const autoIds = autos.map((auto) => auto.auto_id)
     const intervalsByService = new Map()
     const upcoming = []
