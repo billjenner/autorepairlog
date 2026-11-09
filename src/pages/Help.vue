@@ -37,7 +37,18 @@
                     </p>
                   </div>
                   <div class="q-mt-md">
-                    <div class="text-subtitle1 text-weight-medium">Scheduling and predictions</div>
+                    <div class="text-subtitle1 text-weight-medium">
+                      Fuel tracking and expense reporting
+                    </div>
+                    <p>
+                      Track fuel consumption, monitor expenses, and generate reports to better
+                      understand vehicle operating costs.
+                    </p>
+                  </div>
+                  <div class="q-mt-md">
+                    <div class="text-subtitle1 text-weight-medium">
+                      Scheduling, predictions, and Notifications
+                    </div>
                     <p>
                       Set mileage- and time-based service intervals, estimate upcoming maintenance,
                       identify overdue services, and reuse schedule templates.
