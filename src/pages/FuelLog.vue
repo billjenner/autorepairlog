@@ -61,6 +61,20 @@
           <q-banner v-if="fuelLogStore.stationError" class="bg-warning text-dark q-mb-md" rounded>
             {{ fuelLogStore.stationError }}
           </q-banner>
+          <q-banner
+            v-if="fuelLogStore.suggestionError"
+            class="bg-warning text-dark q-mb-md"
+            rounded
+          >
+            {{ fuelLogStore.suggestionError }}
+            <template #action>
+              <q-btn
+                flat
+                label="Retry"
+                @click="fuelLogStore.loadFuelSuggestions(currentProfileId)"
+              />
+            </template>
+          </q-banner>
 
           <q-form v-if="showForm" @submit.prevent="saveFuelLog" class="q-mt-md q-gutter-md">
             <q-banner v-if="priorMileageError" class="bg-negative text-white" rounded>
@@ -424,34 +438,10 @@ const saving = ref(false)
 let prefillRequest = 0
 let loadRequest = 0
 
-// When the entered station matches a public.station row, only that station's locations are offered.
-function locationNamesForStation() {
-  const station = form.station?.trim().toLowerCase()
-  const rows = fuelLogStore.stationRows
-  const stationMatches = station
-    ? rows.filter(
-        (row) =>
-          String(row.station ?? '')
-            .trim()
-            .toLowerCase() === station,
-      )
-    : []
-  const source = stationMatches.length ? stationMatches : rows
-
-  const unique = new Map()
-  for (const row of source) {
-    const name = String(row.location ?? '').trim()
-    if (name && !unique.has(name.toLowerCase())) {
-      unique.set(name.toLowerCase(), name)
-    }
-  }
-  return [...unique.values()].sort((a, b) => a.localeCompare(b))
-}
-
 function filterLocations(value, update) {
   update(() => {
     const term = value.trim().toLowerCase()
-    const names = locationNamesForStation()
+    const names = fuelLogStore.locations
     locationOptions.value = term ? names.filter((name) => name.toLowerCase().includes(term)) : names
   })
 }
@@ -750,9 +740,10 @@ async function load() {
   const request = ++loadRequest
   fuelLogStore.stationRequestId++
   fuelLogStore.stationProfileId = null
-  fuelLogStore.stationRows = []
   fuelLogStore.stations = []
+  fuelLogStore.locations = []
   fuelLogStore.stationError = null
+  fuelLogStore.suggestionError = null
   if (!currentUserId.value) {
     autoStore.auto = []
     fuelLogStore.fuelLogs = []
@@ -772,7 +763,7 @@ async function load() {
   if (request !== loadRequest) return
   await fuelLogStore.loadFuelTypes()
   if (request !== loadRequest) return
-  await fuelLogStore.loadStations(profile.profile_id)
+  await fuelLogStore.loadFuelSuggestions(profile.profile_id)
 }
 
 // Keeps at most two decimal places while typing, without rounding the digits entered.

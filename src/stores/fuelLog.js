@@ -2,6 +2,7 @@ import { defineStore, acceptHMRUpdate } from 'pinia'
 import { supabase } from '../lib/supabase'
 import { milesPerGallon } from '../utils/fuelMileage'
 import { fetchStationRows, insertStationRow } from '../lib/stationLookup'
+import { fetchFuelLogSuggestions } from '../lib/fuelLogSuggestions'
 
 function toNullableNumber(value, { integer = false, decimals = null } = {}) {
   if (value === null || value === undefined || value === '') {
@@ -24,10 +25,11 @@ export const useFuelLogStore = defineStore('FuelLog', {
     fuelLogs: [],
     fuelTypes: [],
     stations: [],
-    stationRows: [],
+    locations: [],
     stationProfileId: null,
     stationRequestId: 0,
     stationError: null,
+    suggestionError: null,
     error: null,
     loading: false,
   }),
@@ -111,19 +113,6 @@ export const useFuelLogStore = defineStore('FuelLog', {
           )
           if (!exists) {
             await insertStationRow(supabase, profileId, payload.station, payload.location)
-            if (this.stationProfileId === profileId) {
-              this.stationRows = [
-                ...this.stationRows,
-                { station: payload.station, location: payload.location },
-              ]
-            }
-            if (
-              this.stationProfileId === profileId &&
-              payload.station &&
-              !this.stations.some((name) => normalize(name) === normalize(payload.station))
-            ) {
-              this.stations = [...this.stations, payload.station].sort((a, b) => a.localeCompare(b))
-            }
           }
         }
       } catch (err) {
@@ -134,33 +123,22 @@ export const useFuelLogStore = defineStore('FuelLog', {
       }
     },
 
-    // Station rows plus the distinct, sorted station names from public.station.
-    async loadStations(profileId) {
+    async loadFuelSuggestions(profileId) {
       const requestId = ++this.stationRequestId
       this.stationProfileId = profileId || null
       this.stations = []
-      this.stationRows = []
-      this.stationError = null
-      let data
+      this.locations = []
+      this.suggestionError = null
       try {
-        data = await fetchStationRows(supabase, profileId)
+        const suggestions = await fetchFuelLogSuggestions(supabase, profileId)
+        if (this.stationRequestId !== requestId) return
+        this.stations = suggestions.stations
+        this.locations = suggestions.locations
       } catch (error) {
         if (this.stationRequestId === requestId) {
-          this.stationError = `Unable to load stations: ${error.message}`
-        }
-        return []
-      }
-      if (this.stationRequestId !== requestId) return []
-      this.stationRows = data
-      const unique = new Map()
-      for (const row of this.stationRows) {
-        const name = String(row.station ?? '').trim()
-        if (name && !unique.has(name.toLowerCase())) {
-          unique.set(name.toLowerCase(), name)
+          this.suggestionError = `Unable to load fuel station and location suggestions: ${error.message}`
         }
       }
-      this.stations = [...unique.values()].sort((a, b) => a.localeCompare(b))
-      return this.stations
     },
 
     // Distinct, sorted fuel type names from public.fuel_type.
@@ -241,6 +219,7 @@ export const useFuelLogStore = defineStore('FuelLog', {
 
         await this.syncLookups(payload, profileId)
         this.fuelLogs = [data, ...this.fuelLogs]
+        if (this.stationProfileId === profileId) await this.loadFuelSuggestions(profileId)
         return data
       } finally {
         this.loading = false
@@ -277,6 +256,7 @@ export const useFuelLogStore = defineStore('FuelLog', {
 
         await this.syncLookups(payload, profileId)
         this.fuelLogs = this.fuelLogs.map((item) => (item.fuel_log_id === fuelLogId ? data : item))
+        if (this.stationProfileId === profileId) await this.loadFuelSuggestions(profileId)
         return data
       } finally {
         this.loading = false
@@ -307,6 +287,7 @@ export const useFuelLogStore = defineStore('FuelLog', {
         }
 
         this.fuelLogs = this.fuelLogs.filter((item) => item.fuel_log_id !== fuelLogId)
+        if (this.stationProfileId) await this.loadFuelSuggestions(this.stationProfileId)
         return true
       } finally {
         this.loading = false
