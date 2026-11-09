@@ -357,7 +357,14 @@ let navCheckId = 0
 let navUserId = null
 
 const isLoggedIn = computed(() => Boolean(usersStore.currentUser && usersStore.currentUser.email))
-const navVisible = computed(() => deriveNavVisibility(navAvailability.value, isLoggedIn.value))
+const navVisible = computed(() =>
+  deriveNavVisibility(
+    navAvailability.value,
+    isLoggedIn.value,
+    profileStore.currentProfile?.user_id === usersStore.currentUser?.user_id &&
+      profileStore.currentProfile?.use_fuel_tracking !== false,
+  ),
+)
 
 watch(isLoggedIn, (loggedIn) => writeCachedLoginStatus(loggedIn), { immediate: true })
 
