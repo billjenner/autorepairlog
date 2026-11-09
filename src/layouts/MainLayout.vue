@@ -135,9 +135,6 @@
                 <q-item clickable v-close-popup @click="router.push('/profile')">
                   <q-item-section>Profile</q-item-section>
                 </q-item>
-                <q-item clickable v-close-popup @click="router.push('/change-password')">
-                  <q-item-section>Change Password</q-item-section>
-                </q-item>
                 <q-item clickable v-close-popup @click="router.push('/help')">
                   <q-item-section>Help</q-item-section>
                 </q-item>

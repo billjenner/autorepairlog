@@ -10,7 +10,6 @@
         >
           <div class="row items-center justify-between q-mx-md q-mb-md">
             <div class="text-h5">Profile</div>
-            <q-btn to="/change-password" label="Change Password" color="secondary" flat />
           </div>
 
           <q-banner v-if="store.error" class="bg-negative text-white q-mb-md" rounded>
@@ -52,6 +51,10 @@
                 </div>
               </div>
             </q-card>
+            <q-card flat bordered class="q-pa-md bg-grey-1">
+              <div class="text-subtitle1 q-mb-sm">Change Password</div>
+              <q-btn to="/change-password" label="Change Password" color="primary" flat />
+            </q-card>
             <q-card flat bordered class="q-pa-md bg-grey-1 q-mt-md">
               <div class="text-subtitle1 q-mb-sm">Manage shared users</div>
               <q-btn
@@ -75,6 +78,8 @@
                   label="Use maintenance tracking"
                   :disable="!usersStore.currentUser"
                 />
+                <br />
+                <q-separator />
                 <br />
                 <q-toggle
                   v-model="profile.allow_in_app_notifications"
