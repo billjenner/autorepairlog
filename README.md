@@ -6,7 +6,7 @@
 
 > **Track your Auto records, manage maintenance and repair schedules all in one organized dashboard. Stay ahead with a clear view of upcoming service needs.**
 
-Auto Repair Log aims to simplify vehicle ownership by making maintenance history accessible and future service needs predictable.
+Auto Repair Log helps organize maintenance history and estimate future service needs. Estimates depend on the records provided.
 
 By combining historical records with mileage-based and calendar-based estimates, the application helps users:
 
@@ -14,7 +14,7 @@ By combining historical records with mileage-based and calendar-based estimates,
 - Plan maintenance ahead of time.
 - Reduce missed service intervals.
 - Monitor repair and maintenance expenses.
-- Keep documentation for warre\anty and resell purposes.
+- Keep documentation for warranty and resale purposes.
 
 ## ✨ Features
 
@@ -24,6 +24,7 @@ By combining historical records with mileage-based and calendar-based estimates,
 - Manage service schedules and recurring maintenance intervals.
 - Record service costs and summarize repair expenses.
 - Access maintenance records for future reference or vehicle resale.
+- Attach invoices or warranty documents to service orders as PDF or image files.
 - Dictate notes in supported browsers using the microphone. Dictated text is appended to existing
   notes; browser speech recognition may send audio to the browser provider for processing.
 
@@ -47,10 +48,18 @@ By combining historical records with mileage-based and calendar-based estimates,
 - View maintenance status through dashboard summaries.
 - Review historical maintenance and upcoming service requirements.
 - Analyze service costs and repair expenses.
-- Export maintenance history for personal records or resale.
+- Export fuel and service records as CSV or PDF when Dashboard is available.
 
 ### 🔔 Reminders & Notifications
 
-- Stay informed about upcoming maintenance.
-- Receive reminders for approaching service intervals.
-- Reduce the risk of missed or overdue maintenance.
+- Review estimated service intervals in Dashboard Alerts.
+- Receive in-app notifications for past-due services when maintenance tracking and in-app
+  notifications are enabled and the service permits notifications.
+
+### ⚙️ Profile preferences and sharing
+
+- Turn fuel tracking and maintenance tracking on or off in Profile. Disabling maintenance tracking
+  hides its pages and Dashboard Alerts and stops maintenance notifications; disabling fuel tracking
+  hides Fuel navigation.
+- Manage shared-user email entries in Profile. Reciprocal sharing requires both users to list each
+  other's verified account email; shared access is not yet enabled in the app.

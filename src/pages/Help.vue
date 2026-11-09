@@ -21,10 +21,9 @@
                 </q-card-section>
                 <q-card-section>
                   <p>
-                    Auto Repair Log helps simplify vehicle ownership by making maintenance history
-                    accessible and future service needs predictable. It combines your past records
-                    with mileage-based and calendar-based estimates so you can plan maintenance,
-                    keep vehicle information organized, and stay ahead of upcoming service needs.
+                    Auto Repair Log helps organize vehicle records and maintenance history. It uses
+                    your records and mileage- and calendar-based intervals to help estimate future
+                    service needs. Estimates depend on the information you enter.
                   </p>
 
                   <div class="text-h6 q-mt-md">What you can do</div>
@@ -32,8 +31,7 @@
                     <div class="text-subtitle1 text-weight-medium">Maintenance and repairs</div>
                     <p>
                       Record service history and costs, manage recurring maintenance schedules, and
-                      keep records available for future reference, warranty documentation, or
-                      resale.
+                      attach invoices or warranty documents as PDF or image files.
                     </p>
                   </div>
                   <div class="q-mt-md">
@@ -46,9 +44,7 @@
                     </p>
                   </div>
                   <div class="q-mt-md">
-                    <div class="text-subtitle1 text-weight-medium">
-                      Scheduling, predictions, and Notifications
-                    </div>
+                    <div class="text-subtitle1 text-weight-medium">Scheduling and predictions</div>
                     <p>
                       Set mileage- and time-based service intervals, estimate upcoming maintenance,
                       identify overdue services, and reuse schedule templates.
@@ -59,15 +55,25 @@
                       Vehicle records and insights
                     </div>
                     <p>
-                      Manage multiple vehicles, track mileage history and driving trends, review
-                      maintenance status and expenses, and export your records.
+                      Manage multiple vehicles, track mileage history and driving trends, and review
+                      maintenance status and expenses. Dashboard exports include fuel and service
+                      records in CSV or PDF format.
                     </p>
                   </div>
                   <div class="q-mt-md">
-                    <div class="text-subtitle1 text-weight-medium">Reminders</div>
+                    <div class="text-subtitle1 text-weight-medium">Alerts and notifications</div>
+                    <p>
+                      View estimated service intervals in Dashboard Alerts. When maintenance
+                      tracking and in-app notifications are enabled, the app can notify you about
+                      past-due services whose notifications are enabled.
+                    </p>
+                  </div>
+                  <div class="q-mt-md">
+                    <div class="text-subtitle1 text-weight-medium">Notes and dictation</div>
                     <p class="q-mb-none">
-                      Keep upcoming maintenance in view and reduce the chance of missing a service
-                      interval.
+                      Enter notes or use voice dictation in supported browsers. Dictated text is
+                      appended to existing notes, and speech may be processed by your browser
+                      provider.
                     </p>
                   </div>
                 </q-card-section>
@@ -97,9 +103,7 @@
                 </q-card-section>
                 <q-card-section>
                   <p>
-                    Follow these steps to set up your vehicle and maintenance records. With this
-                    information, Auto Repair Log can track service history and estimate upcoming
-                    maintenance.
+                    Add your vehicle, then use the features you enable in your Profile preferences.
                   </p>
                   <ol class="q-pl-md">
                     <li class="q-mb-md">
@@ -108,25 +112,32 @@
                       odometer reading.
                     </li>
                     <li class="q-mb-md">
-                      <strong>Choose a schedule.</strong> On the Schedule page, select the
-                      maintenance schedule that best fits your auto. Enter the last service date for
-                      each service in that schedule.
+                      <strong>Set your preferences.</strong> In Profile, choose whether to use fuel
+                      tracking and maintenance tracking, then save your profile. Turning fuel
+                      tracking off hides Fuel navigation. Turning maintenance tracking off hides
+                      Schedule, Service, Service Order, Service Log, and Dashboard Alerts, and stops
+                      maintenance notifications.
                     </li>
                     <li class="q-mb-md">
-                      <strong>Customize services.</strong> On the Services page, adjust the listed
-                      services to suit your maintenance needs. If a service you need is not listed,
-                      add it there.
+                      <strong>Set up maintenance, if enabled.</strong> On the Schedule page, choose
+                      a schedule for your auto and enter the last service dates or mileage. On the
+                      Service page, customize or add services and their intervals.
                     </li>
                     <li class="q-mb-md">
-                      <strong>Record completed work.</strong> Add service order details for each
-                      service performed. Include notes and upload invoices or warranty documents for
-                      your records.
+                      <strong>Record your activity.</strong> With maintenance tracking enabled, add
+                      service orders for completed work, with notes and optional attachments. With
+                      fuel tracking enabled, use Fuel to record fill-ups and costs.
                     </li>
                   </ol>
+                  <p>
+                    When an eligible schedule is available, Dashboard shows costs and exports and,
+                    if maintenance tracking is enabled, Alerts. Keep mileage and service history
+                    current to improve maintenance estimates.
+                  </p>
                   <p class="q-mb-none">
-                    Once your auto, schedule, and service history are set up, the system can use
-                    mileage and service intervals to estimate upcoming maintenance and alert you
-                    when services are approaching.
+                    Profile also lets you manage shared-user email entries. Both users must add each
+                    other’s verified account email for reciprocal sharing; shared access is not yet
+                    enabled in the app.
                   </p>
                 </q-card-section>
               </q-card>
