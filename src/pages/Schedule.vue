@@ -252,6 +252,7 @@
           </q-expansion-item>
         </q-card>
         <schedule-timeline
+          v-if="form.auto_id != null"
           class="q-mt-lg"
           :profile-id="profileStore.currentProfile?.profile_id || null"
           :refresh-key="scheduleStore.schedules"
