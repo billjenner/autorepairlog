@@ -286,7 +286,10 @@
               </q-tr>
               <q-tr :props="props">
                 <q-td :colspan="props.cols.length + 1">
-                  <AutoServiceDueBadges :profile-id="profileId" :auto-id="props.row.auto_id" />
+                  <AutoServiceDueBadges
+                    :profile-id="props.row.profile_id"
+                    :auto-id="props.row.auto_id"
+                  />
                 </q-td>
               </q-tr>
             </template>
@@ -357,6 +360,7 @@ const profileStore = useProfileStore()
 const usersStore = useUsersStore()
 const showForm = ref(false)
 const editingAutoId = ref(null)
+const editingOwnerProfileId = ref(null)
 const selectedAutos = ref([])
 const showMileageForm = ref(false)
 const pendingDeleteAuto = ref(null)
@@ -453,6 +457,7 @@ function resetForm() {
   Object.assign(form, createEmptyForm())
   loadedLatest = null
   editingAutoId.value = null
+  editingOwnerProfileId.value = null
   photoFile.value = null
   photoPreviewUrl.value = null
   attachedPhotoPath.value = null
@@ -503,6 +508,7 @@ async function editAuto(auto) {
     isTemplate: auto.isTemplate,
   })
   editingAutoId.value = auto.auto_id
+  editingOwnerProfileId.value = auto.profile_id
   const latest = await mileageStore.fetchLatestRecord(auto.auto_id)
   if (latest) {
     form.latest_mileage = latest.miles
@@ -522,7 +528,10 @@ async function removeAutoPhoto() {
     return
   }
 
-  const updatedAuto = await autoStore.removeAutoPhoto(profileId.value, editingAutoId.value)
+  const updatedAuto = await autoStore.removeAutoPhoto(
+    editingOwnerProfileId.value,
+    editingAutoId.value,
+  )
   if (!updatedAuto) {
     return
   }
@@ -541,6 +550,7 @@ function requestDeleteEditedAuto() {
 
   pendingDeleteAuto.value = {
     auto_id: editingAutoId.value,
+    profile_id: editingOwnerProfileId.value,
     year: form.year,
     make: form.make,
     model: form.model,
@@ -569,7 +579,7 @@ async function saveAuto() {
   const isAdmin = Number(profileStore.currentProfile?.admin_level) > 0
   const payload = { ...form, isTemplate: isAdmin ? form.isTemplate : false }
   let savedAuto = isEditing
-    ? await autoStore.updateAuto(profileId.value, editingAutoId.value, payload)
+    ? await autoStore.updateAuto(editingOwnerProfileId.value, editingAutoId.value, payload)
     : await autoStore.createAuto(profileId.value, payload)
 
   if (!savedAuto) {
@@ -578,10 +588,15 @@ async function saveAuto() {
 
   if (!isEditing) {
     editingAutoId.value = savedAuto.auto_id
+    editingOwnerProfileId.value = savedAuto.profile_id
   }
 
   if (photoFile.value) {
-    savedAuto = await autoStore.uploadAutoPhoto(profileId.value, savedAuto.auto_id, photoFile.value)
+    savedAuto = await autoStore.uploadAutoPhoto(
+      savedAuto.profile_id,
+      savedAuto.auto_id,
+      photoFile.value,
+    )
     if (!savedAuto) {
       return
     }
@@ -616,7 +631,7 @@ async function deleteAuto() {
     return
   }
 
-  const deleted = await autoStore.deleteAuto(profileId.value, auto.auto_id)
+  const deleted = await autoStore.deleteAuto(auto.profile_id, auto.auto_id)
   if (deleted) {
     pendingDeleteAuto.value = null
     if (editingAutoId.value === auto.auto_id) {

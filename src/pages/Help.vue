@@ -136,8 +136,8 @@
                   </p>
                   <p class="q-mb-none">
                     Profile also lets you manage shared-user email entries. Both users must add each
-                    other’s verified account email for reciprocal sharing; shared access is not yet
-                    enabled in the app.
+                    other’s verified account email for reciprocal sharing. Both users can view and
+                    edit the other’s autos and related records; removing either entry ends access.
                   </p>
                 </q-card-section>
               </q-card>

@@ -1,5 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { supabase } from '../lib/supabase'
+import { fetchAccessibleProfileIds } from '../lib/accessibleProfiles'
 
 export const useServiceStore = defineStore('Service', {
   state: () => ({
@@ -34,7 +35,7 @@ export const useServiceStore = defineStore('Service', {
       return Number.isFinite(numericValue) && numericValue > 0 ? Math.trunc(numericValue) : 0
     },
 
-    // Active schedules for all autos when admin, otherwise only the user's autos.
+    // Active schedules for all autos when admin, otherwise accessible autos.
     async loadScheduleOptions({ isAdmin = false, profileId = null } = {}) {
       this.error = null
       this.scheduleOptions = []
@@ -55,7 +56,12 @@ export const useServiceStore = defineStore('Service', {
         .eq('auto.is_active', true)
 
       if (!isAdmin) {
-        query = query.eq('auto.profile_id', profileId)
+        try {
+          query = query.in('auto.profile_id', await fetchAccessibleProfileIds(supabase, profileId))
+        } catch (error) {
+          this.error = error.message
+          return []
+        }
       }
 
       const { data, error } = await query
@@ -93,8 +99,14 @@ export const useServiceStore = defineStore('Service', {
         .eq('auto.is_active', true)
 
       if (!isAdmin) {
-        autoQuery = autoQuery.eq('profile_id', profileId)
-        scheduleQuery = scheduleQuery.eq('auto.profile_id', profileId)
+        try {
+          const ids = await fetchAccessibleProfileIds(supabase, profileId)
+          autoQuery = autoQuery.in('profile_id', ids)
+          scheduleQuery = scheduleQuery.in('auto.profile_id', ids)
+        } catch (error) {
+          this.error = error.message
+          return null
+        }
       }
 
       const [autoResult, scheduleResult, dashboardSchedules] = await Promise.all([
@@ -141,7 +153,12 @@ export const useServiceStore = defineStore('Service', {
         .eq('service.is_active', true)
 
       if (!isAdmin) {
-        query = query.eq('auto.profile_id', profileId)
+        try {
+          query = query.in('auto.profile_id', await fetchAccessibleProfileIds(supabase, profileId))
+        } catch (error) {
+          this.error = error.message
+          return null
+        }
       }
 
       const { data, error } = await query

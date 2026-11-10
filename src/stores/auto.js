@@ -1,5 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { supabase } from '../lib/supabase'
+import { fetchAccessibleProfileIds } from '../lib/accessibleProfiles'
 
 const AUTO_PHOTO_BUCKET = 'auto-photos'
 const AUTO_PHOTO_MAX_BYTES = 10 * 1024 * 1024
@@ -56,10 +57,19 @@ export const useAutoStore = defineStore('Auto', {
           return []
         }
 
+        let profileIds
+        try {
+          profileIds = await fetchAccessibleProfileIds(supabase, profileId)
+        } catch (error) {
+          this.auto = []
+          this.error = error.message
+          return []
+        }
+
         const { data, error } = await supabase
           .from('auto')
           .select('*')
-          .eq('profile_id', profileId)
+          .in('profile_id', profileIds)
           .eq('is_active', true)
           .order('created_date', { ascending: false })
 
@@ -312,14 +322,20 @@ export const useAutoStore = defineStore('Auto', {
           return false
         }
 
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('auto')
           .update({ is_active: false })
           .eq('auto_id', autoId)
           .eq('profile_id', profileId)
+          .select('auto_id')
+          .maybeSingle()
 
         if (error) {
           this.error = error.message
+          return false
+        }
+        if (!data) {
+          this.error = 'The auto could not be deleted or is no longer accessible.'
           return false
         }
 

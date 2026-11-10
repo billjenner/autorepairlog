@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { fetchAccessibleProfileIds } from '../lib/accessibleProfiles'
 
 function autoLabel(auto) {
   return [auto.year, auto.make, auto.model].filter(Boolean).join(' ') || 'this auto'
@@ -121,16 +122,19 @@ export function estimateLastServiceDate(service, { auto, latest }) {
 }
 
 // Predicts the next occurrence of every active service for each of the profile's active autos.
-export async function predictFutureServices(profileId, today = Date.now()) {
+export async function predictFutureServices(profileId, today = Date.now(), includeShared = false) {
   if (!supabase) throw new Error('Supabase client is not configured.')
   if (!profileId) return []
 
+  const profileIds = includeShared
+    ? await fetchAccessibleProfileIds(supabase, profileId)
+    : [profileId]
   const todayDay = toUtcDay(new Date(today).toISOString())
 
   const { data: autos, error: autoError } = await supabase
     .from('auto')
     .select('auto_id, year, make, model, purchase_date, purchase_mileage')
-    .eq('profile_id', profileId)
+    .in('profile_id', profileIds)
     .eq('is_active', true)
     .eq('isTemplate', false)
   if (autoError) throw autoError
@@ -249,10 +253,18 @@ export async function checkLoginBusinessRules(
     return
   }
 
+  let profileIds
+  try {
+    profileIds = await fetchAccessibleProfileIds(supabase, profileId)
+  } catch (error) {
+    notifyCheckError($q, 'accessible profiles', error)
+    return
+  }
+
   const { data: autos, error: autoError } = await supabase
     .from('auto')
     .select('auto_id, year, make, model')
-    .eq('profile_id', profileId)
+    .in('profile_id', profileIds)
     .eq('is_active', true)
     .eq('isTemplate', false)
 

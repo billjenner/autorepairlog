@@ -1,5 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { supabase } from '../lib/supabase'
+import { fetchAccessibleProfileIds } from '../lib/accessibleProfiles'
 
 const INVOICE_BUCKET = 'service-invoices'
 const INVOICE_MAX_BYTES = 10 * 1024 * 1024
@@ -38,7 +39,7 @@ export const useServiceOrderStore = defineStore('ServiceOrder', {
       }
     },
 
-    // Active autos for all users when admin, otherwise only the user's autos.
+    // Active autos for all users when admin, otherwise accessible autos.
     async loadAutoOptions({ isAdmin = false, profileId = null } = {}) {
       this.error = null
       this.autoOptions = []
@@ -58,7 +59,12 @@ export const useServiceOrderStore = defineStore('ServiceOrder', {
         .eq('is_active', true)
 
       if (!isAdmin) {
-        query = query.eq('profile_id', profileId)
+        try {
+          query = query.in('profile_id', await fetchAccessibleProfileIds(supabase, profileId))
+        } catch (error) {
+          this.error = error.message
+          return []
+        }
       }
 
       const { data, error } = await query

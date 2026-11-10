@@ -1,5 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { supabase } from '../lib/supabase'
+import { fetchAccessibleProfileIds } from '../lib/accessibleProfiles'
 
 const LOG_SELECT =
   '*, service_order:service_order_id(service_order_id, auto_id, shop_name, mechanic_name, ' +
@@ -44,7 +45,7 @@ export const useServiceLogStore = defineStore('ServiceLog', {
       }
     },
 
-    // Active service orders for all autos when admin, otherwise only the user's autos.
+    // Active service orders for all autos when admin, otherwise accessible autos.
     async loadOrderOptions({ isAdmin = false, profileId = null } = {}) {
       this.error = null
       this.orderOptions = []
@@ -67,7 +68,12 @@ export const useServiceLogStore = defineStore('ServiceLog', {
         .eq('auto.is_active', true)
 
       if (!isAdmin) {
-        query = query.eq('auto.profile_id', profileId)
+        try {
+          query = query.in('auto.profile_id', await fetchAccessibleProfileIds(supabase, profileId))
+        } catch (error) {
+          this.error = error.message
+          return []
+        }
       }
 
       const { data, error } = await query.order('service_date', {

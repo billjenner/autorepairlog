@@ -1,5 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { supabase } from '../lib/supabase'
+import { fetchAccessibleProfileIds } from '../lib/accessibleProfiles'
 
 const SCHEDULE_SELECT =
   '*, auto:auto!inner(profile_id, isTemplate, is_active, year, make, model, color), ' +
@@ -42,8 +43,16 @@ export const useScheduleStore = defineStore('Schedule', {
         .select('auto_id, year, make, model, color')
         .eq('is_active', true)
 
-      // Level 0 users get all of their own autos; admins get the shared templates.
-      query = isAdmin ? query.eq('isTemplate', true) : query.eq('profile_id', profileId)
+      if (isAdmin) {
+        query = query.eq('isTemplate', true)
+      } else {
+        try {
+          query = query.in('profile_id', await fetchAccessibleProfileIds(supabase, profileId))
+        } catch (error) {
+          this.error = error.message
+          return []
+        }
+      }
 
       const { data, error } = await query
         .order('make', { ascending: true })
@@ -58,7 +67,7 @@ export const useScheduleStore = defineStore('Schedule', {
       return this.templateAutos
     },
 
-    // Non-template schedules. Users with admin_level 0 only see schedules for their own autos.
+    // Non-template schedules for accessible autos, or all autos for admins.
     async loadSchedules({ isAdmin = false, profileId = null } = {}) {
       this.error = null
       this.loading = true
@@ -82,7 +91,16 @@ export const useScheduleStore = defineStore('Schedule', {
           .eq('auto.isTemplate', false)
 
         if (!isAdmin) {
-          query = query.eq('auto.profile_id', profileId)
+          try {
+            query = query.in(
+              'auto.profile_id',
+              await fetchAccessibleProfileIds(supabase, profileId),
+            )
+          } catch (error) {
+            this.schedules = []
+            this.error = error.message
+            return []
+          }
         }
 
         const { data, error } = await query.order('created_date', { ascending: false })
@@ -167,9 +185,7 @@ export const useScheduleStore = defineStore('Schedule', {
     async copyServices(sourceScheduleId, targetScheduleId) {
       const { data: source, error: selectError } = await supabase
         .from('service')
-        .select(
-          'name, notes, interval_miles, interval_months, interval_years, allow_notifications',
-        )
+        .select('name, notes, interval_miles, interval_months, interval_years, allow_notifications')
         .eq('schedule_id', sourceScheduleId)
         .eq('is_active', true)
 

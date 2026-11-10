@@ -158,7 +158,7 @@ async function load() {
 
   loading.value = true
   try {
-    const allAutos = await predictFutureServices(props.profileId)
+    const allAutos = await predictFutureServices(props.profileId, Date.now(), true)
     const autos = props.autoId ? allAutos.filter((auto) => auto.auto_id === props.autoId) : allAutos
     const autoIds = autos.map((auto) => auto.auto_id)
     const intervalsByService = new Map()

@@ -27,3 +27,13 @@ If Admin, ability to edit and delete schedule
 ### Now Published
 
 Yes
+
+### ⚙️ Profile preferences and sharing
+
+- Manage shared-user email entries in Profile. When both users list each other's verified account
+  email, each can view and edit the other's autos and related records. Removing either entry
+  revokes the shared access.
+- Deploy [profile-sharing-access.sql](src/sql/profile-sharing-access.sql) and
+  [profile-sharing-policies.sql](src/sql/profile-sharing-policies.sql) with the app. Review
+  existing database and storage policies before deployment; permissive policies can override
+  access restrictions.

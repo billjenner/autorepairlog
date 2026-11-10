@@ -48,7 +48,7 @@ export async function checkServiceNotifications(
   inFlightProfiles.add(profileId)
   try {
     const todayDay = Date.parse(`${new Date(now).toISOString().slice(0, 10)}T00:00:00Z`)
-    const autos = await predictFutureServices(profileId, now)
+    const autos = await predictFutureServices(profileId, now, true)
     if (!canContinue()) return
     const duePairs = autos.flatMap((auto) =>
       auto.services

@@ -337,7 +337,7 @@ function predictionFor(service) {
 
 async function loadPredictions(profileId) {
   try {
-    const autos = await predictFutureServices(profileId)
+    const autos = await predictFutureServices(profileId, Date.now(), true)
     predictions.value = new Map(
       autos.flatMap((auto) => auto.services.map((service) => [service.service_id, service])),
     )
