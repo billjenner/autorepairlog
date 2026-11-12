@@ -108,7 +108,7 @@
             @mouseleave="hoveredPath = null"
           />
           <q-btn
-            v-if="!(usersStore.currentUser && usersStore.currentUser.email)"
+            v-if="!isLoggedIn && route.path !== '/login'"
             flat
             label="LOGIN"
             to="/login"
@@ -148,7 +148,7 @@
     <q-drawer v-model="leftDrawerOpen" side="left" bordered overlay :width="176">
       <q-list padding>
         <q-item
-          v-if="!(usersStore.currentUser && usersStore.currentUser.email)"
+          v-if="!isLoggedIn && route.path !== '/login'"
           clickable
           v-ripple
           @click="navigateAndClose('/login')"
