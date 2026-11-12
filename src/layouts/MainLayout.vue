@@ -169,13 +169,13 @@
             @click="navigateAndClose('/dashboard')"
           >
             <q-item-section avatar>
-              <q-icon name="dashboard" />
+              <q-icon name="dashboard" color="accent" />
             </q-item-section>
             <q-item-section>Dashboard</q-item-section>
           </q-item>
           <q-item v-if="navVisible['/auto']" clickable v-ripple @click="navigateAndClose('/auto')">
             <q-item-section avatar>
-              <q-icon name="directions_car" />
+              <q-icon name="directions_car" color="accent" />
             </q-item-section>
             <q-item-section>Auto</q-item-section>
           </q-item>
@@ -186,7 +186,7 @@
             @click="navigateAndClose('/fuel-log')"
           >
             <q-item-section avatar>
-              <q-icon name="local_gas_station" />
+              <q-icon name="local_gas_station" color="accent" />
             </q-item-section>
             <q-item-section>Fuel</q-item-section>
           </q-item>
@@ -197,7 +197,7 @@
             @click="navigateAndClose('/schedule')"
           >
             <q-item-section avatar>
-              <q-icon name="event_available" />
+              <q-icon name="event_available" color="accent" />
             </q-item-section>
             <q-item-section>Schedule</q-item-section>
           </q-item>
@@ -208,7 +208,7 @@
             @click="navigateAndClose('/service')"
           >
             <q-item-section avatar>
-              <q-icon name="build" />
+              <q-icon name="build" color="accent" />
             </q-item-section>
             <q-item-section>Service</q-item-section>
           </q-item>
@@ -219,7 +219,7 @@
             @click="navigateAndClose('/service-order')"
           >
             <q-item-section avatar>
-              <q-icon name="receipt_long" />
+              <q-icon name="receipt_long" color="accent" />
             </q-item-section>
             <q-item-section>Service Order</q-item-section>
           </q-item>
@@ -230,13 +230,13 @@
             @click="navigateAndClose('/service-log')"
           >
             <q-item-section avatar>
-              <q-icon name="history" />
+              <q-icon name="history" color="accent" />
             </q-item-section>
             <q-item-section>Service Log</q-item-section>
           </q-item>
           <q-item clickable v-ripple @click="navigateAndClose('/profile')">
             <q-item-section avatar>
-              <q-icon name="person" />
+              <q-icon name="person" color="accent" />
             </q-item-section>
             <q-item-section>Profile</q-item-section>
           </q-item>
@@ -248,7 +248,7 @@
           </q-item>
           <q-item clickable v-ripple @click="navigateAndClose('/help')">
             <q-item-section avatar>
-              <q-icon name="help_outline" />
+              <q-icon name="help_outline" color="accent" />
             </q-item-section>
             <q-item-section>Help</q-item-section>
           </q-item>
