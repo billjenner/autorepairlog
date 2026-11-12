@@ -119,7 +119,7 @@
             @mouseleave="hoveredPath = null"
           />
           <q-btn
-            v-else
+            v-if="isLoggedIn && route.path !== '/login'"
             flat
             round
             :label="userInitials"
