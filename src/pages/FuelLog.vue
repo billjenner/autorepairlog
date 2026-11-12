@@ -83,6 +83,12 @@
                 <q-btn flat label="Retry" @click="prefillPriorMileage" />
               </template>
             </q-banner>
+            <q-banner v-if="priorMileageWarning" class="bg-warning text-dark" rounded>
+              {{ priorMileageWarning }} Enter prior mileage manually if available.
+              <template #action>
+                <q-btn flat label="Retry" @click="prefillPriorMileage" />
+              </template>
+            </q-banner>
             <q-card flat bordered class="q-pa-md bg-grey-1">
               <div class="text-subtitle1 q-mb-sm">
                 {{ editingFuelLogId ? 'Edit fuel log' : 'Fuel details' }}
@@ -193,6 +199,7 @@
                     dense
                     :rules="[(value) => !!value || 'Enter a date.']"
                     lazy-rules
+                    @update:model-value="onFuelDateChange"
                   />
                 </div>
                 <div class="col-12 col-sm-3">
@@ -414,6 +421,7 @@ import { useUsersStore } from '@/stores/users'
 import { useProfileStore } from '@/stores/profile'
 import { notifySuccess } from '../utils/notify'
 import { formatMpg, mileageDifference, milesPerGallon } from '../utils/fuelMileage'
+import { PriorMileageEstimateError } from '../lib/priorFuelMileage'
 
 const $q = useQuasar()
 const autoStore = useAutoStore()
@@ -434,9 +442,11 @@ const stationOptions = ref([])
 const locationOptions = ref([])
 const loadingPriorMileage = ref(false)
 const priorMileageError = ref('')
+const priorMileageWarning = ref('')
 const saving = ref(false)
 let prefillRequest = 0
 let loadRequest = 0
+let lastPrefilledMileage = null
 
 function filterLocations(value, update) {
   update(() => {
@@ -659,8 +669,10 @@ function createEmptyForm() {
 
 function resetForm() {
   prefillRequest++
+  lastPrefilledMileage = null
   loadingPriorMileage.value = false
   priorMileageError.value = ''
+  priorMileageWarning.value = ''
   Object.assign(form, createEmptyForm())
   editingFuelLogId.value = null
   showNotes.value = false
@@ -688,29 +700,61 @@ function toggleForm() {
 
 async function prefillPriorMileage() {
   const autoId = selectedAutoId.value
+  const date = form.date
   const request = ++prefillRequest
+  if (!autoId || !date) {
+    loadingPriorMileage.value = false
+    priorMileageError.value = ''
+    priorMileageWarning.value = ''
+    return
+  }
   loadingPriorMileage.value = true
   priorMileageError.value = ''
+  priorMileageWarning.value = ''
   try {
-    let miles = await fuelLogStore.fetchLatestMileage(autoId)
-    if (miles === null) miles = await mileageStore.fetchLatestMilesChecked(autoId)
+    let miles = await fuelLogStore.fetchLatestMileage(autoId, date)
+    if (miles === null) miles = await mileageStore.fetchLatestMilesChecked(autoId, date)
     if (request === prefillRequest && showForm.value && !editingFuelLogId.value) {
-      if (form.prior_mileage === null || form.prior_mileage === '') form.prior_mileage = miles
+      if (form.prior_mileage === null || form.prior_mileage === '') {
+        form.prior_mileage = miles
+        lastPrefilledMileage = miles
+      }
     }
   } catch (error) {
     if (request === prefillRequest) {
-      priorMileageError.value = `Unable to load prior mileage: ${error.message}`
-      $q.notify({ type: 'negative', message: priorMileageError.value })
+      if (error instanceof PriorMileageEstimateError) {
+        priorMileageWarning.value = error.message
+      } else {
+        priorMileageError.value = `Unable to load prior mileage: ${error.message}`
+        $q.notify({ type: 'negative', message: priorMileageError.value })
+      }
     }
   } finally {
     if (request === prefillRequest) loadingPriorMileage.value = false
   }
 }
 
+function onFuelDateChange() {
+  if (!showForm.value || editingFuelLogId.value) return
+  const isPrefilled = form.prior_mileage === lastPrefilledMileage
+  if (!isPrefilled && form.prior_mileage !== null && form.prior_mileage !== '') {
+    prefillRequest++
+    loadingPriorMileage.value = false
+    priorMileageError.value = ''
+    priorMileageWarning.value = ''
+    lastPrefilledMileage = null
+    return
+  }
+  if (isPrefilled) form.prior_mileage = null
+  lastPrefilledMileage = null
+  prefillPriorMileage()
+}
+
 function editFuelLog(entry) {
   prefillRequest++
   loadingPriorMileage.value = false
   priorMileageError.value = ''
+  priorMileageWarning.value = ''
   Object.assign(form, {
     auto_id: entry.auto_id,
     date: entry.date ? String(entry.date).slice(0, 10) : '',

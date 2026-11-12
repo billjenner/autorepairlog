@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { milesPerGallon } from '../utils/fuelMileage'
 import { fetchStationRows, insertStationRow } from '../lib/stationLookup'
 import { fetchFuelLogSuggestions } from '../lib/fuelLogSuggestions'
+import { fetchPriorFuelMileage } from '../lib/priorFuelMileage'
 
 function toNullableNumber(value, { integer = false, decimals = null } = {}) {
   if (value === null || value === undefined || value === '') {
@@ -35,19 +36,8 @@ export const useFuelLogStore = defineStore('FuelLog', {
   }),
 
   actions: {
-    async fetchLatestMileage(autoId) {
-      if (!supabase) throw new Error('Supabase client is not configured.')
-      const { data, error } = await supabase
-        .from('fuel_log')
-        .select('mileage')
-        .eq('auto_id', autoId)
-        .not('mileage', 'is', null)
-        .order('date', { ascending: false })
-        .order('fuel_log_id', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-      if (error) throw error
-      return data?.mileage ?? null
+    async fetchLatestMileage(autoId, date) {
+      return fetchPriorFuelMileage(supabase, autoId, date)
     },
 
     buildPayload(entry = {}) {

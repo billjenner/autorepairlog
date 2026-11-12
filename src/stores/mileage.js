@@ -24,13 +24,15 @@ export const useMileageStore = defineStore('Mileage', {
       return Boolean(data)
     },
 
-    async fetchLatestMilesChecked(autoId) {
+    async fetchLatestMilesChecked(autoId, throughDate = null) {
       if (!supabase) throw new Error('Supabase client is not configured.')
-      const { data, error } = await supabase
+      let query = supabase
         .from('mileage')
         .select('miles')
         .eq('auto_id', autoId)
         .eq('is_active', true)
+      if (throughDate) query = query.lte('date', throughDate)
+      const { data, error } = await query
         .order('date', { ascending: false, nullsFirst: false })
         .order('created_date', { ascending: false })
         .limit(1)

@@ -40,6 +40,11 @@ By combining historical records with mileage-based and calendar-based estimates,
 
 - Maintain records for multiple vehicles.
 - Track vehicle mileage history and driving-rate trends.
+- When adding fuel, prefill prior mileage from the preceding fuel log. If intervening logs lack
+  mileage, estimate it using the last recorded mileage, its MPG, and gallons from the
+  intervening logs (excluding the mileage-bearing log), rounded to the nearest mile. Missing data
+  is reported so prior mileage can be entered manually; if no fuel mileage exists, mileage history
+  is used instead.
 - Organize maintenance schedules by vehicle.
 - Support manufacturer-specific maintenance recommendations.
 
