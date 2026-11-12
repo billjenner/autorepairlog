@@ -45,6 +45,10 @@ By combining historical records with mileage-based and calendar-based estimates,
   intervening logs (excluding the mileage-bearing log), rounded to the nearest mile. Missing data
   is reported so prior mileage can be entered manually; if no fuel mileage exists, mileage history
   is used instead.
+- When saving a fuel log with prior mileage and gallons but no mileage, estimate mileage using
+  the most recent earlier fuel log with an MPG value. The estimate is rounded to a whole mile
+  and saved as mileage; a notice is shown before saving. If no earlier MPG is available, the
+  log can still be saved without mileage and a warning is shown.
 - Organize maintenance schedules by vehicle.
 - Support manufacturer-specific maintenance recommendations.
 

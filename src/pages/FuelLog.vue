@@ -845,6 +845,16 @@ async function saveFuelLog() {
   saving.value = true
   let fuelSaved = false
   try {
+    const estimate = await fuelLogStore.estimateMileage(entry, fuelLogId)
+    if (estimate.warning) {
+      $q.notify({ type: 'warning', message: estimate.warning })
+    } else if (estimate.mileage !== null) {
+      entry.mileage = estimate.mileage
+      form.mileage = estimate.mileage
+      notifySuccess($q, `Mileage estimated at ${estimate.mileage.toLocaleString()} miles.`, {
+        color: 'positive',
+      })
+    }
     const hasMileage = entry.mileage !== null && entry.mileage !== ''
     const latest = hasMileage ? await mileageStore.fetchLatestMilesChecked(entry.auto_id) : null
     const saved = isEditing

@@ -4,6 +4,7 @@ import { milesPerGallon } from '../utils/fuelMileage'
 import { fetchStationRows, insertStationRow } from '../lib/stationLookup'
 import { fetchFuelLogSuggestions } from '../lib/fuelLogSuggestions'
 import { fetchPriorFuelMileage } from '../lib/priorFuelMileage'
+import { estimateFuelMileage } from '../lib/estimateFuelMileage'
 
 function toNullableNumber(value, { integer = false, decimals = null } = {}) {
   if (value === null || value === undefined || value === '') {
@@ -38,6 +39,10 @@ export const useFuelLogStore = defineStore('FuelLog', {
   actions: {
     async fetchLatestMileage(autoId, date) {
       return fetchPriorFuelMileage(supabase, autoId, date)
+    },
+
+    async estimateMileage(entry, fuelLogId) {
+      return estimateFuelMileage(supabase, entry, fuelLogId)
     },
 
     buildPayload(entry = {}) {
