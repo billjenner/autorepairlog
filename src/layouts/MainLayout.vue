@@ -242,7 +242,7 @@
           </q-item>
           <q-item clickable v-ripple @click="navigateAndClose('/change-password')">
             <q-item-section avatar>
-              <q-icon name="lock" />
+              <q-icon name="lock" color="accent" />
             </q-item-section>
             <q-item-section>Change Password</q-item-section>
           </q-item>
