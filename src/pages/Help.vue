@@ -137,7 +137,12 @@
                     </li>
                   </ol>
                   <p>
-                    <q-btn flat color="primary" label="Open setup checklist" to="/setup" />
+                    <q-btn
+                      color="accent"
+                      text-color="white"
+                      label="Open getting started checklist"
+                      to="/setup"
+                    />
                   </p>
                 </q-card-section>
               </q-card>
