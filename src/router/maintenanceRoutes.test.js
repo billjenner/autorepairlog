@@ -4,6 +4,10 @@ import routes from './routes.js'
 
 test('maintenance pages require maintenance tracking, but dashboard remains available', () => {
   const children = routes[0].children
+  const setup = children.find((item) => item.path === 'setup')
+  assert.equal(setup.meta.requiresAuth, true)
+  assert.notEqual(setup.meta.requiresMaintenanceTracking, true)
+
   for (const path of ['schedule', 'service', 'service-order', 'service-log']) {
     const route = children.find((item) => item.path === path)
     assert.equal(route.meta.requiresAuth, true)

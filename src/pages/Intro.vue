@@ -39,47 +39,15 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
-import { useProfileStore } from '@/stores/profile'
-import { useServiceStore } from '@/stores/service'
-import { useUsersStore } from '@/stores/users'
 
-const $q = useQuasar()
 const router = useRouter()
-const profileStore = useProfileStore()
-const serviceStore = useServiceStore()
-const usersStore = useUsersStore()
 const routing = ref(false)
 
 async function handleLetsGo() {
-  if (!usersStore.currentUser?.email) {
-    await router.push('/login')
-    return
-  }
-
   routing.value = true
   try {
-    const userId = usersStore.currentUser.user_id
-    const profile =
-      profileStore.currentProfile?.user_id === userId
-        ? profileStore.currentProfile
-        : await profileStore.loadCurrentProfile(userId)
-    const schedules = await serviceStore.loadDashboardScheduleOptions({
-      isAdmin: Number(profile?.admin_level) > 0,
-      profileId: profile?.profile_id,
-    })
-
-    if (schedules === null) {
-      console.error('[Intro] dashboard availability check failed:', serviceStore.error)
-      $q.notify({
-        type: 'negative',
-        message: 'Unable to check Dashboard availability. Continuing to Auto.',
-        timeout: 7000,
-      })
-    }
-
-    await router.push(schedules?.length ? '/dashboard' : '/auto')
+    await router.push('/setup')
   } finally {
     routing.value = false
   }

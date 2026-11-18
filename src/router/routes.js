@@ -59,6 +59,18 @@ const routes = [
         },
       },
       {
+        path: 'setup',
+        component: () => import('@/pages/GettingStarted.vue'),
+        meta: {
+          requiresAuth: true,
+          seo: {
+            title: 'Getting started',
+            description: 'Set up your autos, mileage, tracking preferences, and service schedules.',
+            canonicalPath: '/setup',
+          },
+        },
+      },
+      {
         path: 'login',
         component: () => import('@/pages/Login.vue'),
         meta: {

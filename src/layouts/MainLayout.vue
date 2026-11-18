@@ -135,6 +135,9 @@
                 <q-item clickable v-close-popup @click="router.push('/profile')">
                   <q-item-section>Profile</q-item-section>
                 </q-item>
+                <q-item clickable v-close-popup @click="router.push('/setup')">
+                  <q-item-section>Getting Started</q-item-section>
+                </q-item>
                 <q-item clickable v-close-popup @click="router.push('/help')">
                   <q-item-section>Help</q-item-section>
                 </q-item>
@@ -172,6 +175,12 @@
               <q-icon name="dashboard" color="accent" />
             </q-item-section>
             <q-item-section>Dashboard</q-item-section>
+          </q-item>
+          <q-item clickable v-ripple @click="navigateAndClose('/setup')">
+            <q-item-section avatar>
+              <q-icon name="checklist" color="accent" />
+            </q-item-section>
+            <q-item-section>Getting Started</q-item-section>
           </q-item>
           <q-item v-if="navVisible['/auto']" clickable v-ripple @click="navigateAndClose('/auto')">
             <q-item-section avatar>

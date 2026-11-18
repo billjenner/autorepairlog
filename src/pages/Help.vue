@@ -99,45 +99,45 @@
             <div class="col-12 flex justify-center">
               <q-card style="width: 100%">
                 <q-card-section class="bg-secondary text-white text-center">
-                  Getting Started with Auto Repair Log
+                  <router-link to="/setup" class="text-white">
+                    Getting Started with Auto Repair Log
+                  </router-link>
                 </q-card-section>
                 <q-card-section>
                   <p>
-                    Add your vehicle, then use the features you enable in your Profile preferences.
+                    Use these steps to set up your autos, mileage, tracking preferences, and service
+                    schedules. Maintenance steps appear only when maintenance tracking is enabled.
                   </p>
                   <ol class="q-pl-md">
                     <li class="q-mb-md">
-                      <strong>Add your auto.</strong> Enter basic auto information, including its
-                      purchase date and mileage, along with the date and mileage of its latest
-                      odometer reading.
+                      <strong>Set up an auto.</strong> Add an auto to your profile or use one shared
+                      with you.
                     </li>
                     <li class="q-mb-md">
-                      <strong>Set your preferences.</strong> In Profile, choose whether to use fuel
-                      tracking and maintenance tracking, then save your profile. Turning fuel
-                      tracking off hides Fuel navigation. Turning maintenance tracking off hides
-                      Schedule, Service, Service Order, Service Log, and Dashboard Alerts, and stops
-                      maintenance notifications.
+                      <strong>Record initial and latest mileage.</strong> For at least one
+                      associated auto, record its initial mileage and an active latest mileage
+                      reading.
                     </li>
                     <li class="q-mb-md">
-                      <strong>Set up maintenance, if enabled.</strong> On the Schedule page, choose
-                      a schedule for your auto and enter the last service dates or mileage. On the
-                      Service page, customize or add services and their intervals.
+                      <strong>Choose your tracking preferences.</strong> In Profile, review whether
+                      to use fuel tracking, maintenance tracking, or both. This checklist step is
+                      automatically complete.
                     </li>
                     <li class="q-mb-md">
-                      <strong>Record your activity.</strong> With maintenance tracking enabled, add
-                      service orders for completed work, with notes and optional attachments. With
-                      fuel tracking enabled, use Fuel to record fill-ups and costs.
+                      <strong>Create a schedule.</strong> If maintenance tracking is enabled, create
+                      at least one schedule for an auto associated with your profile.
+                    </li>
+                    <li class="q-mb-md">
+                      <strong>Record a last service.</strong> Enter the last mileage or date for at
+                      least one scheduled service.
+                    </li>
+                    <li>
+                      <strong>Complete service history.</strong> Enter the last mileage or date for
+                      every active scheduled service.
                     </li>
                   </ol>
                   <p>
-                    When an eligible schedule is available, Dashboard shows costs and exports and,
-                    if maintenance tracking is enabled, Alerts. Keep mileage and service history
-                    current to improve maintenance estimates.
-                  </p>
-                  <p class="q-mb-none">
-                    Profile also lets you manage shared-user email entries. Both users must add each
-                    other’s verified account email for reciprocal sharing. Both users can view and
-                    edit the other’s autos and related records; removing either entry ends access.
+                    <q-btn flat color="primary" label="Open setup checklist" to="/setup" />
                   </p>
                 </q-card-section>
               </q-card>
