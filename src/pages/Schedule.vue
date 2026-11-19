@@ -211,7 +211,7 @@
                     flat
                     dense
                     color="accent"
-                    label="Last service Dates"
+                    :label="`Last service Dates - completed (${lastServiceCompletion(scheduleStore.schedules, props.row.auto_id)}%)`"
                     @click="editLastService(props.row)"
                   />
                 </q-td>
@@ -279,6 +279,7 @@ import { templateAutoLabel, useScheduleStore } from '@/stores/schedule'
 import { useUsersStore } from '@/stores/users'
 import { useProfileStore } from '@/stores/profile'
 import { notifySuccess } from '../utils/notify'
+import { lastServiceCompletion } from '@/utils/lastServiceCompletion'
 
 const $q = useQuasar()
 const route = useRoute()

@@ -14,10 +14,18 @@
             </q-item-section>
           </template>
           <div class="row q-col-gutter-md q-pa-md">
+            <div
+              class="text-subtitle1 text-center text-weight-bold q-mx-auto"
+              style="max-width: 80%"
+            >
+              Auto Repair Log helps organize vehicle records and maintenance history. It uses your
+              records and mileage- and calendar-based intervals to help estimate future service
+              needs. Estimates depend on the information you enter
+            </div>
             <div class="col-12 flex justify-center">
-              <q-card style="width: 100%; max-width: 800px">
-                <q-card-section class="bg-secondary text-white text-center">
-                  Auto Repair Log
+              <q-card style="width: 100%">
+                <q-card-section class="bg-secondary text-white text-h6 text-center">
+                  What you can do
                 </q-card-section>
                 <q-card-section>
                   <p>
@@ -25,8 +33,6 @@
                     your records and mileage- and calendar-based intervals to help estimate future
                     service needs. Estimates depend on the information you enter.
                   </p>
-
-                  <div class="text-h6 q-mt-md">What you can do</div>
                   <div class="q-mt-sm">
                     <div class="text-subtitle1 text-weight-medium">Maintenance and repairs</div>
                     <p>
@@ -36,7 +42,7 @@
                   </div>
                   <div class="q-mt-md">
                     <div class="text-subtitle1 text-weight-medium">
-                      Fuel tracking and expense reporting
+                      Fuel and service expense tracking and reporting
                     </div>
                     <p>
                       Track fuel consumption, monitor expenses, and generate reports to better
@@ -76,6 +82,43 @@
                       provider.
                     </p>
                   </div>
+                </q-card-section>
+              </q-card>
+            </div>
+            <div class="col-12 flex justify-center">
+              <q-card style="width: 100%">
+                <q-card-section class="bg-secondary text-white text-h6 text-center">
+                  Screens and their purpose
+                </q-card-section>
+                <q-card-section>
+                  <div class="text-subtitle1 text-weight-medium">Auto</div>
+                  <p>Add and manage vehicle details, purchase information, and mileage.</p>
+
+                  <div class="text-subtitle1 text-weight-medium">Schedule</div>
+                  <p>
+                    Create maintenance schedules from templates and enter the last service date or
+                    mileage for scheduled services.
+                  </p>
+
+                  <div class="text-subtitle1 text-weight-medium">Service</div>
+                  <p>
+                    Manage scheduled services, their mileage or time intervals, and last service
+                    details.
+                  </p>
+
+                  <div class="text-subtitle1 text-weight-medium">Service Orders</div>
+                  <p>
+                    Record work for a vehicle, including the shop, service date, mileage, services,
+                    costs, and an invoice.
+                  </p>
+
+                  <div class="text-subtitle1 text-weight-medium">Service Log</div>
+                  <p>Review and manage individual services and their parts and labor costs.</p>
+
+                  <div class="text-subtitle1 text-weight-medium">Fuel Log</div>
+                  <p class="q-mb-none">
+                    Record fuel purchases, mileage, gallons, and costs to track fuel consumption.
+                  </p>
                 </q-card-section>
               </q-card>
             </div>
