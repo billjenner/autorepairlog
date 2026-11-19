@@ -48,18 +48,6 @@
             @mouseleave="hoveredPath = null"
           />
           <q-btn
-            v-if="navVisible['/fuel-log']"
-            flat
-            icon="local_gas_station"
-            label="Fuel"
-            to="/fuel-log"
-            class="q-mx-xs"
-            style="min-width: 117px; font-size: 0.6rem"
-            :style="buttonStyle('/fuel-log')"
-            @mouseover="hoveredPath = '/fuel-log'"
-            @mouseleave="hoveredPath = null"
-          />
-          <q-btn
             v-if="navVisible['/schedule']"
             flat
             icon="event_available"
@@ -105,6 +93,18 @@
             style="min-width: 117px; font-size: 0.6rem"
             :style="buttonStyle('/service-log')"
             @mouseover="hoveredPath = '/service-log'"
+            @mouseleave="hoveredPath = null"
+          />
+          <q-btn
+            v-if="navVisible['/fuel-log']"
+            flat
+            icon="local_gas_station"
+            label="Fuel Log"
+            to="/fuel-log"
+            class="q-mx-xs"
+            style="min-width: 117px; font-size: 0.6rem"
+            :style="buttonStyle('/fuel-log')"
+            @mouseover="hoveredPath = '/fuel-log'"
             @mouseleave="hoveredPath = null"
           />
           <q-btn
@@ -165,6 +165,12 @@
           <q-item-section>Intro</q-item-section>
         </q-item>
         <template v-if="isLoggedIn">
+          <q-item clickable v-ripple @click="navigateAndClose('/setup')">
+            <q-item-section avatar>
+              <q-icon name="checklist" color="accent" />
+            </q-item-section>
+            <q-item-section>Getting Started</q-item-section>
+          </q-item>
           <q-item
             v-if="navVisible['/dashboard']"
             clickable
@@ -176,28 +182,11 @@
             </q-item-section>
             <q-item-section>Dashboard</q-item-section>
           </q-item>
-          <q-item clickable v-ripple @click="navigateAndClose('/setup')">
-            <q-item-section avatar>
-              <q-icon name="checklist" color="accent" />
-            </q-item-section>
-            <q-item-section>Getting Started</q-item-section>
-          </q-item>
           <q-item v-if="navVisible['/auto']" clickable v-ripple @click="navigateAndClose('/auto')">
             <q-item-section avatar>
               <q-icon name="directions_car" color="accent" />
             </q-item-section>
             <q-item-section>Auto</q-item-section>
-          </q-item>
-          <q-item
-            v-if="navVisible['/fuel-log']"
-            clickable
-            v-ripple
-            @click="navigateAndClose('/fuel-log')"
-          >
-            <q-item-section avatar>
-              <q-icon name="local_gas_station" color="accent" />
-            </q-item-section>
-            <q-item-section>Fuel</q-item-section>
           </q-item>
           <q-item
             v-if="navVisible['/schedule']"
@@ -242,6 +231,17 @@
               <q-icon name="history" color="accent" />
             </q-item-section>
             <q-item-section>Service Log</q-item-section>
+          </q-item>
+          <q-item
+            v-if="navVisible['/fuel-log']"
+            clickable
+            v-ripple
+            @click="navigateAndClose('/fuel-log')"
+          >
+            <q-item-section avatar>
+              <q-icon name="local_gas_station" color="accent" />
+            </q-item-section>
+            <q-item-section>Fuel Log</q-item-section>
           </q-item>
           <q-item clickable v-ripple @click="navigateAndClose('/profile')">
             <q-item-section avatar>
