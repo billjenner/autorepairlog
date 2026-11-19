@@ -194,12 +194,11 @@
               <template #body-cell-notes="props">
                 <q-td :props="props">
                   <q-btn
-                    v-if="props.row.notes"
                     flat
                     dense
                     color="primary"
                     label="View notes"
-                    @click="openNotes(props.row.notes)"
+                    @click="openNotes(props.row.notes, props.row)"
                   />
                 </q-td>
               </template>
@@ -215,7 +214,6 @@
                     label="Last service Dates"
                     @click="editLastService(props.row)"
                   />
-                  <q-btn flat dense color="primary" label="Edit" @click="editSchedule(props.row)" />
                 </q-td>
               </template>
             </q-table>
@@ -228,7 +226,12 @@
               @save="saveLastServiceValues"
               @delete="deleteNewService"
             />
-            <schedule-notes-dialog v-model="notesDialogOpen" :notes="selectedNotes" />
+            <schedule-notes-dialog
+              v-model="notesDialogOpen"
+              :notes="selectedNotes"
+              :editable="Boolean(selectedNotesSchedule)"
+              @edit="editSelectedNotes"
+            />
             <q-dialog v-model="confirmDeleteOpen">
               <q-card style="min-width: 320px">
                 <q-card-section class="text-h6">Delete schedule?</q-card-section>
@@ -400,6 +403,7 @@ const servicesDialogOpen = ref(false)
 const lastServiceDialogOpen = ref(false)
 const notesDialogOpen = ref(false)
 const selectedNotes = ref('')
+const selectedNotesSchedule = ref(null)
 const newScheduleServices = ref([])
 const newScheduleAutoId = ref(null)
 const servicesForDialog = ref([])
@@ -409,9 +413,15 @@ function openServices(schedule) {
   servicesDialogOpen.value = true
 }
 
-function openNotes(notes) {
-  selectedNotes.value = notes
+function openNotes(notes, schedule = null) {
+  selectedNotes.value = notes || ''
+  selectedNotesSchedule.value = schedule
   notesDialogOpen.value = true
+}
+
+function editSelectedNotes() {
+  notesDialogOpen.value = false
+  editSchedule(selectedNotesSchedule.value)
 }
 
 function autoDescription(schedule) {
@@ -446,7 +456,7 @@ function editSchedule(schedule) {
   form.auto_id = schedule.auto_id
   form.notes = schedule.notes || ''
   editingScheduleId.value = schedule.schedule_id
-  showNotes.value = Boolean(schedule.notes)
+  showNotes.value = true
   showForm.value = true
 }
 
