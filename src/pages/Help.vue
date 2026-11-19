@@ -24,102 +24,109 @@
             </div>
             <div class="col-12 flex justify-center">
               <q-card style="width: 100%">
-                <q-card-section class="bg-secondary text-white text-h6 text-center">
-                  What you can do
-                </q-card-section>
-                <q-card-section>
-                  <p>
-                    Auto Repair Log helps organize vehicle records and maintenance history. It uses
-                    your records and mileage- and calendar-based intervals to help estimate future
-                    service needs. Estimates depend on the information you enter.
-                  </p>
-                  <div class="q-mt-sm">
-                    <div class="text-subtitle1 text-weight-medium">Maintenance and repairs</div>
-                    <p>
-                      Record service history and costs, manage recurring maintenance schedules, and
-                      attach invoices or warranty documents as PDF or image files.
-                    </p>
-                  </div>
-                  <div class="q-mt-md">
-                    <div class="text-subtitle1 text-weight-medium">
-                      Fuel and service expense tracking and reporting
+                <q-expansion-item
+                  label="What you can do"
+                  expand-icon="keyboard_arrow_down"
+                  expanded-icon="keyboard_arrow_up"
+                  header-class="bg-secondary text-white text-h6 relative-position what-you-can-do-header"
+                  label-class="text-center"
+                >
+                  <q-card-section>
+                    <div class="q-mt-sm">
+                      <div class="text-subtitle1 text-weight-medium">Maintenance and repairs</div>
+                      <p>
+                        Record service history and costs, manage recurring maintenance schedules,
+                        and attach invoices or warranty documents as PDF or image files.
+                      </p>
                     </div>
-                    <p>
-                      Track fuel consumption, monitor expenses, and generate reports to better
-                      understand vehicle operating costs.
-                    </p>
-                  </div>
-                  <div class="q-mt-md">
-                    <div class="text-subtitle1 text-weight-medium">Scheduling and predictions</div>
-                    <p>
-                      Set mileage- and time-based service intervals, estimate upcoming maintenance,
-                      identify overdue services, and reuse schedule templates.
-                    </p>
-                  </div>
-                  <div class="q-mt-md">
-                    <div class="text-subtitle1 text-weight-medium">
-                      Vehicle records and insights
+                    <div class="q-mt-md">
+                      <div class="text-subtitle1 text-weight-medium">
+                        Fuel and service expense tracking and reporting
+                      </div>
+                      <p>
+                        Track fuel consumption, monitor expenses, and generate reports to better
+                        understand vehicle operating costs.
+                      </p>
                     </div>
-                    <p>
-                      Manage multiple vehicles, track mileage history and driving trends, and review
-                      maintenance status and expenses. Dashboard exports include fuel and service
-                      records in CSV or PDF format.
-                    </p>
-                  </div>
-                  <div class="q-mt-md">
-                    <div class="text-subtitle1 text-weight-medium">Alerts and notifications</div>
-                    <p>
-                      View estimated service intervals in Dashboard Alerts. When maintenance
-                      tracking and in-app notifications are enabled, the app can notify you about
-                      past-due services whose notifications are enabled.
-                    </p>
-                  </div>
-                  <div class="q-mt-md">
-                    <div class="text-subtitle1 text-weight-medium">Notes and dictation</div>
-                    <p class="q-mb-none">
-                      Enter notes or use voice dictation in supported browsers. Dictated text is
-                      appended to existing notes, and speech may be processed by your browser
-                      provider.
-                    </p>
-                  </div>
-                </q-card-section>
+                    <div class="q-mt-md">
+                      <div class="text-subtitle1 text-weight-medium">
+                        Scheduling and predictions
+                      </div>
+                      <p>
+                        Set mileage- and time-based service intervals, estimate upcoming
+                        maintenance, identify overdue services, and reuse schedule templates.
+                      </p>
+                    </div>
+                    <div class="q-mt-md">
+                      <div class="text-subtitle1 text-weight-medium">
+                        Vehicle records and insights
+                      </div>
+                      <p>
+                        Manage multiple vehicles, track mileage history and driving trends, and
+                        review maintenance status and expenses. Dashboard exports include fuel and
+                        service records in CSV or PDF format.
+                      </p>
+                    </div>
+                    <div class="q-mt-md">
+                      <div class="text-subtitle1 text-weight-medium">Alerts and notifications</div>
+                      <p>
+                        View estimated service intervals in Dashboard Alerts. When maintenance
+                        tracking and in-app notifications are enabled, the app can notify you about
+                        past-due services whose notifications are enabled.
+                      </p>
+                    </div>
+                    <div class="q-mt-md">
+                      <div class="text-subtitle1 text-weight-medium">Notes and dictation</div>
+                      <p class="q-mb-none">
+                        Enter notes or use voice dictation in supported browsers. Dictated text is
+                        appended to existing notes, and speech may be processed by your browser
+                        provider.
+                      </p>
+                    </div>
+                  </q-card-section>
+                </q-expansion-item>
               </q-card>
             </div>
             <div class="col-12 flex justify-center">
               <q-card style="width: 100%">
-                <q-card-section class="bg-secondary text-white text-h6 text-center">
-                  Screens and their purpose
-                </q-card-section>
-                <q-card-section>
-                  <div class="text-subtitle1 text-weight-medium">Auto</div>
-                  <p>Add and manage vehicle details, purchase information, and mileage.</p>
+                <q-expansion-item
+                  label="Screens and their purpose"
+                  expand-icon="keyboard_arrow_down"
+                  expanded-icon="keyboard_arrow_up"
+                  header-class="bg-secondary text-white text-h6"
+                  label-class="text-center"
+                >
+                  <q-card-section>
+                    <div class="text-subtitle1 text-weight-medium">Auto</div>
+                    <p>Add and manage vehicle details, purchase information, and mileage.</p>
 
-                  <div class="text-subtitle1 text-weight-medium">Schedule</div>
-                  <p>
-                    Create maintenance schedules from templates and enter the last service date or
-                    mileage for scheduled services.
-                  </p>
+                    <div class="text-subtitle1 text-weight-medium">Schedule</div>
+                    <p>
+                      Create maintenance schedules from templates and enter the last service date or
+                      mileage for scheduled services.
+                    </p>
 
-                  <div class="text-subtitle1 text-weight-medium">Service</div>
-                  <p>
-                    Manage scheduled services, their mileage or time intervals, and last service
-                    details.
-                  </p>
+                    <div class="text-subtitle1 text-weight-medium">Service</div>
+                    <p>
+                      Manage scheduled services, their mileage or time intervals, and last service
+                      details.
+                    </p>
 
-                  <div class="text-subtitle1 text-weight-medium">Service Orders</div>
-                  <p>
-                    Record work for a vehicle, including the shop, service date, mileage, services,
-                    costs, and an invoice.
-                  </p>
+                    <div class="text-subtitle1 text-weight-medium">Service Orders</div>
+                    <p>
+                      Record work for a vehicle, including the shop, service date, mileage,
+                      services, costs, and an invoice.
+                    </p>
 
-                  <div class="text-subtitle1 text-weight-medium">Service Log</div>
-                  <p>Review and manage individual services and their parts and labor costs.</p>
+                    <div class="text-subtitle1 text-weight-medium">Service Log</div>
+                    <p>Review and manage individual services and their parts and labor costs.</p>
 
-                  <div class="text-subtitle1 text-weight-medium">Fuel Log</div>
-                  <p class="q-mb-none">
-                    Record fuel purchases, mileage, gallons, and costs to track fuel consumption.
-                  </p>
-                </q-card-section>
+                    <div class="text-subtitle1 text-weight-medium">Fuel Log</div>
+                    <p class="q-mb-none">
+                      Record fuel purchases, mileage, gallons, and costs to track fuel consumption.
+                    </p>
+                  </q-card-section>
+                </q-expansion-item>
               </q-card>
             </div>
           </div>
@@ -446,6 +453,11 @@ async function handleFeedbackSubmit() {
 </script>
 
 <style scoped>
+:deep(.what-you-can-do-header > .q-item__section--side) {
+  position: absolute;
+  right: 16px;
+}
+
 .help-page {
   display: flex;
   flex-direction: column;
