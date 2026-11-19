@@ -30,6 +30,9 @@
             label="Dashboard"
             to="/dashboard"
             class="q-mx-xs"
+            :class="{
+              'navigation-hovered': hoveredPath === '/dashboard' && route.path !== '/dashboard',
+            }"
             style="min-width: 117px; font-size: 0.6rem"
             :style="buttonStyle('/dashboard')"
             @mouseover="hoveredPath = '/dashboard'"
@@ -42,6 +45,7 @@
             label="Auto"
             to="/auto"
             class="q-mx-xs"
+            :class="{ 'navigation-hovered': hoveredPath === '/auto' && route.path !== '/auto' }"
             style="min-width: 117px; font-size: 0.6rem"
             :style="buttonStyle('/auto')"
             @mouseover="hoveredPath = '/auto'"
@@ -54,6 +58,9 @@
             label="Schedule"
             to="/schedule"
             class="q-mx-xs"
+            :class="{
+              'navigation-hovered': hoveredPath === '/schedule' && route.path !== '/schedule',
+            }"
             style="min-width: 117px; font-size: 0.6rem"
             :style="buttonStyle('/schedule')"
             @mouseover="hoveredPath = '/schedule'"
@@ -66,6 +73,9 @@
             label="Service"
             to="/service"
             class="q-mx-xs"
+            :class="{
+              'navigation-hovered': hoveredPath === '/service' && route.path !== '/service',
+            }"
             style="min-width: 117px; font-size: 0.6rem"
             :style="buttonStyle('/service')"
             @mouseover="hoveredPath = '/service'"
@@ -78,6 +88,10 @@
             label="S. Order"
             to="/service-order"
             class="q-mx-xs"
+            :class="{
+              'navigation-hovered':
+                hoveredPath === '/service-order' && route.path !== '/service-order',
+            }"
             style="min-width: 117px; font-size: 0.6rem"
             :style="buttonStyle('/service-order')"
             @mouseover="hoveredPath = '/service-order'"
@@ -90,6 +104,9 @@
             label="S. log"
             to="/service-log"
             class="q-mx-xs"
+            :class="{
+              'navigation-hovered': hoveredPath === '/service-log' && route.path !== '/service-log',
+            }"
             style="min-width: 117px; font-size: 0.6rem"
             :style="buttonStyle('/service-log')"
             @mouseover="hoveredPath = '/service-log'"
@@ -102,6 +119,9 @@
             label="Fuel Log"
             to="/fuel-log"
             class="q-mx-xs"
+            :class="{
+              'navigation-hovered': hoveredPath === '/fuel-log' && route.path !== '/fuel-log',
+            }"
             style="min-width: 117px; font-size: 0.6rem"
             :style="buttonStyle('/fuel-log')"
             @mouseover="hoveredPath = '/fuel-log'"
@@ -733,6 +753,10 @@ onBeforeUnmount(() => {
   background-color: var(--q-accent);
   min-width: 40px;
   min-height: 40px;
+}
+
+.navigation-hovered :deep(.q-icon) {
+  color: var(--q-accent);
 }
 
 .navigation-list :deep(.q-item--active) {
