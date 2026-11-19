@@ -127,18 +127,33 @@
             class="q-mx-sm user-initials-button"
           >
             <q-menu auto-close>
-              <q-list style="min-width: 140px">
+              <q-list class="navigation-list" style="min-width: 140px">
                 <q-item clickable v-close-popup @click="signOut()">
                   <q-item-section>Sign out</q-item-section>
                 </q-item>
                 <q-separator />
-                <q-item clickable v-close-popup @click="router.push('/profile')">
+                <q-item
+                  clickable
+                  v-close-popup
+                  :active="route.path === '/profile'"
+                  @click="router.push('/profile')"
+                >
                   <q-item-section>Profile</q-item-section>
                 </q-item>
-                <q-item clickable v-close-popup @click="router.push('/setup')">
+                <q-item
+                  clickable
+                  v-close-popup
+                  :active="route.path === '/setup'"
+                  @click="router.push('/setup')"
+                >
                   <q-item-section>Getting Started</q-item-section>
                 </q-item>
-                <q-item clickable v-close-popup @click="router.push('/help')">
+                <q-item
+                  clickable
+                  v-close-popup
+                  :active="route.path === '/help'"
+                  @click="router.push('/help')"
+                >
                   <q-item-section>Help</q-item-section>
                 </q-item>
               </q-list>
@@ -149,11 +164,12 @@
     </q-header>
 
     <q-drawer v-model="leftDrawerOpen" side="left" bordered overlay :width="176">
-      <q-list padding>
+      <q-list padding class="navigation-list">
         <q-item
-          v-if="!isLoggedIn && route.path !== '/login'"
+          v-if="!isLoggedIn"
           clickable
           v-ripple
+          :active="route.path === '/login'"
           @click="navigateAndClose('/login')"
         >
           <q-item-section>Login</q-item-section>
@@ -161,11 +177,16 @@
         <q-item v-else clickable v-ripple @click="signOut()">
           <q-item-section>Sign out</q-item-section>
         </q-item>
-        <q-item clickable v-ripple @click="navigateAndClose('/')">
+        <q-item clickable v-ripple :active="route.path === '/'" @click="navigateAndClose('/')">
           <q-item-section>Intro</q-item-section>
         </q-item>
         <template v-if="isLoggedIn">
-          <q-item clickable v-ripple @click="navigateAndClose('/setup')">
+          <q-item
+            clickable
+            v-ripple
+            :active="route.path === '/setup'"
+            @click="navigateAndClose('/setup')"
+          >
             <q-item-section avatar>
               <q-icon name="checklist" color="accent" />
             </q-item-section>
@@ -175,6 +196,7 @@
             v-if="navVisible['/dashboard']"
             clickable
             v-ripple
+            :active="route.path === '/dashboard'"
             @click="navigateAndClose('/dashboard')"
           >
             <q-item-section avatar>
@@ -182,7 +204,13 @@
             </q-item-section>
             <q-item-section>Dashboard</q-item-section>
           </q-item>
-          <q-item v-if="navVisible['/auto']" clickable v-ripple @click="navigateAndClose('/auto')">
+          <q-item
+            v-if="navVisible['/auto']"
+            clickable
+            v-ripple
+            :active="route.path === '/auto'"
+            @click="navigateAndClose('/auto')"
+          >
             <q-item-section avatar>
               <q-icon name="directions_car" color="accent" />
             </q-item-section>
@@ -192,6 +220,7 @@
             v-if="navVisible['/schedule']"
             clickable
             v-ripple
+            :active="route.path === '/schedule'"
             @click="navigateAndClose('/schedule')"
           >
             <q-item-section avatar>
@@ -203,6 +232,7 @@
             v-if="navVisible['/service']"
             clickable
             v-ripple
+            :active="route.path === '/service'"
             @click="navigateAndClose('/service')"
           >
             <q-item-section avatar>
@@ -214,6 +244,7 @@
             v-if="navVisible['/service-order']"
             clickable
             v-ripple
+            :active="route.path === '/service-order'"
             @click="navigateAndClose('/service-order')"
           >
             <q-item-section avatar>
@@ -225,6 +256,7 @@
             v-if="navVisible['/service-log']"
             clickable
             v-ripple
+            :active="route.path === '/service-log'"
             @click="navigateAndClose('/service-log')"
           >
             <q-item-section avatar>
@@ -236,6 +268,7 @@
             v-if="navVisible['/fuel-log']"
             clickable
             v-ripple
+            :active="route.path === '/fuel-log'"
             @click="navigateAndClose('/fuel-log')"
           >
             <q-item-section avatar>
@@ -243,31 +276,58 @@
             </q-item-section>
             <q-item-section>Fuel Log</q-item-section>
           </q-item>
-          <q-item clickable v-ripple @click="navigateAndClose('/profile')">
+          <q-item
+            clickable
+            v-ripple
+            :active="route.path === '/profile'"
+            @click="navigateAndClose('/profile')"
+          >
             <q-item-section avatar>
               <q-icon name="person" color="accent" />
             </q-item-section>
             <q-item-section>Profile</q-item-section>
           </q-item>
-          <q-item clickable v-ripple @click="navigateAndClose('/change-password')">
+          <q-item
+            clickable
+            v-ripple
+            :active="route.path === '/change-password'"
+            @click="navigateAndClose('/change-password')"
+          >
             <q-item-section avatar>
               <q-icon name="lock" color="accent" />
             </q-item-section>
             <q-item-section>Change Password</q-item-section>
           </q-item>
-          <q-item clickable v-ripple @click="navigateAndClose('/help')">
+          <q-item
+            clickable
+            v-ripple
+            :active="route.path === '/help'"
+            @click="navigateAndClose('/help')"
+          >
             <q-item-section avatar>
               <q-icon name="help_outline" color="accent" />
             </q-item-section>
             <q-item-section>Help</q-item-section>
           </q-item>
-          <q-item v-if="isAdmin" clickable v-ripple @click="navigateAndClose('/users')">
+          <q-item
+            v-if="isAdmin"
+            clickable
+            v-ripple
+            :active="route.path === '/users'"
+            @click="navigateAndClose('/users')"
+          >
             <q-item-section avatar>
               <q-icon name="group" />
             </q-item-section>
             <q-item-section>Users</q-item-section>
           </q-item>
-          <q-item v-if="isAdmin" clickable v-ripple @click="navigateAndClose('/feedback')">
+          <q-item
+            v-if="isAdmin"
+            clickable
+            v-ripple
+            :active="route.path === '/feedback'"
+            @click="navigateAndClose('/feedback')"
+          >
             <q-item-section avatar>
               <q-icon name="feedback" />
             </q-item-section>
@@ -673,5 +733,14 @@ onBeforeUnmount(() => {
   background-color: var(--q-accent);
   min-width: 40px;
   min-height: 40px;
+}
+
+.navigation-list :deep(.q-item--active) {
+  background-color: var(--q-accent);
+  color: white;
+}
+
+.navigation-list :deep(.q-item:hover) {
+  background-color: var(--q-warning);
 }
 </style>
