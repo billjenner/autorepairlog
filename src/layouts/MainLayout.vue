@@ -740,7 +740,12 @@ onBeforeUnmount(() => {
   color: white;
 }
 
+.navigation-list :deep(.q-item--active .q-icon) {
+  color: white !important;
+}
+
 .navigation-list :deep(.q-item:hover) {
   background-color: var(--q-warning);
+  color: white;
 }
 </style>
